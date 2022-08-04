@@ -1,7 +1,10 @@
+import Stargate from "@components/stargate/Stargate";
+import "@styles/app.scss";
+
 function App() {
   return (
     <div className="App">
-      <p>coucou</p>
+      <Stargate />
     </div>
   );
 }

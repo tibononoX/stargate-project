@@ -1,0 +1,118 @@
+.gameContainer {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.stargate {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 60px;
+  p {
+    color: cyan;
+    text-align: center;
+  }
+  .chevrons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    color: rgb(53, 53, 53);
+
+    .chevron {
+      background-color: grey;
+      margin: 8px;
+      width: fit-content;
+      padding: 4px 8px;
+      font-weight: 800;
+      &.active {
+        background-color: rgb(185, 66, 36);
+        color: rgb(255, 166, 0);
+      }
+    }
+  }
+
+  .wormhole {
+    margin-top: 50px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(240, 248, 255, 1) 0%,
+      rgba(172, 208, 240, 1) 15%,
+      rgba(26, 152, 231, 1) 76%,
+      rgba(0, 93, 255, 1) 100%
+    );
+  }
+}
+
+.inputAddress {
+  position: absolute;
+  top: 0;
+  margin: 20px;
+  display: flex;
+  list-style: none;
+
+  li {
+    margin-right: 5px;
+    font-size: 1.5rem;
+    color: rgb(12, 201, 43);
+  }
+}
+
+.dhd {
+  position: absolute;
+  bottom: 70px;
+  display: flex;
+
+  form {
+    text-align: center;
+  }
+
+  .buttonList {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    justify-content: center;
+    max-width: 200px;
+
+    .buttonItem {
+      color: rgb(53, 53, 53);
+      margin: 4px;
+      width: 32px;
+      height: 32px;
+
+      .symbButton {
+        color: rgb(114, 108, 108);
+        font-weight: 800;
+        background-color: rgb(65, 63, 63);
+        width: 100%;
+        height: 100%;
+
+        &.active {
+          background-color: rgb(185, 66, 36);
+          color: rgb(255, 166, 0);
+        }
+      }
+    }
+  }
+
+  .dhdButton {
+    background-color: rgb(54, 39, 39);
+    color: rgb(114, 108, 108);
+    height: 70px;
+    width: 70px;
+    border-radius: 50%;
+    border: solid rgb(65, 63, 63);
+
+    &.active {
+      background-color: rgb(185, 66, 36);
+    }
+  }
+}
