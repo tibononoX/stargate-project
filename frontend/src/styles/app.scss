@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "sg1Glyph";
+  src: url("../assets/fonts/stargate_sg1.ttf");
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,4 +16,17 @@
   min-height: 100vh;
   width: 100%;
   background-color: rgb(122, 122, 126);
+
+  .openAddressBook {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgb(206, 206, 206);
+    border: none;
+    padding: 8px 16px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState } from "react";
 import symbols from "@services/gateSymbols";
 import addressList from "@services/addressList";
@@ -5,20 +6,20 @@ import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
 
 const Stargate = () => {
+  const [currentPlanet, setCurrentPlanet] = useState({
+    id: 1,
+    address: ["20", "22", "26", "13", "14", "19"],
+    poi: ["7"],
+    planet: "Earth",
+  });
   const [inputAddress, setInputAddress] = useState([]);
+  const [destinationInfo, setDestinationInfo] = useState({});
   const [isOpen, setIsOpen] = useState(false);
   const [dhdActive, setDhdActive] = useState(false);
 
-  const currentPlanet = {
-    id: 2,
-    address: ["1", "2", "3", "4", "5", "6"],
-    poi: ["7"],
-    planet: "P7V-124",
-  };
-
-  const handleSymbolPress = (value) => {
+  const handleSymbolPress = (value, letter) => {
     if (inputAddress.length < 7) {
-      setInputAddress([...inputAddress, { value }]);
+      setInputAddress([...inputAddress, { value, letter }]);
     }
 
     if (inputAddress.length === 6) {
@@ -65,14 +66,19 @@ const Stargate = () => {
 
     const match = addressList.some((destination) => {
       const { address } = destination;
-      return (
+
+      if (
         address.length === destAddress.length &&
         address.every((symbol, index) => {
           return (
             parseInt(symbol, 10) === parseInt(destAddress[index].value, 10)
           );
         })
-      );
+      ) {
+        setDestinationInfo(destination);
+        return true;
+      }
+      return false;
     });
     if (!match) {
       return false;
@@ -84,6 +90,16 @@ const Stargate = () => {
     return true;
   };
 
+  const closeGate = () => {
+    new Audio(`../../src/assets/sounds/stargate/gateClose.mp3`).play();
+    return setTimeout(() => {
+      setInputAddress([]);
+      setDestinationInfo({});
+      setDhdActive(false);
+      return setIsOpen(false);
+    }, 2500);
+  };
+
   const openGate = () => {
     setTimeout(() => {
       new Audio(`../../src/assets/sounds/stargate/gateOpen.mp3`).play();
@@ -92,18 +108,8 @@ const Stargate = () => {
       setIsOpen(true);
     }, 2000);
     setTimeout(() => {
-      setInputAddress([]);
-      setIsOpen(false);
+      return closeGate();
     }, 38000);
-  };
-
-  const closeGate = () => {
-    new Audio(`../../src/assets/sounds/stargate/gateClose.mp3`).play();
-    setTimeout(() => {
-      setInputAddress([]);
-      setDhdActive(false);
-    }, 3000);
-    return setIsOpen(false);
   };
 
   const resetDhd = () => {
@@ -137,6 +143,15 @@ const Stargate = () => {
     return openGate();
   };
 
+  const travelGate = () => {
+    new Audio(
+      `../../src/assets/sounds/stargate/teleport_${Math.floor(
+        Math.random() * (8 - 1) + 1
+      )}.mp3`
+    ).play();
+    return setCurrentPlanet(destinationInfo);
+  };
+
   const handleDhdClassName = (type, id) => {
     switch (type) {
       case "redButton":
@@ -153,6 +168,7 @@ const Stargate = () => {
 
   return (
     <div className="gameContainer">
+      <p>Current planet: {currentPlanet.planet}</p>
       <div className="stargate">
         {isOpen && (
           <ReactAudioPlayer
@@ -208,13 +224,11 @@ const Stargate = () => {
             9
           </li>
         </ul>
-        {isOpen && <span className="wormhole" />}
+        {isOpen && <span className="wormhole" onClick={() => travelGate()} />}
       </div>
 
       <ul className="inputAddress">
-        {inputAddress.map((symbol) => (
-          <li>{`${symbol.value}`}</li>
-        ))}
+        {inputAddress.map((symbol) => symbol.letter)}
       </ul>
 
       <div className="dhd">
@@ -224,9 +238,11 @@ const Stargate = () => {
               <li className="buttonItem">
                 <button
                   className={handleDhdClassName("symbButton", symbol.id)}
-                  title={symbol.label}
+                  title={`${symbol.id} - ${symbol.label}`}
                   type="button"
-                  onClick={() => handleSymbolPress(symbol.id.toString())}
+                  onClick={() =>
+                    handleSymbolPress(symbol.id.toString(), symbol.letter)
+                  }
                 >
                   {symbol.id}
                 </button>
@@ -235,10 +251,9 @@ const Stargate = () => {
           </ul>
           <button
             type="submit"
+            title="Big red button woosh woosh"
             className={dhdActive ? "dhdButton active" : "dhdButton"}
-          >
-            ENTER
-          </button>
+          />
         </form>
       </div>
     </div>
