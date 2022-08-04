@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import symbols from "@services/gateSymbols";
 import addressList from "@services/addressList";
 import "@styles/stargate/main.scss";
@@ -54,6 +54,14 @@ const Stargate = () => {
   const inputCheck = async () => {
     const destAddress = inputAddress.slice(0, 6);
     const poi = inputAddress[6];
+
+    if (
+      currentPlanet.address.every(
+        (symbol, index) => symbol === inputAddress[index].value
+      )
+    ) {
+      return false;
+    }
 
     const match = addressList.some((destination) => {
       const { address } = destination;
