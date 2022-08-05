@@ -7,6 +7,13 @@
   justify-content: space-evenly;
 }
 
+.currentPlanet {
+  position: absolute;
+  top: 0;
+  font-size: 2rem;
+  padding: 8px;
+}
+
 .stargate {
   position: absolute;
   display: flex;
@@ -38,18 +45,6 @@
   }
 
   .wormhole {
-    margin-top: 50px;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      rgba(240, 248, 255, 1) 0%,
-      rgba(172, 208, 240, 1) 15%,
-      rgba(26, 152, 231, 1) 76%,
-      rgba(0, 93, 255, 1) 100%
-    );
-
     &:hover {
       cursor: pointer;
     }
@@ -66,24 +61,17 @@
 
   margin-right: 5px;
   font-size: 1.5rem;
-  color: rgb(12, 201, 43);
-}
-.inputAddres {
-  position: absolute;
-  top: 20px;
-  margin: 20px;
-  display: flex;
-  list-style: none;
-
-  margin-right: 5px;
-  font-size: 1.5rem;
-  color: rgb(12, 201, 43);
+  color: #473e39;
 }
 
 .dhd {
   position: absolute;
-  bottom: 70px;
+  bottom: 0;
   display: flex;
+  justify-content: center;
+  width: 100%;
+  background-color: rgb(61, 58, 58);
+  padding: 20px;
 
   form {
     text-align: center;

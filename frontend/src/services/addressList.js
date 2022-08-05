@@ -11,18 +11,6 @@ const addressList = [
     poi: ["n"],
     planet: "Abydos",
   },
-  {
-    id: 3,
-    address: ["5", "12", "8", "4", "3", "28"],
-    poi: ["34"],
-    planet: "P3X-639",
-  },
-  {
-    id: 4,
-    address: ["13", "34", "31", "21", "17", "5"],
-    poi: ["3"],
-    planet: "Chulak",
-  },
 ];
 
 export default addressList;

@@ -1,20 +1,20 @@
 const models = require("../models");
 
-class ItemController {
-  static browse = (req, res) => {
-    models.item
-      .findAll()
-      .then(([rows]) => {
-        res.send(rows);
-      })
-      .catch((err) => {
-        console.error(err);
-        res.sendStatus(500);
-      });
+class PlanetController {
+  static browse = async (req, res) => {
+    try {
+      const [planetList] = await models.planet.findAll();
+      if (!planetList) {
+        return res.sendStatus(404);
+      }
+      return res.status(200).send(planetList);
+    } catch (err) {
+      return res.sendStatus(500);
+    }
   };
 
   static read = (req, res) => {
-    models.item
+    models.planet
       .find(req.params.id)
       .then(([rows]) => {
         if (rows[0] == null) {
@@ -30,14 +30,14 @@ class ItemController {
   };
 
   static edit = (req, res) => {
-    const item = req.body;
+    const planet = req.body;
 
     // TODO validations (length, format...)
 
-    item.id = parseInt(req.params.id, 10);
+    planet.id = parseInt(req.params.id, 10);
 
-    models.item
-      .update(item)
+    models.planet
+      .update(planet)
       .then(([result]) => {
         if (result.affectedRows === 0) {
           res.sendStatus(404);
@@ -52,14 +52,14 @@ class ItemController {
   };
 
   static add = (req, res) => {
-    const item = req.body;
+    const planet = req.body;
 
     // TODO validations (length, format...)
 
-    models.item
-      .insert(item)
+    models.planet
+      .insert(planet)
       .then(([result]) => {
-        res.status(201).send({ ...item, id: result.insertId });
+        res.status(201).send({ ...planet, id: result.insertId });
       })
       .catch((err) => {
         console.error(err);
@@ -68,7 +68,7 @@ class ItemController {
   };
 
   static delete = (req, res) => {
-    models.item
+    models.planet
       .delete(req.params.id)
       .then(() => {
         res.sendStatus(204);
@@ -80,4 +80,4 @@ class ItemController {
   };
 }
 
-module.exports = ItemController;
+module.exports = PlanetController;

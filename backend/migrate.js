@@ -17,9 +17,13 @@ const migrate = async () => {
   await connection.query(`create database ${DB_NAME}`);
   await connection.query(`use ${DB_NAME}`);
 
-  const sql = fs.readFileSync("./database.sql", "utf8");
+  const tables = fs.readFileSync("./database.sql", "utf8");
+  const planets = fs.readFileSync("./planets.sql", "utf8");
+  const glyphs = fs.readFileSync("./glyphs.sql", "utf8");
 
-  await connection.query(sql);
+  await connection.query(tables);
+  await connection.query(planets);
+  await connection.query(glyphs);
 
   connection.end();
 };

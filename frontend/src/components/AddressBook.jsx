@@ -1,8 +1,6 @@
-import symbols from "@services/gateSymbols";
-import addressList from "@services/addressList";
 import "@styles/addressBook.scss";
 
-const AddressBook = () => {
+const AddressBook = ({ addressList }) => {
   return (
     <div className="addressBook">
       <ul className="planetList">
@@ -10,13 +8,10 @@ const AddressBook = () => {
           <li className="planet">
             <h3>{address.planet}</h3>
             <h4>
-              Address:{" "}
-              <span className="glyphs">
-                {address.address.map((symbol) => `${symbol} `)}
-              </span>
+              Address: <span className="glyphs">{address.gateAddress}</span>
             </h4>
             <h4>
-              Point of Origin: <span className="glyphs">{address.poi}</span>
+              Point of Origin: <span className="glyphs">{address.poo}</span>
             </h4>
           </li>
         ))}
