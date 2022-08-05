@@ -17,6 +17,7 @@ const Stargate = ({ addressList }) => {
   const [destLock, setDestLock] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [dhdActive, setDhdActive] = useState(false);
+  const [dhdOpen, setDhdOpen] = useState(false);
 
   const inputCheck = async () => {
     const destAddress = inputAddress.slice(0, 6);
@@ -96,13 +97,15 @@ const Stargate = ({ addressList }) => {
 
   const closeGate = () => {
     new Audio(`../../src/assets/sounds/stargate/gateClose.mp3`).play();
-    return setTimeout(() => {
-      setInputAddress([]);
+    setTimeout(() => {
       setDestinationInfo({});
       setDhdActive(false);
       setDestLock(false);
-      return setIsOpen(false);
+      setIsOpen(false);
     }, 2500);
+    setTimeout(() => {
+      return setInputAddress("");
+    }, 3200);
   };
 
   const openGate = () => {
@@ -126,7 +129,7 @@ const Stargate = ({ addressList }) => {
   }, [isOpen]);
 
   const resetDhd = () => {
-    return setInputAddress([]);
+    return setInputAddress("");
   };
 
   const wrongAddress = () => {
@@ -199,7 +202,14 @@ const Stargate = ({ addressList }) => {
         />
       </div>
 
-      <div className="dhd">
+      <div className={dhdOpen ? "dhd open" : "dhd"}>
+        <button
+          type="button"
+          className={dhdOpen ? "showHide hide" : "showHide"}
+          onClick={() => setDhdOpen(!dhdOpen)}
+        >
+          {dhdOpen ? "Hide DHD" : "Show DHD"}
+        </button>
         <form onSubmit={handleSubmit}>
           <ul className="buttonList">
             {symbols.map((symbol) => {

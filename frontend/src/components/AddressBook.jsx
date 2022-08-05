@@ -6,7 +6,7 @@ const AddressBook = ({ addressList }) => {
       <ul className="planetList">
         {addressList.map((address) => (
           <li className="planet">
-            <h3>{address.planet}</h3>
+            <h3>{address.planetName}</h3>
             <h4>
               Address: <span className="glyphs">{address.gateAddress}</span>
             </h4>

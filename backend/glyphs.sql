@@ -46,4 +46,5 @@ INSERT INTO
   poo (planet_id, glyph_id)
 VALUES
   (1, 1),
-  (2, 40);
+  (2, 40),
+  (3, 2);
