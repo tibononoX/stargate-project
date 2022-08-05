@@ -1,7 +1,7 @@
 import React from "react";
 import Wormhole from "./dynamic/Wormhole";
 
-function SG1Render({ isOpen, travelGate, chevrons }) {
+function SG1Render({ isOpen, travelGate, chevrons, destLock }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17424,7 +17424,7 @@ function SG1Render({ isOpen, travelGate, chevrons }) {
           />
         </>
       )}
-      {chevrons >= 7 && (
+      {destLock && (
         <>
           <path
             fill="url(#radialGradient8138)"

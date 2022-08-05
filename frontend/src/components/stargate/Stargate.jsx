@@ -12,48 +12,11 @@ const Stargate = ({ addressList }) => {
     poo: "A",
     planetName: "Earth",
   });
-  const [inputAddress, setInputAddress] = useState([]);
+  const [inputAddress, setInputAddress] = useState("");
   const [destinationInfo, setDestinationInfo] = useState({});
+  const [destLock, setDestLock] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [dhdActive, setDhdActive] = useState(false);
-
-  const handleSymbolPress = (letter) => {
-    if (inputAddress.length < 7) {
-      setInputAddress(`${inputAddress}${letter}`);
-    }
-
-    if (inputAddress.length === 6) {
-      new Audio(
-        `../../src/assets/sounds/dhd/dhd${Math.floor(
-          Math.random() * (7 - 1) + 1
-        )}.mp3`
-      ).play();
-      setTimeout(() => {
-        return new Audio(
-          `../../src/assets/sounds/stargate/chevDhdLast.mp3`
-        ).play();
-      }, 800);
-    }
-
-    if (inputAddress.length === 7) {
-      return null;
-    }
-
-    new Audio(
-      `../../src/assets/sounds/dhd/dhd${Math.floor(
-        Math.random() * (7 - 1) + 1
-      )}.mp3`
-    ).play();
-
-    if (inputAddress.lenght < 6) {
-      return null;
-    }
-    return new Audio(
-      `../../src/assets/sounds/stargate/chevDhd${Math.floor(
-        Math.random() * (7 - 1) + 1
-      )}.mp3`
-    ).play();
-  };
 
   const inputCheck = async () => {
     const destAddress = inputAddress.slice(0, 6);
@@ -74,14 +37,62 @@ const Stargate = ({ addressList }) => {
       return false;
     });
     if (!match) {
+      setDestLock(false);
       return false;
     }
     if (currentPlanet.poo !== poo) {
       console.warn("wrong POI");
       return false;
     }
+
+    setTimeout(() => {
+      setDestLock(true);
+      return new Audio(
+        `../../src/assets/sounds/stargate/chevDhdLast.mp3`
+      ).play();
+    }, 800);
     return true;
   };
+
+  const handleSymbolPress = (letter) => {
+    if (inputAddress.length < 7) {
+      setInputAddress(`${inputAddress}${letter}`);
+    }
+
+    if (inputAddress.length === 6) {
+      new Audio(
+        `../../src/assets/sounds/dhd/dhd${Math.floor(
+          Math.random() * (7 - 1) + 1
+        )}.mp3`
+      ).play();
+    }
+
+    if (inputAddress.length === 7) {
+      return null;
+    }
+
+    new Audio(
+      `../../src/assets/sounds/dhd/dhd${Math.floor(
+        Math.random() * (7 - 1) + 1
+      )}.mp3`
+    ).play();
+
+    if (inputAddress.length === 6) {
+      return null;
+    }
+
+    return new Audio(
+      `../../src/assets/sounds/stargate/chevDhd${Math.floor(
+        Math.random() * (7 - 1) + 1
+      )}.mp3`
+    ).play();
+  };
+
+  useEffect(() => {
+    if (inputAddress.length === 7 && !destLock) {
+      inputCheck();
+    }
+  }, [inputAddress]);
 
   const closeGate = () => {
     new Audio(`../../src/assets/sounds/stargate/gateClose.mp3`).play();
@@ -89,6 +100,7 @@ const Stargate = ({ addressList }) => {
       setInputAddress([]);
       setDestinationInfo({});
       setDhdActive(false);
+      setDestLock(false);
       return setIsOpen(false);
     }, 2500);
   };
@@ -135,8 +147,7 @@ const Stargate = ({ addressList }) => {
       return resetDhd();
     }
     new Audio(`../../src/assets/sounds/dhd/dhdEngage.mp3`).play();
-    const validInput = await inputCheck();
-    if (!validInput) {
+    if (!destLock) {
       new Audio(`../../src/assets/sounds/dhd/dhdFail.mp3`).play();
       return wrongAddress();
     }
@@ -184,6 +195,7 @@ const Stargate = ({ addressList }) => {
           isOpen={isOpen}
           travelGate={travelGate}
           chevrons={inputAddress.length}
+          destLock={destLock}
         />
       </div>
 
@@ -194,7 +206,10 @@ const Stargate = ({ addressList }) => {
               if (currentPlanet.poo === symbol.letter) {
                 return null;
               }
-              if (currentPlanet.id !== 1 && symbol.id === 1) {
+              if (
+                (currentPlanet.id !== 1 && symbol.id === 1) ||
+                (currentPlanet.id !== 2 && symbol.id === 40)
+              ) {
                 return null;
               }
               return (
