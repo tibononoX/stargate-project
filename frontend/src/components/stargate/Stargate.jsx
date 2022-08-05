@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import symbols from "@services/gateSymbols";
 import addressList from "@services/addressList";
 import "@styles/stargate/main.scss";
@@ -8,8 +8,8 @@ import ReactAudioPlayer from "react-audio-player";
 const Stargate = () => {
   const [currentPlanet, setCurrentPlanet] = useState({
     id: 1,
-    address: ["20", "22", "26", "13", "14", "19"],
-    poi: ["7"],
+    address: ["b", "Z", "E", "j", "K", "c"],
+    poi: ["A"],
     planet: "Earth",
   });
   const [inputAddress, setInputAddress] = useState([]);
@@ -58,7 +58,7 @@ const Stargate = () => {
 
     if (
       currentPlanet.address.every(
-        (symbol, index) => symbol === inputAddress[index].value
+        (symbol, index) => symbol === inputAddress[index].letter
       )
     ) {
       return false;
@@ -70,9 +70,7 @@ const Stargate = () => {
       if (
         address.length === destAddress.length &&
         address.every((symbol, index) => {
-          return (
-            parseInt(symbol, 10) === parseInt(destAddress[index].value, 10)
-          );
+          return symbol === destAddress[index].letter;
         })
       ) {
         setDestinationInfo(destination);
@@ -83,7 +81,7 @@ const Stargate = () => {
     if (!match) {
       return false;
     }
-    if (parseInt(currentPlanet.poi, 10) !== parseInt(poi.value, 10)) {
+    if (currentPlanet.poi[0] !== poi.letter) {
       console.warn("wrong POI");
       return false;
     }
@@ -107,10 +105,18 @@ const Stargate = () => {
     setTimeout(() => {
       setIsOpen(true);
     }, 2000);
-    setTimeout(() => {
+  };
+
+  useEffect(() => {
+    const openLimit = setTimeout(() => {
+      if (!isOpen) {
+        return null;
+      }
       return closeGate();
     }, 38000);
-  };
+
+    return () => clearTimeout(openLimit);
+  }, [isOpen]);
 
   const resetDhd = () => {
     return setInputAddress([]);
@@ -234,20 +240,36 @@ const Stargate = () => {
       <div className="dhd">
         <form onSubmit={handleSubmit}>
           <ul className="buttonList">
-            {symbols.map((symbol) => (
-              <li className="buttonItem">
-                <button
-                  className={handleDhdClassName("symbButton", symbol.id)}
-                  title={`${symbol.id} - ${symbol.label}`}
-                  type="button"
-                  onClick={() =>
-                    handleSymbolPress(symbol.id.toString(), symbol.letter)
-                  }
-                >
-                  {symbol.id}
-                </button>
-              </li>
-            ))}
+            {symbols.map((symbol) => {
+              if (currentPlanet.id === 2 && symbol.id === 1) {
+                return (
+                  <li className="buttonItem">
+                    <button
+                      className={handleDhdClassName("symbButton", 40)}
+                      title="m - Leo"
+                      type="button"
+                      onClick={() => handleSymbolPress("40", "m")}
+                    >
+                      n
+                    </button>
+                  </li>
+                );
+              }
+              return (
+                <li className="buttonItem">
+                  <button
+                    className={handleDhdClassName("symbButton", symbol.id)}
+                    title={`${symbol.letter} - ${symbol.label}`}
+                    type="button"
+                    onClick={() =>
+                      handleSymbolPress(symbol.id.toString(), symbol.letter)
+                    }
+                  >
+                    {symbol.letter}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
           <button
             type="submit"

@@ -9,8 +9,15 @@ const AddressBook = () => {
         {addressList.map((address) => (
           <li className="planet">
             <h3>{address.planet}</h3>
-            <h4>Address: {address.address.map((symbol) => `${symbol} `)}</h4>
-            <h4>Point of Origin: {address.poi}</h4>
+            <h4>
+              Address:{" "}
+              <span className="glyphs">
+                {address.address.map((symbol) => `${symbol} `)}
+              </span>
+            </h4>
+            <h4>
+              Point of Origin: <span className="glyphs">{address.poi}</span>
+            </h4>
           </li>
         ))}
       </ul>
