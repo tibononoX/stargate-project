@@ -1,30 +1,35 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, createContext } from "react";
 import symbols from "@services/gateSymbols";
 import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
+import PlanetContext from "@contexts/PlanetContext";
 
-const Stargate = ({ addressList }) => {
-  const [currentPlanet, setCurrentPlanet] = useState({
-    id: 1,
-    gateAddress: "bZEjKc",
-    poo: "A",
-    planetName: "Earth",
-  });
+export const RollContext = createContext();
+
+export const Stargate = ({ addressList }) => {
+  const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
   const [inputAddress, setInputAddress] = useState("");
   const [destinationInfo, setDestinationInfo] = useState({});
   const [destLock, setDestLock] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [dhdActive, setDhdActive] = useState(false);
   const [dhdOpen, setDhdOpen] = useState(false);
+  const [currentSymbol, setCurrentSymbol] = useState(1);
+  const activeChevrons = inputAddress.length;
+  const [ringRoll, setRingRoll] = useState(false);
+  const [timeToRoll, setTimeToRoll] = useState();
+
+  const resetDhd = () => {
+    return setInputAddress("");
+  };
 
   const inputCheck = async () => {
     const destAddress = inputAddress.slice(0, 6);
     const poo = inputAddress[6];
 
     if (currentPlanet.gateAddress === destAddress) {
-      console.warn("Cannot dial your own gate");
       return false;
     }
 
@@ -39,6 +44,7 @@ const Stargate = ({ addressList }) => {
     });
     if (!match) {
       setDestLock(false);
+      new Audio(`../../src/assets/sounds/stargate/chev_usual_7.wav`).play();
       return false;
     }
     if (currentPlanet.poo !== poo) {
@@ -51,52 +57,76 @@ const Stargate = ({ addressList }) => {
       return new Audio(
         `../../src/assets/sounds/stargate/chevDhdLast.mp3`
       ).play();
-    }, 800);
+    }, 500);
     return true;
   };
 
-  const handleSymbolPress = (letter) => {
-    if (inputAddress.length < 7) {
-      setInputAddress(`${inputAddress}${letter}`);
-    }
-
-    if (inputAddress.length === 6) {
-      new Audio(
-        `../../src/assets/sounds/dhd/dhd${Math.floor(
-          Math.random() * (7 - 1) + 1
-        )}.mp3`
-      ).play();
-    }
-
-    if (inputAddress.length === 7) {
+  const handleSymbolPress = (letter, id) => {
+    if (activeChevrons === 7) {
       return null;
     }
 
-    new Audio(
-      `../../src/assets/sounds/dhd/dhd${Math.floor(
-        Math.random() * (7 - 1) + 1
-      )}.mp3`
-    ).play();
-
-    if (inputAddress.length === 6) {
+    if (inputAddress.includes(letter)) {
       return null;
     }
 
-    return new Audio(
-      `../../src/assets/sounds/stargate/chevDhd${Math.floor(
-        Math.random() * (7 - 1) + 1
-      )}.mp3`
-    ).play();
+    switch (currentPlanet.dialMode) {
+      case "EARTH":
+        if (activeChevrons < 7) {
+          setInputAddress(`${inputAddress}${letter}`);
+
+          if (activeChevrons === 6) {
+            return null;
+          }
+          if (id > 39) {
+            setCurrentSymbol(1);
+          } else {
+            setCurrentSymbol(id);
+          }
+          return new Audio(
+            `../../src/assets/sounds/stargate/chev_usual_${
+              activeChevrons + 1
+            }.wav`
+          ).play();
+        }
+        return null;
+
+      case "DHD":
+        if (activeChevrons < 7) {
+          setInputAddress(`${inputAddress}${letter}`);
+          new Audio(
+            `../../src/assets/sounds/dhd/dhd_usual_${activeChevrons + 1}.wav`
+          ).play();
+
+          if (activeChevrons === 6) {
+            return null;
+          }
+          if (id > 39) {
+            setCurrentSymbol(1);
+          } else {
+            setCurrentSymbol(id);
+          }
+          return new Audio(
+            `../../src/assets/sounds/stargate/chev_usual_${
+              activeChevrons + 1
+            }.wav`
+          ).play();
+        }
+        return null;
+
+      default:
+        break;
+    }
   };
 
   useEffect(() => {
-    if (inputAddress.length === 7 && !destLock) {
+    if (activeChevrons === 7 && !destLock) {
       inputCheck();
     }
   }, [inputAddress]);
 
   const closeGate = () => {
-    new Audio(`../../src/assets/sounds/stargate/gateClose.mp3`).play();
+    new Audio(`../../src/assets/sounds/stargate/gateClose.wav`).play();
     setTimeout(() => {
       setDestinationInfo({});
       setDhdActive(false);
@@ -104,13 +134,12 @@ const Stargate = ({ addressList }) => {
     }, 2500);
     setTimeout(() => {
       setDestLock(false);
-      return setInputAddress("");
-    }, 3200);
+      return resetDhd();
+    }, 2600);
   };
-
   const openGate = () => {
     setTimeout(() => {
-      new Audio(`../../src/assets/sounds/stargate/gateOpen.mp3`).play();
+      new Audio(`../../src/assets/sounds/stargate/gateOpen.wav`).play();
     }, 500);
     setTimeout(() => {
       setIsOpen(true);
@@ -128,12 +157,12 @@ const Stargate = ({ addressList }) => {
     return () => clearTimeout(openLimit);
   }, [isOpen]);
 
-  const resetDhd = () => {
-    return setInputAddress("");
-  };
-
   const wrongAddress = () => {
-    setInputAddress([]);
+    new Audio(`../../src/assets/sounds/dhd/dhd_usual_fail.mp3`).play();
+    setCurrentSymbol(1);
+    setTimeout(() => {
+      resetDhd();
+    }, 1200);
     return console.warn("Wrong address");
   };
 
@@ -142,18 +171,13 @@ const Stargate = ({ addressList }) => {
     if (isOpen) {
       return closeGate();
     }
-    if (inputAddress.length === 0) {
+    if (activeChevrons === 0) {
       return null;
     }
-    if (inputAddress.length <= 6 && inputAddress.length !== 0) {
-      new Audio(`../../src/assets/sounds/dhd/dhdFail.mp3`).play();
-      return resetDhd();
-    }
-    new Audio(`../../src/assets/sounds/dhd/dhdEngage.mp3`).play();
-    if (!destLock) {
-      new Audio(`../../src/assets/sounds/dhd/dhdFail.mp3`).play();
+    if ((activeChevrons <= 6 && activeChevrons !== 0) || !destLock) {
       return wrongAddress();
     }
+    new Audio(`../../src/assets/sounds/dhd/dhd_usual_dial.wav`).play();
     setDhdActive(true);
     return openGate();
   };
@@ -182,79 +206,93 @@ const Stargate = ({ addressList }) => {
   };
 
   return (
-    <div className="gameContainer">
-      <p className="currentPlanet">
-        Current planet: {currentPlanet.planetName}
-      </p>
-      <div className="stargate">
-        {isOpen && (
-          <ReactAudioPlayer
-            src="../../src/assets/sounds/stargate/wormholeLoop.wav"
-            autoPlay
-            loop
+    // eslint-disable-next-line react/jsx-no-constructed-context-values
+    <RollContext.Provider value={{ ringRoll, setRingRoll, setTimeToRoll }}>
+      <div className="gameContainer">
+        <p className="currentPlanet">
+          Current planet: {currentPlanet.planetName}
+        </p>
+        <div className="stargate">
+          {isOpen && (
+            <ReactAudioPlayer
+              src="../../src/assets/sounds/stargate/wormholeLoop.wav"
+              autoPlay
+              loop
+            />
+          )}
+          <SG1Render
+            isOpen={isOpen}
+            travelGate={travelGate}
+            chevrons={activeChevrons}
+            destLock={destLock}
+            currentSymbol={currentSymbol}
           />
-        )}
-        <SG1Render
-          isOpen={isOpen}
-          travelGate={travelGate}
-          chevrons={inputAddress.length}
-          destLock={destLock}
-        />
-      </div>
+        </div>
 
-      <div className={dhdOpen ? "dhd open" : "dhd"}>
-        <button
-          type="button"
-          className={dhdOpen ? "showHide hide" : "showHide"}
-          onClick={() => setDhdOpen(!dhdOpen)}
-        >
-          {dhdOpen ? "Hide DHD" : "Show DHD"}
-        </button>
-        <form onSubmit={handleSubmit}>
-          <ul className="buttonList">
-            {symbols.map((symbol) => {
-              if (currentPlanet.poo === symbol.letter) {
-                return null;
-              }
-              if (
-                (currentPlanet.id !== 1 && symbol.id === 1) ||
-                (currentPlanet.id !== 2 && symbol.id === 40)
-              ) {
-                return null;
-              }
-              return (
-                <li className="buttonItem">
-                  <button
-                    className={handleDhdClassName("symbButton", symbol.letter)}
-                    title={`${symbol.letter} - ${symbol.label}`}
-                    type="button"
-                    onClick={() => handleSymbolPress(symbol.letter)}
-                  >
-                    {symbol.letter}
-                  </button>
-                </li>
-              );
-            })}
-            <li className="buttonItem">
-              <button
-                className={handleDhdClassName("symbButton", currentPlanet.poo)}
-                title="n - Abydos"
-                type="button"
-                onClick={() => handleSymbolPress(currentPlanet.poo)}
-              >
-                {currentPlanet.poo}
-              </button>
-            </li>
-          </ul>
+        <div className={dhdOpen ? "dhd open" : "dhd"}>
           <button
-            type="submit"
-            title="Big red button woosh woosh"
-            className={dhdActive ? "dhdButton active" : "dhdButton"}
-          />
-        </form>
+            type="button"
+            className={dhdOpen ? "showHide hide" : "showHide"}
+            onClick={() => setDhdOpen(!dhdOpen)}
+          >
+            {dhdOpen ? "Hide DHD" : "Show DHD"}
+          </button>
+          <form onSubmit={handleSubmit}>
+            <ul className="buttonList">
+              {symbols.map((symbol) => {
+                if (currentPlanet.poo === symbol.letter) {
+                  return null;
+                }
+                if (
+                  (currentPlanet.id !== 1 && symbol.id === 1) ||
+                  (currentPlanet.id !== 2 && symbol.id === 40)
+                ) {
+                  return null;
+                }
+                return (
+                  <li className="buttonItem" key={symbol.id}>
+                    <button
+                      className={handleDhdClassName(
+                        "symbButton",
+                        symbol.letter
+                      )}
+                      title={`${symbol.letter} - ${symbol.label}`}
+                      type="button"
+                      onClick={() =>
+                        handleSymbolPress(symbol.letter, symbol.id)
+                      }
+                    >
+                      {symbol.letter}
+                    </button>
+                  </li>
+                );
+              })}
+              <li className="buttonItem">
+                <button
+                  className={handleDhdClassName(
+                    "symbButton",
+                    currentPlanet.poo
+                  )}
+                  title="n - Abydos"
+                  type="button"
+                  onClick={() =>
+                    handleSymbolPress(currentPlanet.poo, currentPlanet.poo_id)
+                  }
+                >
+                  {currentPlanet.poo}
+                </button>
+              </li>
+            </ul>
+            <button
+              type="submit"
+              title="Big red button woosh woosh"
+              className={dhdActive ? "dhdButton active" : "dhdButton"}
+            />
+          </form>
+        </div>
       </div>
-    </div>
+    </RollContext.Provider>
   );
 };
 
-export default Stargate;
+export default { RollContext, Stargate };

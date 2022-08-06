@@ -138,6 +138,10 @@
         &.active {
           border: solid 2px rgb(231, 89, 26);
           color: rgb(238, 127, 79);
+
+          &:hover {
+            cursor: default;
+          }
         }
 
         &:hover {
