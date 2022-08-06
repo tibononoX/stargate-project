@@ -100,10 +100,10 @@ const Stargate = ({ addressList }) => {
     setTimeout(() => {
       setDestinationInfo({});
       setDhdActive(false);
-      setDestLock(false);
       setIsOpen(false);
     }, 2500);
     setTimeout(() => {
+      setDestLock(false);
       return setInputAddress("");
     }, 3200);
   };
