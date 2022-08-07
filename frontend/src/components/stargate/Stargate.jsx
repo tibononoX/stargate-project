@@ -207,7 +207,9 @@ export const Stargate = ({ addressList }) => {
 
   return (
     // eslint-disable-next-line react/jsx-no-constructed-context-values
-    <RollContext.Provider value={{ ringRoll, setRingRoll, setTimeToRoll }}>
+    <RollContext.Provider
+      value={{ ringRoll, setRingRoll, timeToRoll, setTimeToRoll }}
+    >
       <div className="gameContainer">
         <p className="currentPlanet">
           Current planet: {currentPlanet.planetName}
