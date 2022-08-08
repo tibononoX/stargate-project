@@ -17,7 +17,13 @@ export const Stargate = ({ addressList }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dhdActive, setDhdActive] = useState(false);
   const [dhdOpen, setDhdOpen] = useState(false);
-  const [currentSymbol, setCurrentSymbol] = useState(1);
+  const [currentSymbol, setCurrentSymbol] = useState({
+    id: 1,
+    letter: "A",
+    poi: [],
+    label: "Earth",
+    position: 0,
+  });
   const activeChevrons = inputAddress.length;
   const [ringRoll, setRingRoll] = useState(false);
   const [timeToRoll, setTimeToRoll] = useState();
@@ -62,23 +68,27 @@ export const Stargate = ({ addressList }) => {
     return true;
   };
 
-  const handleSymbolPress = (letter, id) => {
-    if (activeChevrons === 7 || inputAddress.includes(letter) || ringRoll) {
+  const handleSymbolPress = (symbol, id) => {
+    if (
+      activeChevrons === 7 ||
+      inputAddress.includes(symbol.letter) ||
+      ringRoll
+    ) {
       return null;
     }
 
     switch (currentPlanet.dialMode) {
       case "EARTH":
         if (activeChevrons < 7) {
-          setInputAddress(`${inputAddress}${letter}`);
+          setInputAddress(`${inputAddress}${symbol.letter}`);
 
           if (activeChevrons === 6) {
             return null;
           }
           if (id > 39) {
-            setCurrentSymbol(1);
+            setCurrentSymbol(symbol);
           } else {
-            setCurrentSymbol(id);
+            setCurrentSymbol(symbol);
           }
           return new Audio(
             `../../src/assets/sounds/stargate/chev_usual_${
@@ -90,7 +100,7 @@ export const Stargate = ({ addressList }) => {
 
       case "DHD":
         if (activeChevrons < 7) {
-          setInputAddress(`${inputAddress}${letter}`);
+          setInputAddress(`${inputAddress}${symbol.letter}`);
           new Audio(
             `../../src/assets/sounds/dhd/dhd_usual_${activeChevrons + 1}.wav`
           ).play();
@@ -253,9 +263,7 @@ export const Stargate = ({ addressList }) => {
                       )}
                       title={`${symbol.letter} - ${symbol.label}`}
                       type="button"
-                      onClick={() =>
-                        handleSymbolPress(symbol.letter, symbol.id)
-                      }
+                      onClick={() => handleSymbolPress(symbol)}
                     >
                       {symbol.letter}
                     </button>
@@ -270,9 +278,7 @@ export const Stargate = ({ addressList }) => {
                   )}
                   title="n - Abydos"
                   type="button"
-                  onClick={() =>
-                    handleSymbolPress(currentPlanet.poo, currentPlanet.poo_id)
-                  }
+                  onClick={() => handleSymbolPress(currentPlanet)}
                 >
                   {currentPlanet.poo}
                 </button>

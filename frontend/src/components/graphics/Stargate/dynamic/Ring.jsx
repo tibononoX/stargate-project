@@ -1,38 +1,27 @@
 import { RollContext } from "@components/stargate/Stargate";
 import PlanetContext from "@contexts/PlanetContext";
+import symbols from "@services/gateSymbols";
 import { useState, useEffect, useContext } from "react";
 
 const Ring = ({ currentSymbol }) => {
-  const intialRingPos = 360 / 39 - 9.23;
   const { currentPlanet } = useContext(PlanetContext);
   const { ringRoll, setRingRoll, timeToRoll, setTimeToRoll } =
     useContext(RollContext);
-  const [rollDirection, setRollDirection] = useState(false);
-  const [ringPosition, setRingPosition] = useState(intialRingPos);
-  const quarter = 360 / 39;
-  const ringPosFromStart = intialRingPos - ringPosition;
+  const [prevRingPosition, setPrevRingPosition] = useState(0);
+  const [positionDiff, setPositionDiff] = useState(0);
+  const [ringPosition, setRingPosition] = useState(0);
 
   console.log("timeToRoll: ", timeToRoll);
-  console.log("quarter: ", Math.floor(quarter));
-  console.log("ringPos: ", ringPosition);
-  console.log("rollDirection: ", !rollDirection ? "left" : "right");
-  console.log("Symbol time: ", 230 * currentSymbol);
+
+  console.log("prevRingPos: ", prevRingPosition);
+  console.log("posDiff: ", positionDiff);
+  console.log("newRingPos: ", ringPosition);
 
   const rotation = () => {
     switch (currentPlanet.dialMode) {
       case "EARTH":
-        setRollDirection(!rollDirection);
-        return rollDirection
-          ? setRingPosition(
-              quarter - 9.23 * currentSymbol < 0
-                ? quarter - 9.23 * currentSymbol
-                : quarter + 9.23 * (39 - currentSymbol)
-            )
-          : setRingPosition(
-              quarter - 9.23 * currentSymbol < 0
-                ? quarter + 9.23 * (39 - currentSymbol)
-                : quarter - 9.23 * currentSymbol
-            );
+        setPrevRingPosition(ringPosition);
+        return setRingPosition(currentSymbol.position);
       case "DHD":
         return 360 / 39 - 9.23;
       default:
@@ -45,9 +34,10 @@ const Ring = ({ currentSymbol }) => {
       return null;
     }
 
-    setRingRoll(true);
-    setTimeToRoll(rollDirection ? 9000 : 9000);
+    setPositionDiff((360 - prevRingPosition) / 9.230769230769287);
     rotation();
+    setRingRoll(true);
+    setTimeToRoll(positionDiff * 230);
 
     const rollSound = new Audio(
       `../../src/assets/sounds/stargate/ringRoll.wav`
