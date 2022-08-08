@@ -3,23 +3,34 @@ import PlanetContext from "@contexts/PlanetContext";
 import { useState, useEffect, useContext } from "react";
 
 const Ring = ({ currentSymbol }) => {
+  const intialRingPos = 360 / 39 - 9.23;
   const { currentPlanet } = useContext(PlanetContext);
   const { ringRoll, setRingRoll, timeToRoll, setTimeToRoll } =
     useContext(RollContext);
   const [rollDirection, setRollDirection] = useState(false);
-  const [ringPosition, setRingPosition] = useState(360 / 39 - 9.23);
+  const [ringPosition, setRingPosition] = useState(intialRingPos);
+  const quarter = 360 / 39;
+  const ringPosFromStart = intialRingPos - ringPosition;
+
+  console.log("timeToRoll: ", timeToRoll);
+  console.log("quarter: ", Math.floor(quarter));
+  console.log("ringPos: ", ringPosition);
+  console.log("rollDirection: ", !rollDirection ? "left" : "right");
+  console.log("Symbol time: ", 230 * currentSymbol);
 
   const rotation = () => {
-    const quarter = 360 / 39;
-
     switch (currentPlanet.dialMode) {
       case "EARTH":
         setRollDirection(!rollDirection);
         return rollDirection
-          ? setRingPosition(quarter + 9.23 * (39 - currentSymbol))
+          ? setRingPosition(
+              quarter - 9.23 * currentSymbol < 0
+                ? quarter - 9.23 * currentSymbol
+                : quarter + 9.23 * (39 - currentSymbol)
+            )
           : setRingPosition(
-              quarter - 9.23 * currentSymbol < -180
-                ? quarter - 9.23 * currentSymbol + 360
+              quarter - 9.23 * currentSymbol < 0
+                ? quarter + 9.23 * (39 - currentSymbol)
                 : quarter - 9.23 * currentSymbol
             );
       case "DHD":
@@ -29,23 +40,25 @@ const Ring = ({ currentSymbol }) => {
     }
   };
 
-  const HandleRingRoll = () => {
+  const handleRingRoll = () => {
     if (ringRoll) {
       return null;
     }
+
     setRingRoll(true);
-    setTimeToRoll(9);
+    setTimeToRoll(rollDirection ? 9000 : 9000);
+    rotation();
 
     const rollSound = new Audio(
       `../../src/assets/sounds/stargate/ringRoll.wav`
     );
     rollSound.play();
 
-    setTimeout(() => {
+    return setTimeout(() => {
       rollSound.pause();
       rollSound.currentTime = 0;
       return setRingRoll(false);
-    }, timeToRoll * 1000);
+    }, timeToRoll);
   };
 
   const timingFunction = "cubic-bezier(.18,0,.82,1)";
@@ -53,12 +66,11 @@ const Ring = ({ currentSymbol }) => {
     if (currentPlanet.dialMode !== "EARTH") {
       return "0ms";
     }
-    return `${timeToRoll}s`;
+    return `${timeToRoll}ms`;
   };
 
   useEffect(() => {
-    HandleRingRoll();
-    rotation();
+    handleRingRoll();
   }, [currentSymbol]);
 
   return (

@@ -11,6 +11,7 @@ export const RollContext = createContext();
 export const Stargate = ({ addressList }) => {
   const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
   const [inputAddress, setInputAddress] = useState("");
+  const [inputAddressBuffer, setInputAddressBuffer] = useState("");
   const [destinationInfo, setDestinationInfo] = useState({});
   const [destLock, setDestLock] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -62,11 +63,7 @@ export const Stargate = ({ addressList }) => {
   };
 
   const handleSymbolPress = (letter, id) => {
-    if (activeChevrons === 7) {
-      return null;
-    }
-
-    if (inputAddress.includes(letter)) {
+    if (activeChevrons === 7 || inputAddress.includes(letter) || ringRoll) {
       return null;
     }
 
