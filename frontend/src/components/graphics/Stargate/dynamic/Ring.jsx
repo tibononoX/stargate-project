@@ -1,26 +1,26 @@
 import { RollContext } from "@components/stargate/Stargate";
 import PlanetContext from "@contexts/PlanetContext";
-import symbols from "@services/gateSymbols";
 import { useState, useEffect, useContext } from "react";
 
 const Ring = ({ currentSymbol }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const { ringRoll, setRingRoll, timeToRoll, setTimeToRoll } =
     useContext(RollContext);
-  const [prevRingPosition, setPrevRingPosition] = useState(0);
-  const [positionDiff, setPositionDiff] = useState(0);
+  const [prevRingPos, setPrevRingPos] = useState();
   const [ringPosition, setRingPosition] = useState(0);
+  const diff = Math.abs(prevRingPos - ringPosition) / 9.23;
 
   console.log("timeToRoll: ", timeToRoll);
+  console.log("ringPos: ", ringPosition);
 
-  console.log("prevRingPos: ", prevRingPosition);
-  console.log("posDiff: ", positionDiff);
-  console.log("newRingPos: ", ringPosition);
+  console.log("diffPos: ", Math.abs(prevRingPos - ringPosition));
+  console.log(diff);
 
   const rotation = () => {
     switch (currentPlanet.dialMode) {
       case "EARTH":
-        setPrevRingPosition(ringPosition);
+        setPrevRingPos(ringPosition);
+        setTimeToRoll(230 * diff);
         return setRingPosition(currentSymbol.position);
       case "DHD":
         return 360 / 39 - 9.23;
@@ -29,15 +29,19 @@ const Ring = ({ currentSymbol }) => {
     }
   };
 
+  const timing = () => {
+    const fullRotation = 9000;
+    const oneSymb = 9000 / 39;
+    const diffDegree = Math.abs(prevRingPos - ringPosition);
+  };
+
   const handleRingRoll = () => {
     if (ringRoll) {
       return null;
     }
 
-    setPositionDiff((360 - prevRingPosition) / 9.230769230769287);
     rotation();
     setRingRoll(true);
-    setTimeToRoll(positionDiff * 230);
 
     const rollSound = new Audio(
       `../../src/assets/sounds/stargate/ringRoll.wav`
