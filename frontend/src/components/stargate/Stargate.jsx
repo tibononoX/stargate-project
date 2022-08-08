@@ -101,11 +101,7 @@ export const Stargate = ({ addressList }) => {
           if (activeChevrons === 6) {
             return null;
           }
-          if (id > 39) {
-            setCurrentSymbol(1);
-          } else {
-            setCurrentSymbol(id);
-          }
+          setCurrentSymbol(1);
           return new Audio(
             `../../src/assets/sounds/stargate/chev_usual_${
               activeChevrons + 1
@@ -206,8 +202,8 @@ export const Stargate = ({ addressList }) => {
   };
 
   return (
-    // eslint-disable-next-line react/jsx-no-constructed-context-values
     <RollContext.Provider
+      // eslint-disable-next-line react/jsx-no-constructed-context-values
       value={{ ringRoll, setRingRoll, timeToRoll, setTimeToRoll }}
     >
       <div className="gameContainer">

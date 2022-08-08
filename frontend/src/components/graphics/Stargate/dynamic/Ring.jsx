@@ -9,11 +9,6 @@ const Ring = ({ currentSymbol }) => {
   const [rollDirection, setRollDirection] = useState(false);
   const [ringPosition, setRingPosition] = useState(360 / 39 - 9.23);
 
-  console.log("rollDirection:", rollDirection);
-  console.log("RollTime:", timeToRoll);
-  console.log("RingPos:", Math.floor(ringPosition + 1));
-  console.log("CurrSymbol:", currentSymbol);
-
   const rotation = () => {
     const quarter = 360 / 39;
 
@@ -41,16 +36,16 @@ const Ring = ({ currentSymbol }) => {
     setRingRoll(true);
     setTimeToRoll(9);
 
-    // const rollSound = new Audio(
-    //   `../../src/assets/sounds/stargate/ringRoll.wav`
-    // );
-    // rollSound.play();
+    const rollSound = new Audio(
+      `../../src/assets/sounds/stargate/ringRoll.wav`
+    );
+    rollSound.play();
 
     setTimeout(() => {
-      // rollSound.pause();
-      // rollSound.currentTime = 0;
+      rollSound.pause();
+      rollSound.currentTime = 0;
       return setRingRoll(false);
-    }, timeToRoll);
+    }, timeToRoll * 1000);
   };
 
   const timingFunction = "cubic-bezier(.18,0,.82,1)";
