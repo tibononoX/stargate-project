@@ -18,13 +18,13 @@ function App() {
   const [addressBookOpen, setAddressBookOpen] = useState(false);
 
   const fetchAddressList = async () => {
-    const addressList = await axios
+    const newAddressList = await axios
       .get("/planets")
       .then((result) => result.data);
-    if (!addressList) {
+    if (!newAddressList) {
       return console.warn("Error retrieving address list");
     }
-    return setAddressList(addressList);
+    return setAddressList(newAddressList);
   };
 
   useEffect(() => {
@@ -35,6 +35,7 @@ function App() {
     <PlanetContext.Provider value={{ currentPlanet, setCurrentPlanet }}>
       <div className="App">
         <Stargate addressList={addressList} />
+
         <button
           type="button"
           className="openAddressBook"

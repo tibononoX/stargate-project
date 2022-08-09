@@ -1,49 +1,22 @@
-import { RollContext } from "@components/stargate/Stargate";
-import PlanetContext from "@contexts/PlanetContext";
-import { useState, useEffect, useContext } from "react";
+/* eslint-disable no-case-declarations */
+import { useEffect } from "react";
 
-const Ring = ({ currentSymbol }) => {
-  const { currentPlanet } = useContext(PlanetContext);
-  const { ringRoll, setRingRoll, timeToRoll, setTimeToRoll } =
-    useContext(RollContext);
+const Ring = ({ rollData, setIsRolling }) => {
+  const handleRoll = () => {
+    if (rollData.reset) {
+      setIsRolling(true);
+      const rollSound = new Audio(
+        `../../src/assets/sounds/stargate/ringRollFail.wav`
+      );
+      rollSound.play();
 
-  const [ringPosition, setRingPosition] = useState(0);
-
-  const rotation = async () => {
-    return setRingRoll(true);
-  };
-
-  let timingFunction = "cubic-bezier(.18,0,.82,1)";
-
-  const handleRingRoll = async () => {
-    if (ringRoll) {
-      return null;
+      return setTimeout(() => {
+        rollSound.pause();
+        rollSound.currentTime = 0;
+        setIsRolling(false);
+      }, rollData.timing);
     }
-    const prevRingPos = ringPosition;
-    const newRingPos = currentSymbol.position;
-    const diff = Math.abs((prevRingPos - newRingPos) / 9.23);
-    timingFunction = `cubic-bezier(${0.18 * diff},0,${0.82 * diff},1)`;
-    const timing = 280 * diff;
-    setTimeToRoll(timing);
-    setRingPosition(newRingPos);
-
-    console.log("timeToRoll: ", timing);
-    console.log("timingFunc: ", timingFunction);
-    console.log("prevRingPos: ", prevRingPos);
-    console.log("newRingPos: ", newRingPos);
-    console.log("diffPos: ", diff);
-    console.log("ringPos: ", ringPosition);
-
-    switch (currentPlanet.dialMode) {
-      case "EARTH":
-        rotation();
-        break;
-      case "DHD":
-        break;
-      default:
-        break;
-    }
-
+    setIsRolling(true);
     const rollSound = new Audio(
       `../../src/assets/sounds/stargate/ringRoll.wav`
     );
@@ -52,28 +25,21 @@ const Ring = ({ currentSymbol }) => {
     return setTimeout(() => {
       rollSound.pause();
       rollSound.currentTime = 0;
-      return setRingRoll(false);
-    }, timeToRoll);
-  };
-
-  const handleRollTime = () => {
-    if (currentPlanet.dialMode !== "EARTH") {
-      return "0ms";
-    }
-    return `${timeToRoll}ms`;
+      setIsRolling(false);
+    }, rollData.timing);
   };
 
   useEffect(() => {
-    handleRingRoll();
-  }, [currentSymbol]);
+    handleRoll();
+  }, [rollData]);
 
   return (
     <g
       style={{
-        transitionDuration: handleRollTime(),
+        transitionDuration: `${rollData.timing}ms`,
         transformOrigin: "center",
-        transform: `rotate(${ringPosition}deg)`,
-        transitionTimingFunction: timingFunction,
+        transform: `rotate(${rollData.position}deg)`,
+        transitionTimingFunction: "cubic-bezier( 0.05, 0, .8, 1 )",
       }}
     >
       <g
