@@ -24,6 +24,7 @@ function SG1Render({
   destLock,
   locking,
   isOpen,
+  travelGate,
 }) {
   useEffect(() => {}, [chevrons]);
   return (
@@ -36,7 +37,7 @@ function SG1Render({
       viewBox="0 0 800 800"
     >
       <SvgDef />
-      {isOpen && <Wormhole />}
+      {isOpen && <Wormhole travelGate={travelGate} />}
       <GateBg />
       <Ring rollData={rollData} setIsRolling={setIsRolling} />
       <GateFrame locking={locking} lockChev={lockChev} destLock={destLock} />

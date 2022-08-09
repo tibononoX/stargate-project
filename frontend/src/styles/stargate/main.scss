@@ -134,11 +134,18 @@
         justify-content: center;
         align-items: center;
         border: solid 2px rgb(61, 45, 37);
+        user-select: none;
 
         &.active {
           border: solid 2px rgb(231, 89, 26);
           color: rgb(238, 127, 79);
 
+          &:hover {
+            cursor: default;
+          }
+        }
+
+        &.noClick {
           &:hover {
             cursor: default;
           }

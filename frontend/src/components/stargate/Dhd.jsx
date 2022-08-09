@@ -2,16 +2,14 @@
 import { useState, useContext } from "react";
 import symbols from "@services/gateSymbols";
 import PlanetContext from "@contexts/PlanetContext";
-import GateContext from "@contexts/GateContext";
 
-const lastChevDhd = new Audio(
-  `../../src/assets/sounds/stargate/chev_usual_7.wav`
-);
+function timeout(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const Dhd = ({
   inputAddress,
   setInputAddress,
-  setInputPoo,
   processingInput,
   isRolling,
   destLock,
@@ -23,6 +21,7 @@ const Dhd = ({
 }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const [dhdActive, setDhdActive] = useState(false);
+  const [pooActive, setPooActive] = useState(false);
   const [dhdOpen, setDhdOpen] = useState(false);
 
   const handleDhdClassName = (type, id) => {
@@ -30,8 +29,14 @@ const Dhd = ({
       case "redButton":
         return "red";
       case "symbButton":
-        if (inputAddress.some((symbol) => symbol.id === id)) {
+        if (
+          inputAddress.some((symbol) => symbol.id === id) ||
+          pooActive?.id === id
+        ) {
           return "symbButton active";
+        }
+        if (isOpen || destLock) {
+          return "symbButton noClick";
         }
         return "symbButton";
       default:
@@ -39,17 +44,20 @@ const Dhd = ({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isOpen) {
       setDhdActive(false);
-      return closeGate();
+      closeGate();
+      await timeout(2700);
+      return setPooActive(false);
     }
     if (inputAddress.length === 0 || inputAddress.length === 7) {
       return null;
     }
     if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
       new Audio(`../../src/assets/sounds/dhd/dhd_usual_fail.mp3`).play();
+      setPooActive(false);
       return wrongAddress();
     }
 
@@ -63,11 +71,14 @@ const Dhd = ({
       inputAddress.length === 7 ||
       inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
       isRolling ||
-      processingInput
+      processingInput ||
+      destLock ||
+      isOpen
     ) {
       return null;
     }
     if (inputAddress.length === 6) {
+      setPooActive(dhdSymbol);
       return checkMatching(dhdSymbol);
     }
     return setInputAddress([...inputAddress, dhdSymbol]);
@@ -85,10 +96,10 @@ const Dhd = ({
       <form onSubmit={handleSubmit}>
         <ul className="buttonList">
           {symbols.map((symbol) => {
-            if (currentPlanet.id === 1 && symbol.id === 40) {
+            if (currentPlanet.id !== 1 && symbol.id === 1) {
               return null;
             }
-            if (currentPlanet.id === 2 && symbol.id === 1) {
+            if (currentPlanet.id !== 2 && symbol.id === 40) {
               return null;
             }
             return (
@@ -108,7 +119,11 @@ const Dhd = ({
         <button
           type="submit"
           title="Big red button woosh woosh"
-          className={dhdActive || destLock ? "dhdButton active" : "dhdButton"}
+          className={
+            (dhdActive && destLock) || destLock
+              ? "dhdButton active"
+              : "dhdButton"
+          }
         />
       </form>
     </div>

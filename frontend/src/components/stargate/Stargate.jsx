@@ -1,13 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useEffect, useContext, useRef } from "react";
-import symbols from "@services/gateSymbols";
+import { useState, useEffect, useContext } from "react";
 import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
 import Dhd from "./Dhd";
 import { rollCalc, handleChev } from "@services/dial";
-import GateContext from "@contexts/GateContext";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -34,32 +32,69 @@ export const Stargate = ({ addressList }) => {
   const [destLock, setDestLock] = useState(false);
   const [destinationInfo, setDestinationInfo] = useState({});
 
-  const handleInput = async () => {
-    setProcessingInput(true);
-    const symbolToProcess = inputAddress.map((address) => address).pop();
-    const rollValues = rollCalc(symbolToProcess, ringPosition);
+  const resetGate = async () => {
+    setResetting(true);
+    const rollValues = rollCalc(
+      {
+        id: 1,
+        letter: "A",
+        label: "Earth",
+        position: 0,
+      },
+      ringPosition
+    );
     setRingPosition(rollValues.position);
-    setRollData(rollValues);
-
+    setRollData({ ...rollValues, reset: true });
     await timeout(rollValues.timing);
-    new Audio(`../../src/assets/sounds/stargate/chev_lock1.mp3`).play();
-    setLocking(true);
-    await timeout(700);
-    setLockChev(true);
-    handleChev(inputAddress.length, setChevrons);
-    await timeout(350);
+    new Audio(`../../src/assets/sounds/stargate/chev_usual_end.wav`).play();
+    await timeout(150);
+    handleChev(null, setChevrons);
     setLocking(false);
-    await timeout(620);
-    setLockChev(false);
+    setDestLock(false);
+    setInputAddress([]);
+    return setResetting(false);
+  };
+
+  const handleInput = async () => {
+    if (currentPlanet.dialMode === "EARTH") {
+      setProcessingInput(true);
+      const symbolToProcess = inputAddress.map((address) => address).pop();
+      const rollValues = rollCalc(symbolToProcess, ringPosition);
+      setRingPosition(rollValues.position);
+      setRollData(rollValues);
+
+      await timeout(rollValues.timing - 200);
+      new Audio(`../../src/assets/sounds/stargate/chev_lock1.mp3`).play();
+      setLocking(true);
+      await timeout(700);
+      setLockChev(true);
+      handleChev(inputAddress.length, setChevrons);
+      await timeout(350);
+      setLocking(false);
+      await timeout(620);
+      setLockChev(false);
+      return setProcessingInput(false);
+    }
+
+    setProcessingInput(true);
+    new Audio(
+      `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
+    ).play();
+    new Audio(
+      `../../src/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(inputAddress.length, setChevrons);
     return setProcessingInput(false);
   };
 
   const checkMatching = async (poo) => {
-    const rollValues = rollCalc(poo, ringPosition);
-    setRingPosition(rollValues.position);
-    setRollData(rollValues);
+    if (currentPlanet.dialMode === "EARTH") {
+      const rollValues = rollCalc(poo, ringPosition);
+      setRingPosition(rollValues.position);
+      setRollData(rollValues);
 
-    await timeout(rollValues.timing);
+      await timeout(rollValues.timing);
+    }
 
     const destAddress = inputAddress
       .map((symbol) => symbol.letter)
@@ -79,23 +114,41 @@ export const Stargate = ({ addressList }) => {
       }
       return false;
     });
+
+    if (currentPlanet.dialMode === "EARTH") {
+      if (!match) {
+        console.warn("wrong Address");
+        new Audio(`../../src/assets/sounds/stargate/chev_usual_2.wav`).play();
+        setLocking(true);
+        await timeout(400);
+        setDestLock(false);
+        await timeout(600);
+        return false;
+      }
+    }
+
     if (!match) {
       console.warn("wrong Address");
-      new Audio(`../../src/assets/sounds/stargate/chev_usual_1.wav`).play();
-      setDestLock(false);
+      // new Audio(`../../src/assets/sounds/dhd/dhd_usual_fail.mp3`).play();
       return false;
     }
     if (currentPlanet.poo !== poo.letter) {
       console.warn("wrong Poo");
       return false;
     }
-
-    new Audio(`../../src/assets/sounds/stargate/chev_usual_lock2.wav`).play();
-    setLocking(true);
-    await timeout(400);
-    setDestLock(true);
-    await timeout(600);
-    setLocking(false);
+    if (currentPlanet.dialMode === "EARTH") {
+      new Audio(`../../src/assets/sounds/stargate/chev_usual_lock2.wav`).play();
+      setLocking(true);
+      await timeout(400);
+      setDestLock(true);
+      await timeout(600);
+      return setLocking(false);
+    }
+    new Audio(
+      `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
+    ).play();
+    new Audio(`../../src/assets/sounds/stargate/chev_usual_7.wav`).play();
+    return setDestLock(true);
   };
 
   useEffect(() => {
@@ -104,32 +157,13 @@ export const Stargate = ({ addressList }) => {
     }
   }, [inputAddress]);
 
-  const resetGate = async () => {
-    setResetting(true);
-    const rollValues = rollCalc(
-      {
-        id: 1,
-        letter: "A",
-        label: "Earth",
-        position: 0,
-      },
-      ringPosition
-    );
-    setRingPosition(rollValues.position);
-    setRollData({ ...rollValues, reset: true });
-    await timeout(rollValues.timing);
-    new Audio(`../../src/assets/sounds/stargate/chev_usual_end.wav`).play();
-    await timeout(150);
-    handleChev(null, setChevrons);
-    setDestLock(false);
-    setInputAddress([]);
-    return setResetting(false);
-  };
-
   const openGate = async () => {
+    if (!destLock || inputAddress.length === 0) {
+      return null;
+    }
     new Audio(`../../src/assets/sounds/stargate/gateOpen.wav`).play();
     await timeout(1200);
-    setIsOpen(true);
+    return setIsOpen(true);
   };
 
   const closeGate = async () => {
@@ -142,6 +176,15 @@ export const Stargate = ({ addressList }) => {
 
   const wrongAddress = () => {
     return resetGate();
+  };
+
+  const travelGate = () => {
+    new Audio(
+      `../../src/assets/sounds/stargate/teleport_${Math.floor(
+        Math.random() * (8 - 1) + 1
+      )}.mp3`
+    ).play();
+    return setCurrentPlanet(destinationInfo);
   };
 
   return (
@@ -165,6 +208,7 @@ export const Stargate = ({ addressList }) => {
           destLock={destLock}
           locking={locking}
           isOpen={isOpen}
+          travelGate={travelGate}
         />
       </div>
       <Dhd

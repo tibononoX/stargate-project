@@ -1,5 +1,4 @@
-const LockChev = ({ locking, lockChev, destLock }) => {
-  console.log(locking, lockChev, destLock);
+const LockChev = ({ locking }) => {
   return (
     <>
       <g
