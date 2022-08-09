@@ -1,0 +1,6 @@
+sgc dial:
+
+choose a symbol
+adds it to the inputAddress string
+takes the last character of inputAddress and sends it to the ring
+Ring rotates until in position, locks the symbol and returns chev[1/2/3...] = true

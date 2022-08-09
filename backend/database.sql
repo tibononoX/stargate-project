@@ -15,7 +15,8 @@ CREATE TABLE
   planet (
     id INT PRIMARY KEY AUTO_INCREMENT,
     planetName VARCHAR(255) NOT NULL,
-    gateAddress VARCHAR(8) NOT NULL
+    gateAddress VARCHAR(8) NOT NULL,
+    dialMode ENUM("EARTH", "DHD") NOT NULL
   );
 
 CREATE TABLE

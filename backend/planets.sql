@@ -1,6 +1,6 @@
 INSERT INTO
-  planet (planetName, gateAddress)
+  planet (planetName, gateAddress, dialMode)
 VALUES
-  ("Earth", "bZEjKc"),
-  ("Abydos", "aGOfLd"),
-  ("Tollan", "FgakKR");
+  ("Earth", "bZEjKc", "EARTH"),
+  ("Abydos", "aGOfLd", "DHD"),
+  ("Tollan", "FgakKR", "DHD");
