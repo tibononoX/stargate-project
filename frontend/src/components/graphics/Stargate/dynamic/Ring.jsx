@@ -6,42 +6,43 @@ const Ring = ({ currentSymbol }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const { ringRoll, setRingRoll, timeToRoll, setTimeToRoll } =
     useContext(RollContext);
-  const [prevRingPos, setPrevRingPos] = useState();
+
   const [ringPosition, setRingPosition] = useState(0);
-  const diff = Math.abs(prevRingPos - ringPosition) / 9.23;
 
-  console.log("timeToRoll: ", timeToRoll);
-  console.log("ringPos: ", ringPosition);
-
-  console.log("diffPos: ", Math.abs(prevRingPos - ringPosition));
-  console.log(diff);
-
-  const rotation = () => {
-    switch (currentPlanet.dialMode) {
-      case "EARTH":
-        setPrevRingPos(ringPosition);
-        setTimeToRoll(230 * diff);
-        return setRingPosition(currentSymbol.position);
-      case "DHD":
-        return 360 / 39 - 9.23;
-      default:
-        return ringPosition;
-    }
+  const rotation = async () => {
+    return setRingRoll(true);
   };
 
-  const timing = () => {
-    const fullRotation = 9000;
-    const oneSymb = 9000 / 39;
-    const diffDegree = Math.abs(prevRingPos - ringPosition);
-  };
+  let timingFunction = "cubic-bezier(.18,0,.82,1)";
 
-  const handleRingRoll = () => {
+  const handleRingRoll = async () => {
     if (ringRoll) {
       return null;
     }
+    const prevRingPos = ringPosition;
+    const newRingPos = currentSymbol.position;
+    const diff = Math.abs((prevRingPos - newRingPos) / 9.23);
+    timingFunction = `cubic-bezier(${0.18 * diff},0,${0.82 * diff},1)`;
+    const timing = 280 * diff;
+    setTimeToRoll(timing);
+    setRingPosition(newRingPos);
 
-    rotation();
-    setRingRoll(true);
+    console.log("timeToRoll: ", timing);
+    console.log("timingFunc: ", timingFunction);
+    console.log("prevRingPos: ", prevRingPos);
+    console.log("newRingPos: ", newRingPos);
+    console.log("diffPos: ", diff);
+    console.log("ringPos: ", ringPosition);
+
+    switch (currentPlanet.dialMode) {
+      case "EARTH":
+        rotation();
+        break;
+      case "DHD":
+        break;
+      default:
+        break;
+    }
 
     const rollSound = new Audio(
       `../../src/assets/sounds/stargate/ringRoll.wav`
@@ -55,7 +56,6 @@ const Ring = ({ currentSymbol }) => {
     }, timeToRoll);
   };
 
-  const timingFunction = "cubic-bezier(.18,0,.82,1)";
   const handleRollTime = () => {
     if (currentPlanet.dialMode !== "EARTH") {
       return "0ms";
