@@ -1,78 +1,45 @@
-import { RollContext } from "@components/stargate/Stargate";
-import PlanetContext from "@contexts/PlanetContext";
-import { useState, useEffect, useContext } from "react";
+/* eslint-disable no-case-declarations */
+import { useEffect } from "react";
 
-const Ring = ({ currentSymbol }) => {
-  const { currentPlanet } = useContext(PlanetContext);
-  const { ringRoll, setRingRoll, timeToRoll, setTimeToRoll } =
-    useContext(RollContext);
-  const [rollDirection, setRollDirection] = useState(false);
-  const [ringPosition, setRingPosition] = useState(360 / 39 - 9.23);
+const Ring = ({ rollData, setIsRolling }) => {
+  const handleRoll = () => {
+    if (rollData.reset) {
+      setIsRolling(true);
+      const rollSound = new Audio(
+        `../../src/assets/sounds/stargate/ringRollFail.wav`
+      );
+      rollSound.play();
 
-  console.log("rollDirection:", rollDirection);
-  console.log("RollTime:", timeToRoll);
-  console.log("RingPos:", Math.floor(ringPosition + 1));
-  console.log("CurrSymbol:", currentSymbol);
-
-  const rotation = () => {
-    const quarter = 360 / 39;
-
-    switch (currentPlanet.dialMode) {
-      case "EARTH":
-        setRollDirection(!rollDirection);
-        return rollDirection
-          ? setRingPosition(quarter + 9.23 * (39 - currentSymbol))
-          : setRingPosition(
-              quarter - 9.23 * currentSymbol < -180
-                ? quarter - 9.23 * currentSymbol + 360
-                : quarter - 9.23 * currentSymbol
-            );
-      case "DHD":
-        return 360 / 39 - 9.23;
-      default:
-        return ringPosition;
+      return setTimeout(() => {
+        rollSound.pause();
+        rollSound.currentTime = 0;
+        setIsRolling(false);
+      }, rollData.timing);
     }
-  };
+    setIsRolling(true);
+    const rollSound = new Audio(
+      `../../src/assets/sounds/stargate/ringRoll.wav`
+    );
+    rollSound.play();
 
-  const HandleRingRoll = () => {
-    if (ringRoll) {
-      return null;
-    }
-    setRingRoll(true);
-    setTimeToRoll(9);
-
-    // const rollSound = new Audio(
-    //   `../../src/assets/sounds/stargate/ringRoll.wav`
-    // );
-    // rollSound.play();
-
-    setTimeout(() => {
-      // rollSound.pause();
-      // rollSound.currentTime = 0;
-      return setRingRoll(false);
-    }, timeToRoll);
-  };
-
-  const timingFunction = "cubic-bezier(.18,0,.82,1)";
-  const handleRollTime = () => {
-    if (currentPlanet.dialMode !== "EARTH") {
-      return "0ms";
-    }
-    return `${timeToRoll}s`;
+    return setTimeout(() => {
+      rollSound.pause();
+      rollSound.currentTime = 0;
+      setIsRolling(false);
+    }, rollData.timing);
   };
 
   useEffect(() => {
-    HandleRingRoll();
-    rotation();
-  }, [currentSymbol]);
+    handleRoll();
+  }, [rollData]);
 
   return (
     <g
       style={{
-        transitionDuration: handleRollTime(),
+        transitionDuration: `${rollData.timing}ms`,
         transformOrigin: "center",
-        transform: `rotate(${ringPosition}deg)`,
-        transitionTimingFunction: timingFunction,
+        transform: `rotate(${rollData.position}deg)`,
+        transitionTimingFunction: "cubic-bezier( 0.05, 0, .8, 1 )",
       }}
     >
       <g
