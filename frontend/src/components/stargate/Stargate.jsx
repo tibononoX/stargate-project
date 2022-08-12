@@ -225,6 +225,13 @@ export const Stargate = ({ addressList }) => {
             loop
           />
         )}
+        {isOpen && currentPlanet.id === 1 && (
+          <ReactAudioPlayer
+            src="../../src/assets/sounds/alarms/sgc_alarm.wav"
+            autoPlay
+            loop
+          />
+        )}
         <SG1Render
           rollData={rollData}
           setIsRolling={setIsRolling}
