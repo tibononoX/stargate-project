@@ -2,7 +2,6 @@
 import { useState, useEffect, useContext } from "react";
 import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
-import wormholeSound from "@assets/sounds/stargate/wormholeLoop.wav";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
 import { rollCalc, handleChev } from "@services/dial";
@@ -254,16 +253,20 @@ export const Stargate = ({ addressList }) => {
         Current planet: {currentPlanet.planetName}
       </p>
       <div className="stargate">
-        {isOpen && <ReactAudioPlayer src={wormholeSound} autoPlay loop />}
-        {/* {isOpen && currentPlanet.id === 1 && (
+        {isOpen && (
           <ReactAudioPlayer
-            src={`${
-              import.meta.env.VITE_FRONTEND_SRC_URL
-            }/assets/sounds/alarms/sgc_alarm.wav`}
+            src="./src/assets/sounds/stargate/wormholeLoop.wav"
             autoPlay
             loop
           />
-        )} */}
+        )}
+        {isOpen && currentPlanet.id === 1 && (
+          <ReactAudioPlayer
+            src="./src/assets/sounds/alarms/sgc_alarm.wav"
+            autoPlay
+            loop
+          />
+        )}
         <SG1Render
           rollData={rollData}
           setIsRolling={setIsRolling}
