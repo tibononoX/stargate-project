@@ -33,8 +33,44 @@ function App() {
 
   return (
     <PlanetContext.Provider value={{ currentPlanet, setCurrentPlanet }}>
-      <div className="App">
+      <div className={currentPlanet.id !== 1 ? "App sky" : "App"}>
+        {currentPlanet.id !== 1 && (
+          // <>
+          //   <img
+          //     className="forestVeryFar left"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   <img
+          //     className="forestVeryFar left"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   <img
+          //     className="forestVeryFar mid"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   <img
+          //     className="forestFar mid"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   <img
+          //     className="forestFar right"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   <img
+          //     className="forestFar right"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   <img className="forest left" src="src/assets/graphics/forest.svg" />
+          //   <img className="forest mid" src="src/assets/graphics/forest.svg" />
+          //   <img
+          //     className="forest right"
+          //     src="src/assets/graphics/forest.svg"
+          //   />
+          //   </>
+          <div className="background" />
+        )}
         <Stargate addressList={addressList} />
+        {currentPlanet.id !== 1 && <div className="frontground" />}
 
         <button
           type="button"

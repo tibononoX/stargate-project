@@ -1,6 +1,11 @@
 const Wormhole = ({ travelGate }) => {
   return (
     <path
+      animate
+      attributeName="rx"
+      values="0;5;0"
+      dur="10s"
+      repeatCount="indefinite"
       className="wormhole"
       fill="url(#radialGradient10079)"
       fillOpacity="1"

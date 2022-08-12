@@ -17,6 +17,7 @@ export const Stargate = ({ addressList }) => {
   const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
   const [inputAddress, setInputAddress] = useState([]);
   const [processingInput, setProcessingInput] = useState(false);
+  const [pooActive, setPooActive] = useState(false);
   const [resetting, setResetting] = useState(false);
 
   const [ringPosition, setRingPosition] = useState(0);
@@ -51,6 +52,7 @@ export const Stargate = ({ addressList }) => {
     handleChev(null, setChevrons);
     setLocking(false);
     setDestLock(false);
+    setPooActive(false);
     setInputAddress([]);
     return setResetting(false);
   };
@@ -80,6 +82,7 @@ export const Stargate = ({ addressList }) => {
     new Audio(
       `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
     ).play();
+    await timeout(300);
     new Audio(
       `../../src/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
     ).play();
@@ -88,6 +91,11 @@ export const Stargate = ({ addressList }) => {
   };
 
   const checkMatching = async (poo) => {
+    if (currentPlanet.dialMode !== "EARTH") {
+      new Audio(
+        `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
+      ).play();
+    }
     if (currentPlanet.dialMode === "EARTH") {
       const rollValues = rollCalc(poo, ringPosition);
       setRingPosition(rollValues.position);
@@ -144,9 +152,7 @@ export const Stargate = ({ addressList }) => {
       await timeout(600);
       return setLocking(false);
     }
-    new Audio(
-      `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
-    ).play();
+    await timeout(800);
     new Audio(`../../src/assets/sounds/stargate/chev_usual_7.wav`).play();
     return setDestLock(true);
   };
@@ -174,7 +180,26 @@ export const Stargate = ({ addressList }) => {
     return resetGate();
   };
 
-  const wrongAddress = () => {
+  useEffect(() => {
+    if (isOpen) {
+      const expires = setTimeout(() => {
+        closeGate();
+      }, 2280000);
+      return () => clearTimeout(expires);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (destLock && !isOpen) {
+      const expires = setTimeout(() => {
+        resetGate();
+      }, 60000);
+      return () => clearTimeout(expires);
+    }
+  }, [destLock, isOpen]);
+
+  const wrongAddress = async () => {
+    await timeout(1200);
     return resetGate();
   };
 
@@ -200,6 +225,13 @@ export const Stargate = ({ addressList }) => {
             loop
           />
         )}
+        {isOpen && currentPlanet.id === 1 && (
+          <ReactAudioPlayer
+            src="../../src/assets/sounds/alarms/sgc_alarm.wav"
+            autoPlay
+            loop
+          />
+        )}
         <SG1Render
           rollData={rollData}
           setIsRolling={setIsRolling}
@@ -215,6 +247,8 @@ export const Stargate = ({ addressList }) => {
         inputAddress={inputAddress}
         setInputAddress={setInputAddress}
         processingInput={processingInput}
+        pooActive={pooActive}
+        setPooActive={setPooActive}
         isRolling={isRolling}
         destLock={destLock}
         isOpen={isOpen}
