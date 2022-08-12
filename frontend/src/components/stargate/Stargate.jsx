@@ -255,7 +255,7 @@ export const Stargate = ({ addressList }) => {
       </p>
       <div className="stargate">
         {isOpen && <ReactAudioPlayer src={wormholeSound} autoPlay loop />}
-        {isOpen && currentPlanet.id === 1 && (
+        {/* {isOpen && currentPlanet.id === 1 && (
           <ReactAudioPlayer
             src={`${
               import.meta.env.VITE_FRONTEND_SRC_URL
@@ -263,7 +263,7 @@ export const Stargate = ({ addressList }) => {
             autoPlay
             loop
           />
-        )}
+        )} */}
         <SG1Render
           rollData={rollData}
           setIsRolling={setIsRolling}
