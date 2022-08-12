@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState, useEffect, useContext } from "react";
 import "@styles/stargate/main.scss";
@@ -254,18 +255,14 @@ export const Stargate = ({ addressList }) => {
       </p>
       <div className="stargate">
         {isOpen && (
-          <ReactAudioPlayer
-            src="./src/assets/sounds/stargate/wormholeLoop.wav"
-            autoPlay
-            loop
-          />
+          <audio loop autoPlay id="wormholeLoop">
+            <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
+          </audio>
         )}
         {isOpen && currentPlanet.id === 1 && (
-          <ReactAudioPlayer
-            src="./src/assets/sounds/alarms/sgc_alarm.wav"
-            autoPlay
-            loop
-          />
+          <audio loop autoPlay id="sgcAlarm">
+            <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
+          </audio>
         )}
         <SG1Render
           rollData={rollData}
