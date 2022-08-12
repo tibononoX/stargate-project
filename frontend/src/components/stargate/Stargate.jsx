@@ -14,7 +14,7 @@ function timeout(ms) {
 
 const chevInit = [false, false, false, false, false, false, false, false];
 
-export const Stargate = ({ addressList }) => {
+export const Stargate = ({ addressList, windowWidth }) => {
   const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
   const [inputAddress, setInputAddress] = useState([]);
   const [processingInput, setProcessingInput] = useState(false);
@@ -265,6 +265,7 @@ export const Stargate = ({ addressList }) => {
           </audio>
         )}
         <SG1Render
+          windowWidth={windowWidth}
           rollData={rollData}
           setIsRolling={setIsRolling}
           chevrons={chevrons}

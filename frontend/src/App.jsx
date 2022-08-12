@@ -6,6 +6,8 @@ import { Stargate } from "@components/stargate/Stargate";
 import "@styles/app.scss";
 
 function App() {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
   const [currentPlanet, setCurrentPlanet] = useState({
     id: 1,
     gateAddress: "bZEjKc",
@@ -29,6 +31,12 @@ function App() {
 
   useEffect(() => {
     fetchAddressList();
+    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
+
+    return () =>
+      window.removeEventListener("resize", () =>
+        setWindowWidth(window.innerWidth)
+      );
   }, []);
 
   return (
@@ -69,7 +77,7 @@ function App() {
           //   </>
           <div className="background" />
         )}
-        <Stargate addressList={addressList} />
+        <Stargate addressList={addressList} windowWidth={windowWidth} />
         {currentPlanet.id !== 1 && <div className="frontground" />}
 
         <button
