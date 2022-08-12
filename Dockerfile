@@ -33,7 +33,7 @@ RUN npm install -g pnpm
 RUN cd ./frontend && pnpm i && pnpm build
 RUN mkdir -p ./frontend/dist/src && cp -r ./frontend/src/assets ./frontend/dist/src
 # Create back app
-RUN cd ./backend && pnpm i --dev
+RUN cd ./backend && pnpm i --prod
 
 # expose full app on APP_PORT
 EXPOSE ${APP_PORT}
