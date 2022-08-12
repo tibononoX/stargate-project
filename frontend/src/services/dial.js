@@ -1,4 +1,4 @@
-const rollSpeed = 40;
+const rollSpeed = 400;
 
 export const updateInput = (inputAddress, letter) => {
   const updatedInput = inputAddress + letter;

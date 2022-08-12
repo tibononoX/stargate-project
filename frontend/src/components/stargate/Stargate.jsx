@@ -2,10 +2,11 @@
 import { useState, useEffect, useContext } from "react";
 import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
+import wormholeSound from "@assets/sounds/stargate/wormholeLoop.wav";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
-import Dhd from "./Dhd";
 import { rollCalc, handleChev } from "@services/dial";
+import Dhd from "./Dhd";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -253,15 +254,7 @@ export const Stargate = ({ addressList }) => {
         Current planet: {currentPlanet.planetName}
       </p>
       <div className="stargate">
-        {isOpen && (
-          <ReactAudioPlayer
-            src={`${
-              import.meta.env.VITE_FRONTEND_SRC_URL
-            }/assets/sounds/stargate/wormholeLoop.wav`}
-            autoPlay
-            loop
-          />
-        )}
+        {isOpen && <ReactAudioPlayer src={wormholeSound} autoPlay loop />}
         {isOpen && currentPlanet.id === 1 && (
           <ReactAudioPlayer
             src={`${
