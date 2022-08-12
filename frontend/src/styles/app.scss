@@ -11,6 +11,7 @@
 
 html {
   overflow: hidden;
+  min-width: 1920px;
 }
 
 .App {
@@ -25,11 +26,13 @@ html {
   background-color: rgb(121, 110, 103);
 
   &.sky {
-    background: linear-gradient(
-      0deg,
-      rgba(236, 246, 247, 1) 40%,
-      rgba(102, 186, 217, 1) 83%
-    );
+    background-color: rgb(163, 139, 71);
+
+    // background: linear-gradient(
+    //   0deg,
+    //   rgba(236, 246, 247, 1) 40%,
+    //   rgba(102, 186, 217, 1) 83%
+    // );
   }
 
   .forest {
@@ -37,10 +40,10 @@ html {
     width: 800px;
 
     &.left {
-      left: -5%;
+      left: -5em;
     }
     &.right {
-      right: -5%;
+      right: -5em;
     }
   }
 
@@ -50,14 +53,14 @@ html {
     filter: brightness(80%);
 
     &.mid {
-      left: 20%;
+      left: 20em;
     }
 
     &.left {
-      left: -8%;
+      left: -8em;
     }
     &.right {
-      right: -3%;
+      right: -3em;
     }
   }
 
@@ -67,14 +70,14 @@ html {
     filter: brightness(60%);
 
     &.mid {
-      left: 30%;
+      left: 30em;
     }
 
     &.left {
-      left: -1%;
+      left: -1em;
     }
     &.right {
-      right: -0%;
+      right: -0em;
     }
   }
 
@@ -94,7 +97,7 @@ html {
       0 5%
     );
 
-    background-color: rgb(82, 121, 19);
+    background-color: rgb(192, 164, 70);
   }
 
   .frontground {
@@ -102,7 +105,7 @@ html {
     bottom: 0;
     width: 100%;
     height: 40%;
-    background-color: rgb(82, 121, 19);
+    background-color: rgb(192, 164, 70);
   }
 
   .openAddressBook {

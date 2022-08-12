@@ -11,6 +11,8 @@ const Dhd = ({
   inputAddress,
   setInputAddress,
   processingInput,
+  pooActive,
+  setPooActive,
   isRolling,
   destLock,
   isOpen,
@@ -21,7 +23,6 @@ const Dhd = ({
 }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const [dhdActive, setDhdActive] = useState(false);
-  const [pooActive, setPooActive] = useState(false);
   const [dhdOpen, setDhdOpen] = useState(false);
 
   const handleDhdClassName = (type, id) => {
