@@ -4,12 +4,19 @@ import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
-import Dhd from "./Dhd";
 import { rollCalc, handleChev } from "@services/dial";
+import Dhd from "./Dhd";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+const wormholeLoop = `${
+  import.meta.env.VITE_FRONTEND_SRC_URL
+}/assets/sounds/stargate/wormholeLoop.wav`;
+const sgcAlarm = `${
+  import.meta.env.VITE_FRONTEND_SRC_URL
+}/assets/sounds/alarms/sgc_alarm.wav`;
 
 const chevInit = [false, false, false, false, false, false, false, false];
 
@@ -26,8 +33,8 @@ export const Stargate = ({ addressList }) => {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const [lockChev, setLockChev] = useState(false); //Lock chevron light
-  const [locking, setLocking] = useState(false); //Lock chevron animation
+  const [lockChev, setLockChev] = useState(false); // Lock chevron light
+  const [locking, setLocking] = useState(false); // Lock chevron animation
   const [chevrons, setChevrons] = useState(chevInit);
 
   const [destLock, setDestLock] = useState(false);
@@ -47,7 +54,11 @@ export const Stargate = ({ addressList }) => {
     setRingPosition(rollValues.position);
     setRollData({ ...rollValues, reset: true });
     await timeout(rollValues.timing);
-    new Audio(`../../src/assets/sounds/stargate/chev_usual_end.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_end.wav`
+    ).play();
     await timeout(150);
     handleChev(null, setChevrons);
     setLocking(false);
@@ -66,7 +77,11 @@ export const Stargate = ({ addressList }) => {
       setRollData(rollValues);
 
       await timeout(rollValues.timing - 200);
-      new Audio(`../../src/assets/sounds/stargate/chev_lock1.mp3`).play();
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/chev_lock1.mp3`
+      ).play();
       setLocking(true);
       await timeout(700);
       setLockChev(true);
@@ -80,11 +95,15 @@ export const Stargate = ({ addressList }) => {
 
     setProcessingInput(true);
     new Audio(
-      `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
+      `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/dhd/dhd_usual_${
+        inputAddress.length
+      }.wav`
     ).play();
     await timeout(300);
     new Audio(
-      `../../src/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
     ).play();
     handleChev(inputAddress.length, setChevrons);
     return setProcessingInput(false);
@@ -93,7 +112,9 @@ export const Stargate = ({ addressList }) => {
   const checkMatching = async (poo) => {
     if (currentPlanet.dialMode !== "EARTH") {
       new Audio(
-        `../../src/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
+        `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/dhd/dhd_usual_${
+          inputAddress.length
+        }.wav`
       ).play();
     }
     if (currentPlanet.dialMode === "EARTH") {
@@ -126,7 +147,11 @@ export const Stargate = ({ addressList }) => {
     if (currentPlanet.dialMode === "EARTH") {
       if (!match) {
         console.warn("wrong Address");
-        new Audio(`../../src/assets/sounds/stargate/chev_usual_2.wav`).play();
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/stargate/chev_usual_2.wav`
+        ).play();
         setLocking(true);
         await timeout(400);
         setDestLock(false);
@@ -137,7 +162,6 @@ export const Stargate = ({ addressList }) => {
 
     if (!match) {
       console.warn("wrong Address");
-      // new Audio(`../../src/assets/sounds/dhd/dhd_usual_fail.mp3`).play();
       return false;
     }
     if (currentPlanet.poo !== poo.letter) {
@@ -145,7 +169,11 @@ export const Stargate = ({ addressList }) => {
       return false;
     }
     if (currentPlanet.dialMode === "EARTH") {
-      new Audio(`../../src/assets/sounds/stargate/chev_usual_lock2.wav`).play();
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/chev_usual_lock2.wav`
+      ).play();
       setLocking(true);
       await timeout(400);
       setDestLock(true);
@@ -153,7 +181,11 @@ export const Stargate = ({ addressList }) => {
       return setLocking(false);
     }
     await timeout(800);
-    new Audio(`../../src/assets/sounds/stargate/chev_usual_7.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_7.wav`
+    ).play();
     return setDestLock(true);
   };
 
@@ -167,13 +199,21 @@ export const Stargate = ({ addressList }) => {
     if (!destLock || inputAddress.length === 0) {
       return null;
     }
-    new Audio(`../../src/assets/sounds/stargate/gateOpen.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/gateOpen.wav`
+    ).play();
     await timeout(1200);
     return setIsOpen(true);
   };
 
   const closeGate = async () => {
-    new Audio(`../../src/assets/sounds/stargate/gateClose.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/gateClose.wav`
+    ).play();
     await timeout(2400);
     setIsOpen(false);
     await timeout(100);
@@ -182,10 +222,10 @@ export const Stargate = ({ addressList }) => {
 
   useEffect(() => {
     if (isOpen) {
-      const expires = setTimeout(() => {
+      const autoClose = setTimeout(() => {
         closeGate();
       }, 2280000);
-      return () => clearTimeout(expires);
+      return () => clearTimeout(autoClose);
     }
   }, [isOpen]);
 
@@ -205,7 +245,9 @@ export const Stargate = ({ addressList }) => {
 
   const travelGate = () => {
     new Audio(
-      `../../src/assets/sounds/stargate/teleport_${Math.floor(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/teleport_${Math.floor(
         Math.random() * (8 - 1) + 1
       )}.mp3`
     ).play();
@@ -218,20 +260,10 @@ export const Stargate = ({ addressList }) => {
         Current planet: {currentPlanet.planetName}
       </p>
       <div className="stargate">
-        {isOpen && (
-          <ReactAudioPlayer
-            src="../../src/assets/sounds/stargate/wormholeLoop.wav"
-            autoPlay
-            loop
-          />
-        )}
+        {/* {isOpen && <ReactAudioPlayer src={wormholeLoop} autoPlay loop />}
         {isOpen && currentPlanet.id === 1 && (
-          <ReactAudioPlayer
-            src="../../src/assets/sounds/alarms/sgc_alarm.wav"
-            autoPlay
-            loop
-          />
-        )}
+          <ReactAudioPlayer src={sgcAlarm} autoPlay loop />
+        )} */}
         <SG1Render
           rollData={rollData}
           setIsRolling={setIsRolling}

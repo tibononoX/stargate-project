@@ -73,7 +73,11 @@ export const Stargate = ({ addressList }) => {
       });
       if (!match) {
         setDestLock(false);
-        new Audio(`../../src/assets/sounds/stargate/chev_usual_7.wav`).play();
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }assets/sounds/stargate/chev_usual_7.wav`
+        ).play();
         return false;
       }
       if (currentPlanet.poo !== poo) {
@@ -84,7 +88,9 @@ export const Stargate = ({ addressList }) => {
       setTimeout(() => {
         setDestLock(true);
         return new Audio(
-          `../../src/assets/sounds/stargate/chevDhdLast.mp3`
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }assets/sounds/stargate/chevDhdLast.mp3`
         ).play();
       }, 500);
       return true;
@@ -126,16 +132,18 @@ export const Stargate = ({ addressList }) => {
         handleChev(timing);
 
         return new Audio(
-          `../../src/assets/sounds/stargate/chev_usual_${
-            activeChevrons + 1
-          }.wav`
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }assets/sounds/stargate/chev_usual_${activeChevrons + 1}.wav`
         ).play();
       }
 
       if (activeChevrons < 7) {
         setInputAddress(`${inputAddress}${symbol.letter}`);
         new Audio(
-          `../../src/assets/sounds/dhd/dhd_usual_${activeChevrons + 1}.wav`
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }assets/sounds/dhd/dhd_usual_${activeChevrons + 1}.wav`
         ).play();
 
         if (activeChevrons === 6) {
@@ -143,9 +151,9 @@ export const Stargate = ({ addressList }) => {
         }
         setCurrentSymbol(1);
         return new Audio(
-          `../../src/assets/sounds/stargate/chev_usual_${
-            activeChevrons + 1
-          }.wav`
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }assets/sounds/stargate/chev_usual_${activeChevrons + 1}.wav`
         ).play();
       }
       return null;
@@ -159,7 +167,11 @@ export const Stargate = ({ addressList }) => {
   }, [inputAddress.length === 7]);
 
   const closeGate = () => {
-    new Audio(`../../src/assets/sounds/stargate/gateClose.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }assets/sounds/stargate/gateClose.wav`
+    ).play();
     setTimeout(() => {
       setDestinationInfo({});
       setDhdActive(false);
@@ -172,7 +184,11 @@ export const Stargate = ({ addressList }) => {
   };
   const openGate = () => {
     setTimeout(() => {
-      new Audio(`../../src/assets/sounds/stargate/gateOpen.wav`).play();
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }assets/sounds/stargate/gateOpen.wav`
+      ).play();
     }, 500);
     setTimeout(() => {
       setIsOpen(true);
@@ -191,7 +207,11 @@ export const Stargate = ({ addressList }) => {
   }, [isOpen]);
 
   const wrongAddress = () => {
-    new Audio(`../../src/assets/sounds/dhd/dhd_usual_fail.mp3`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }assets/sounds/dhd/dhd_usual_fail.mp3`
+    ).play();
     setCurrentSymbol({
       id: 1,
       letter: "A",
@@ -216,14 +236,20 @@ export const Stargate = ({ addressList }) => {
     if ((activeChevrons <= 6 && activeChevrons !== 0) || !destLock) {
       return wrongAddress();
     }
-    new Audio(`../../src/assets/sounds/dhd/dhd_usual_dial.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }assets/sounds/dhd/dhd_usual_dial.wav`
+    ).play();
     setDhdActive(true);
     return openGate();
   };
 
   const travelGate = () => {
     new Audio(
-      `../../src/assets/sounds/stargate/teleport_${Math.floor(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }assets/sounds/stargate/teleport_${Math.floor(
         Math.random() * (8 - 1) + 1
       )}.mp3`
     ).play();
@@ -263,7 +289,7 @@ export const Stargate = ({ addressList }) => {
         <div className="stargate">
           {isOpen && (
             <ReactAudioPlayer
-              src="../../src/assets/sounds/stargate/wormholeLoop.wav"
+              src="${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/stargate/wormholeLoop.wav"
               autoPlay
               loop
             />

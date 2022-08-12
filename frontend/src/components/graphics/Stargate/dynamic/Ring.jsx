@@ -6,7 +6,9 @@ const Ring = ({ rollData, setIsRolling }) => {
     if (rollData.reset) {
       setIsRolling(true);
       const rollSound = new Audio(
-        `../../src/assets/sounds/stargate/ringRollFail.wav`
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/ringRollFail.wav`
       );
       rollSound.play();
 
@@ -18,7 +20,9 @@ const Ring = ({ rollData, setIsRolling }) => {
     }
     setIsRolling(true);
     const rollSound = new Audio(
-      `../../src/assets/sounds/stargate/ringRoll.wav`
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/ringRoll.wav`
     );
     rollSound.play();
 

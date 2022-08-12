@@ -57,12 +57,20 @@ const Dhd = ({
       return null;
     }
     if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
-      new Audio(`../../src/assets/sounds/dhd/dhd_usual_fail.mp3`).play();
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/dhd/dhd_usual_fail.mp3`
+      ).play();
       setPooActive(false);
       return wrongAddress();
     }
 
-    new Audio(`../../src/assets/sounds/dhd/dhd_usual_dial.wav`).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/dhd/dhd_usual_dial.wav`
+    ).play();
     setDhdActive(true);
     return openGate();
   };
