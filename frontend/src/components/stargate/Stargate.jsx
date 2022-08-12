@@ -2,7 +2,6 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState, useEffect, useContext } from "react";
 import "@styles/stargate/main.scss";
-import ReactAudioPlayer from "react-audio-player";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
 import { rollCalc, handleChev } from "@services/dial";
