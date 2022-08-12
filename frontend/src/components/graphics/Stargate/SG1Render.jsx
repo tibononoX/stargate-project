@@ -17,6 +17,7 @@ import GateFrame from "./GateFrame";
 import SvgDef from "./SvgDef";
 
 function SG1Render({
+  windowWidth,
   rollData,
   setIsRolling,
   chevrons,
@@ -31,8 +32,8 @@ function SG1Render({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
-      width="650"
-      height="650"
+      width={windowWidth >= 650 ? "650" : windowWidth}
+      height={windowWidth >= 650 ? "650" : windowWidth}
       version="1.1"
       viewBox="0 0 800 800"
     >
