@@ -31,7 +31,7 @@ COPY ./ /usr/src/app
 RUN npm install -g pnpm
 # Create front app
 RUN cd ./frontend && pnpm i && pnpm build
-RUN mkdir -p ./frontend/dist/src && cp -r ./frontend/src/assets ./frontend/dist/src
+RUN mkdir -p ./frontend/dist/src/assets && cp -r ./frontend/src/assets ./frontend/dist/src/assets
 # Create back app
 RUN cd ./backend && pnpm i --prod
 
