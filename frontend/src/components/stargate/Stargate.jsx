@@ -4,19 +4,12 @@ import "@styles/stargate/main.scss";
 import ReactAudioPlayer from "react-audio-player";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
-import { rollCalc, handleChev } from "@services/dial";
 import Dhd from "./Dhd";
+import { rollCalc, handleChev } from "@services/dial";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-const wormholeLoop = `${
-  import.meta.env.VITE_FRONTEND_SRC_URL
-}/assets/sounds/stargate/wormholeLoop.wav`;
-const sgcAlarm = `${
-  import.meta.env.VITE_FRONTEND_SRC_URL
-}/assets/sounds/alarms/sgc_alarm.wav`;
 
 const chevInit = [false, false, false, false, false, false, false, false];
 
@@ -260,10 +253,24 @@ export const Stargate = ({ addressList }) => {
         Current planet: {currentPlanet.planetName}
       </p>
       <div className="stargate">
-        {/* {isOpen && <ReactAudioPlayer src={wormholeLoop} autoPlay loop />}
+        {isOpen && (
+          <ReactAudioPlayer
+            src={`${
+              import.meta.env.VITE_FRONTEND_SRC_URL
+            }/assets/sounds/stargate/wormholeLoop.wav`}
+            autoPlay
+            loop
+          />
+        )}
         {isOpen && currentPlanet.id === 1 && (
-          <ReactAudioPlayer src={sgcAlarm} autoPlay loop />
-        )} */}
+          <ReactAudioPlayer
+            src={`${
+              import.meta.env.VITE_FRONTEND_SRC_URL
+            }/assets/sounds/alarms/sgc_alarm.wav`}
+            autoPlay
+            loop
+          />
+        )}
         <SG1Render
           rollData={rollData}
           setIsRolling={setIsRolling}
