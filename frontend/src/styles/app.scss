@@ -35,52 +35,6 @@ html {
     // );
   }
 
-  .forest {
-    position: absolute;
-    width: 800px;
-
-    &.left {
-      left: -5em;
-    }
-    &.right {
-      right: -5em;
-    }
-  }
-
-  .forestFar {
-    position: absolute;
-    width: 1100px;
-    filter: brightness(80%);
-
-    &.mid {
-      left: 20em;
-    }
-
-    &.left {
-      left: -8em;
-    }
-    &.right {
-      right: -3em;
-    }
-  }
-
-  .forestVeryFar {
-    position: absolute;
-    width: 900px;
-    filter: brightness(60%);
-
-    &.mid {
-      left: 30em;
-    }
-
-    &.left {
-      left: -1em;
-    }
-    &.right {
-      right: -0em;
-    }
-  }
-
   .background {
     position: absolute;
     bottom: 0;
@@ -111,6 +65,26 @@ html {
     background-color: rgb(192, 164, 70);
   }
 
+  .openAddressBook {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgb(65, 63, 63);
+    border: solid 2px rgb(61, 45, 37);
+    color: rgb(119, 115, 113);
+    padding: 8px 16px;
+    border-radius: 0 0 1rem 0;
+    transition: 100ms;
+
+    &:active {
+      border: solid 2px rgb(231, 89, 26);
+      color: rgb(238, 127, 79);
+      cursor: pointer;
+    }
+  }
+}
+
+@media screen and (min-width: 650px) {
   .openAddressBook {
     position: absolute;
     top: 0;

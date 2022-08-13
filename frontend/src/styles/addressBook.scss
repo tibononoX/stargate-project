@@ -4,17 +4,27 @@
   left: 0;
 
   .planetList {
-    background-color: rgba(65, 63, 63, 0.452);
+    background-color: rgba(78, 72, 69, 0.733);
     backdrop-filter: blur(1px);
     color: rgb(214, 214, 214);
 
-    padding: 4px 12px;
     list-style: none;
     max-height: 50vh;
     overflow-y: auto;
 
+    .filters {
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+
+      input {
+        margin-right: 8px;
+      }
+    }
+
     .planet {
-      padding: 8px 0;
+      font-size: 1rem;
+      padding: 8px 12px;
       border-top: solid 1px rgb(116, 98, 83);
 
       &:nth-child(1) {
@@ -25,7 +35,22 @@
         font-family: "sg1Glyph";
         font-size: 1.5rem;
         font-weight: 500;
-        color: rgb(238, 127, 79);
+        color: rgb(92, 238, 79);
+      }
+
+      &.oneway {
+        .glyphs {
+          color: rgb(194, 123, 42);
+        }
+      }
+
+      &.unreachable {
+        // background-color: rgba(29, 28, 27, 0.555);
+        filter: brightness(65%);
+
+        .glyphs {
+          color: rgb(194, 42, 42);
+        }
       }
     }
   }
@@ -34,6 +59,7 @@
 @media screen and (min-width: 650px) {
   .addressBook {
     .planetList {
+      max-height: 60vh;
       .planet {
         .glyphs {
           font-size: 2rem;
