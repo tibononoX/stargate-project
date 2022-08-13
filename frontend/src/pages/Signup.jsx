@@ -9,6 +9,7 @@ const formInitialState = {
   username: "",
   email: "",
   password: "",
+  confirmPassword: "",
 };
 
 const registerForm = (state, action) => {
@@ -19,6 +20,8 @@ const registerForm = (state, action) => {
       return { ...state, email: action.payload };
     case "UPDATE_PASSWORD":
       return { ...state, password: action.payload };
+    case "UPDATE_CONFIRMPASSWORD":
+      return { ...state, confirmPassword: action.payload };
     case "RESET_FORM":
       return { ...formInitialState };
     default:
@@ -40,6 +43,10 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
     e.preventDefault();
 
     try {
+      if (confirmPassword !== password) {
+        return alert("Password do not match");
+      }
+
       const newUserData = {
         username: formData.username,
         email: formData.email,
@@ -160,41 +167,60 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
               }
             />
           </label>
+          <label htmlFor="confirmPassword">
+            Confirm password:
+            <input
+              id="confirmPassword"
+              type="password"
+              placeholder="Password"
+              required
+              value={formData.confirmPassword}
+              onChange={(e) =>
+                dispatch({
+                  type: "UPDATE_CONFIRMPASSWORD",
+                  payload: e.target.value,
+                })
+              }
+            />
+          </label>
           <button type="submit">SIGN UP</button>
         </div>
 
         <div className="dhd signup">
-          <label htmlFor="planetName">
-            Name your planet:
-            <input
-              id="planetName"
-              type="text"
-              value={planetName}
-              placeholder="Planet name"
-              onChange={(e) => setPlanetName(e.target.value)}
-            />
-          </label>
-          <label htmlFor="dialMode">
-            Dial Mode:
-            <select
-              id="dialMode"
-              value={dialMode}
-              onChange={(e) => setDialMode(e.target.value)}
-            >
-              <option value="DHD" key="DHD">
-                DHD
-              </option>
-              <option value="EARTH" key="EARTH">
-                Earth
-              </option>
-            </select>
-          </label>
-          <p>
-            Gate address: <span className="inputAddress">{gateAddress}</span>
-          </p>
-          <p>
-            Point of origin: <span className="inputAddress">{poo?.letter}</span>
-          </p>
+          <div className="gateInfo">
+            <label htmlFor="planetName">
+              Name your planet:
+              <input
+                id="planetName"
+                type="text"
+                value={planetName}
+                placeholder="Planet name"
+                onChange={(e) => setPlanetName(e.target.value)}
+              />
+            </label>
+            <label htmlFor="dialMode">
+              Dial Mode:
+              <select
+                id="dialMode"
+                value={dialMode}
+                onChange={(e) => setDialMode(e.target.value)}
+              >
+                <option value="DHD" key="DHD">
+                  DHD
+                </option>
+                <option value="EARTH" key="EARTH">
+                  Earth
+                </option>
+              </select>
+            </label>
+            <p>
+              Gate address: <span className="inputAddress">{gateAddress}</span>
+            </p>
+            <p>
+              Point of origin:{" "}
+              <span className="inputAddress">{poo?.letter}</span>
+            </p>
+          </div>
 
           <button
             type="button"
@@ -208,6 +234,9 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
           </button>
           <ul className="buttonList">
             {symbols.map((symbol) => {
+              if (symbol.id === 1 || symbol.id === 40) {
+                return null;
+              }
               return (
                 <li className="buttonItem" key={symbol.id}>
                   <button

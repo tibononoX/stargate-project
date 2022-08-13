@@ -56,7 +56,7 @@ const Login = ({ initialPlanet }) => {
   return (
     <div className="page">
       <h1>LOGIN</h1>
-      <form onSubmit={handleSubmit}>
+      <form className="login" onSubmit={handleSubmit}>
         <label htmlFor="email">
           Email:
           <input
