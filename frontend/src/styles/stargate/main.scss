@@ -52,19 +52,6 @@
   }
 }
 
-.inputAddress {
-  position: absolute;
-  top: 0;
-  margin: 20px;
-  display: flex;
-  list-style: none;
-  font-family: "sg1Glyph";
-
-  margin-right: 5px;
-  font-size: 1.5rem;
-  color: #473e39;
-}
-
 .dhd {
   z-index: 50;
   position: absolute;
@@ -76,6 +63,18 @@
   background-color: rgba(61, 58, 58, 0);
   padding: 28px 20px 4px 20px;
   transition: 500ms;
+
+  &.signup {
+    flex-direction: column;
+    align-items: center;
+    bottom: 0;
+    left: 0;
+
+    p {
+      display: flex;
+      align-items: center;
+    }
+  }
 
   &.open {
     bottom: 0;

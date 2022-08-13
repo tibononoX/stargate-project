@@ -2,13 +2,28 @@
 import { useEffect } from "react";
 
 const Ring = ({ rollData, setIsRolling }) => {
-  const handleRoll = () => {
-    if (rollData.reset) {
+  const handleRoll = async () => {
+    try {
+      if (rollData.reset) {
+        setIsRolling(true);
+        const rollSound = new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/stargate/ringRollFail.wav`
+        );
+        rollSound.play();
+
+        return setTimeout(() => {
+          rollSound.pause();
+          rollSound.currentTime = 0;
+          setIsRolling(false);
+        }, rollData.timing);
+      }
       setIsRolling(true);
       const rollSound = new Audio(
         `${
           import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/ringRollFail.wav`
+        }/assets/sounds/stargate/ringRoll.wav`
       );
       rollSound.play();
 
@@ -17,20 +32,9 @@ const Ring = ({ rollData, setIsRolling }) => {
         rollSound.currentTime = 0;
         setIsRolling(false);
       }, rollData.timing);
+    } catch (err) {
+      return console.warn(err);
     }
-    setIsRolling(true);
-    const rollSound = new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/ringRoll.wav`
-    );
-    rollSound.play();
-
-    return setTimeout(() => {
-      rollSound.pause();
-      rollSound.currentTime = 0;
-      setIsRolling(false);
-    }, rollData.timing);
   };
 
   useEffect(() => {
