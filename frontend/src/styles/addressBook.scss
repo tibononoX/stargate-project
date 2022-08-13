@@ -4,12 +4,13 @@
   left: 0;
 
   .planetList {
-    background-color: rgb(65, 63, 63);
+    background-color: rgba(65, 63, 63, 0.452);
+    backdrop-filter: blur(1px);
     color: rgb(214, 214, 214);
 
     padding: 4px 12px;
     list-style: none;
-    max-height: 520px;
+    max-height: 50vh;
     overflow-y: auto;
 
     .planet {
@@ -22,9 +23,21 @@
 
       .glyphs {
         font-family: "sg1Glyph";
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 500;
         color: rgb(238, 127, 79);
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 650px) {
+  .addressBook {
+    .planetList {
+      .planet {
+        .glyphs {
+          font-size: 2rem;
+        }
       }
     }
   }
