@@ -9,6 +9,8 @@ class PlanetController {
       }
       return res.status(200).send(planetList);
     } catch (err) {
+      console.error(err);
+
       return res.sendStatus(500);
     }
   };
@@ -53,8 +55,6 @@ class PlanetController {
 
   static add = (req, res) => {
     const planet = req.body;
-
-    // TODO validations (length, format...)
 
     models.planet
       .insert(planet)

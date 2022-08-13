@@ -36,8 +36,7 @@ CREATE TABLE
     id INT PRIMARY KEY AUTO_INCREMENT,
     planetName VARCHAR(255) NOT NULL,
     gateAddress VARCHAR(8) NOT NULL,
-    dialMode ENUM("EARTH", "DHD") NOT NULL
+    poo INT NOT NULL,
+    dialMode ENUM("EARTH", "DHD") NOT NULL,
+    userId INT NULL
   );
-
-CREATE TABLE
-  poo (planet_id INT NOT NULL, glyph_id INT NOT NULL);

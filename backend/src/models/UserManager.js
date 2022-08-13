@@ -15,7 +15,7 @@ class UserManager extends AbstractManager {
 
   async findByEmail(email) {
     const user = await this.connection.query(
-      `SELECT id, username, email, role, creationDate FROM ${UserManager.table} WHERE email = ?`,
+      `SELECT u.id, u.username, u.email, u.role, u.creationDate, p.id planetId FROM ${UserManager.table} u LEFT JOIN planet p ON p.userId=u.id WHERE u.email = ?`,
       [email]
     );
     return user[0];
@@ -23,7 +23,7 @@ class UserManager extends AbstractManager {
 
   async findById(id) {
     const user = await this.connection.query(
-      `SELECT id, username, email, role, creationDate FROM ${UserManager.table} WHERE id = ?`,
+      `SELECT u.id, u.username, u.email, u.role, u.creationDate, p.id planetId FROM ${UserManager.table} u LEFT JOIN planet p ON p.userId=u.id WHERE u.id = ?`,
       [id]
     );
     return user[0];

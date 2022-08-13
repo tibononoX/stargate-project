@@ -5,19 +5,19 @@ class PlanetManager extends AbstractManager {
 
   find(id) {
     return this.connection.query(
-      `SELECT p.id, p.planetName, p.gateAddress, p.dialMode, g.letter poo, g.id poo_id FROM  ${PlanetManager.table} p LEFT JOIN poo ON p.id=poo.planet_id RIGHT JOIN glyph g ON g.id=poo.glyph_id WHERE p.id = ?`,
+      `SELECT p.id, p.planetName, p.gateAddress, g.letter pooLetter, p.dialMode, p.userId FROM ${PlanetManager.table} p LEFT JOIN glyph g ON p.poo=g.id WHERE p.id = ?`,
       [id]
     );
   }
 
   findAll() {
     return this.connection.query(
-      `SELECT p.id, p.planetName, p.gateAddress, p.dialMode, g.letter poo, g.id poo_id FROM  ${PlanetManager.table} p LEFT JOIN poo ON p.id=poo.planet_id LEFT JOIN glyph g ON g.id=poo.glyph_id`
+      `SELECT p.id, p.planetName, p.gateAddress, g.letter pooLetter, p.dialMode, p.userId FROM ${PlanetManager.table} p LEFT JOIN glyph g ON p.poo=g.id`
     );
   }
 
   insert(planet) {
-    return this.connection.query(`INSERT INTO ${PlanetManager.table} ?`, [
+    return this.connection.query(`INSERT INTO ${PlanetManager.table} SET ?`, [
       planet,
     ]);
   }

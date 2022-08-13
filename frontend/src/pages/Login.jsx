@@ -22,7 +22,7 @@ const loginForm = (state, action) => {
   }
 };
 
-const Login = () => {
+const Login = ({ initialPlanet }) => {
   const { setUserData } = useContext(UserContext);
   const [formData, dispatch] = useReducer(loginForm, formInitialState);
 
@@ -46,6 +46,7 @@ const Login = () => {
         return console.warn("An error occured");
       }
       setUserData(login);
+      initialPlanet();
       return navigate("/");
     } catch (err) {
       return console.warn(err);

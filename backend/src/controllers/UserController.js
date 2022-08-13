@@ -210,19 +210,31 @@ class UserController {
       if (emailAlreadyUsed) {
         return res.status(400).send("Email already exists");
       }
-
       const hashedPassword = await models.user.hashPassword(user.password);
 
-      models.user
-        .insert({ ...user, password: hashedPassword })
+      const newUser = {
+        username: user.username,
+        email: user.email,
+        password: hashedPassword,
+      };
+
+      const newCreatedUser = await models.user
+        .insert(newUser)
         .then(([result]) => {
           delete user.password;
-          return res.status(201).json({ ...user, id: result.insertId });
+          const createdUser = { ...user, id: result.insertId };
+          return createdUser;
         })
         .catch((err) => {
           console.error(err);
           return res.sendStatus(500);
         });
+
+      if (!newCreatedUser) {
+        return res.sendStatus(500);
+      }
+
+      return res.status(201).json({ newCreatedUser });
     } catch (err) {
       return res.status(500).send(err.message);
     }

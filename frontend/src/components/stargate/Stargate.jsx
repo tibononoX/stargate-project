@@ -67,7 +67,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const handleInput = async () => {
     try {
-      if (currentPlanet.dialMode === "EARTH") {
+      if (currentPlanet?.dialMode === "EARTH") {
         setProcessingInput(true);
         const symbolToProcess = inputAddress.map((address) => address).pop();
         const rollValues = rollCalc(symbolToProcess, ringPosition);
@@ -112,14 +112,14 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const checkMatching = async (poo) => {
     try {
-      if (currentPlanet.dialMode !== "EARTH") {
+      if (currentPlanet?.dialMode !== "EARTH") {
         new Audio(
           `${
             import.meta.env.VITE_FRONTEND_SRC_URL
           }/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
         ).play();
       }
-      if (currentPlanet.dialMode === "EARTH") {
+      if (currentPlanet?.dialMode === "EARTH") {
         const rollValues = rollCalc(poo, ringPosition);
         setRingPosition(rollValues.position);
         setRollData(rollValues);
@@ -132,7 +132,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         .toString()
         .replace(/,/g, "");
 
-      if (currentPlanet.gateAddress === destAddress) {
+      if (currentPlanet?.gateAddress === destAddress) {
         return false;
       }
 
@@ -146,7 +146,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         return false;
       });
 
-      if (currentPlanet.dialMode === "EARTH") {
+      if (currentPlanet?.dialMode === "EARTH") {
         if (!match) {
           console.warn("wrong Address");
           new Audio(
@@ -166,11 +166,11 @@ export const Stargate = ({ addressList, windowWidth }) => {
         console.warn("wrong Address");
         return false;
       }
-      if (currentPlanet.poo !== poo.letter) {
+      if (currentPlanet?.pooLetter !== poo.letter) {
         console.warn("wrong Poo");
         return false;
       }
-      if (currentPlanet.dialMode === "EARTH") {
+      if (currentPlanet?.dialMode === "EARTH") {
         new Audio(
           `${
             import.meta.env.VITE_FRONTEND_SRC_URL
@@ -274,7 +274,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   return (
     <div className="gameContainer">
       <p className="currentPlanet">
-        Current planet: {currentPlanet.planetName}
+        Current planet: {currentPlanet?.planetName}
       </p>
       <div className="stargate">
         {isOpen && (
@@ -282,7 +282,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
             <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
           </audio>
         )}
-        {isOpen && currentPlanet.id === 1 && (
+        {isOpen && currentPlanet?.id === 1 && (
           <audio loop autoPlay id="sgcAlarm">
             <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
           </audio>

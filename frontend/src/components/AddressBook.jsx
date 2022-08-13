@@ -11,7 +11,8 @@ const AddressBook = ({ addressList }) => {
               Address: <span className="glyphs">{address.gateAddress}</span>
             </h4>
             <h4>
-              Point of Origin: <span className="glyphs">{address.poo}</span>
+              Point of Origin:{" "}
+              <span className="glyphs">{address.pooLetter}</span>
             </h4>
           </li>
         ))}

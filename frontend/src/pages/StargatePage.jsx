@@ -9,9 +9,9 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
   return (
     <div className="page">
-      {currentPlanet.id !== 1 && <div className="background" />}
+      {currentPlanet?.id !== 1 && <div className="background" />}
       <Stargate addressList={addressList} windowWidth={windowWidth} />
-      {currentPlanet.id !== 1 && <div className="frontground" />}
+      {currentPlanet?.id !== 1 && <div className="frontground" />}
       <button
         type="button"
         className="openAddressBook"

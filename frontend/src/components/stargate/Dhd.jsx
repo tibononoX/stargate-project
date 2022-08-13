@@ -109,10 +109,10 @@ const Dhd = ({
       <form onSubmit={handleSubmit}>
         <ul className="buttonList">
           {symbols.map((symbol) => {
-            if (currentPlanet.id !== 1 && symbol.id === 1) {
+            if (currentPlanet?.id !== 1 && symbol.id === 1) {
               return null;
             }
-            if (currentPlanet.id !== 2 && symbol.id === 40) {
+            if (currentPlanet?.id !== 2 && symbol.id === 40) {
               return null;
             }
             return (

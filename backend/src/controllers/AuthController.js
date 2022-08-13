@@ -23,6 +23,7 @@ class AuthController {
             username: user[0].username,
             email: user[0].email,
             role: user[0].role,
+            planetId: user[0].planetId,
           },
           process.env.ACCESS_JWT_SECRET,
           { expiresIn: process.env.ACCESS_JWT_EXPIRESIN }
@@ -39,6 +40,44 @@ class AuthController {
       return res.status(403).send("Invalid creditentials");
     } catch (err) {
       return res.status(500).send(err);
+    }
+  };
+
+  static refreshToken = async (req, res) => {
+    const token = req.cookies.accessToken;
+    if (!token) {
+      return res.sendStatus(204);
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_JWT_SECRET);
+      const { id } = decoded;
+
+      const user = await models.user.findById(id);
+      if (!user[0]) {
+        return res.status(404).send(`Aucun utilisateur avec l'ID "${id}"`);
+      }
+      const refreshedToken = jwt.sign(
+        {
+          id: user[0].id,
+          username: user[0].username,
+          email: user[0].email,
+          role: user[0].role,
+          planetId: user[0].planetId,
+        },
+        process.env.ACCESS_JWT_SECRET,
+        { expiresIn: process.env.ACCESS_JWT_EXPIRESIN }
+      );
+      return res
+        .cookie("accessToken", refreshedToken, {
+          httpOnly: true,
+          secure: process.env.ACCESS_JWT_SECURE === "true",
+          maxAge: parseInt(process.env.ACCESS_JWT_COOKIE_MAXAGE, 10),
+        })
+        .status(200)
+        .json(user[0]);
+    } catch (err) {
+      return res.sendStatus(500);
     }
   };
 
