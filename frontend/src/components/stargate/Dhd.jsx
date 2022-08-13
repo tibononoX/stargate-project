@@ -47,32 +47,36 @@ const Dhd = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isOpen) {
-      setDhdActive(false);
-      closeGate();
-      await timeout(2700);
-      return setPooActive(false);
-    }
-    if (inputAddress.length === 0 || inputAddress.length === 7) {
-      return null;
-    }
-    if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
+    try {
+      if (isOpen) {
+        setDhdActive(false);
+        closeGate();
+        await timeout(2700);
+        return setPooActive(false);
+      }
+      if (inputAddress.length === 0 || inputAddress.length === 7) {
+        return null;
+      }
+      if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/dhd/dhd_usual_fail.mp3`
+        ).play();
+        setPooActive(false);
+        return wrongAddress();
+      }
+
       new Audio(
         `${
           import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/dhd/dhd_usual_fail.mp3`
+        }/assets/sounds/dhd/dhd_usual_dial.wav`
       ).play();
-      setPooActive(false);
-      return wrongAddress();
+      setDhdActive(true);
+      return openGate();
+    } catch (err) {
+      return console.warn(err);
     }
-
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/dhd/dhd_usual_dial.wav`
-    ).play();
-    setDhdActive(true);
-    return openGate();
   };
 
   const handleClick = (dhdSymbol) => {
@@ -105,10 +109,10 @@ const Dhd = ({
       <form onSubmit={handleSubmit}>
         <ul className="buttonList">
           {symbols.map((symbol) => {
-            if (currentPlanet.id !== 1 && symbol.id === 1) {
+            if (currentPlanet?.id !== 1 && symbol.id === 1) {
               return null;
             }
-            if (currentPlanet.id !== 2 && symbol.id === 40) {
+            if (currentPlanet?.id !== 2 && symbol.id === 40) {
               return null;
             }
             return (

@@ -41,10 +41,3 @@ VALUES
   ("l", "Leo Minor"),
   ("m", "Leo"),
   ("n", "Abydos");
-
-INSERT INTO
-  poo (planet_id, glyph_id)
-VALUES
-  (1, 1),
-  (2, 40),
-  (3, 2);
