@@ -4,23 +4,13 @@ import "@styles/addressBook.scss";
 
 const AddressBook = ({ addressList }) => {
   const { currentPlanet } = useContext(PlanetContext);
-  const [showUnreachable, setShowUnreachable] = useState(true);
   const [showOneWay, setShowOneWay] = useState(true);
+  const [showUnreachable, setShowUnreachable] = useState(false);
 
   return (
     <div className="addressBook">
       <ul className="planetList">
         <div className="filters">
-          <label htmlFor="unreachable">
-            <input
-              id="unreachable"
-              type="checkbox"
-              checked={showUnreachable}
-              title="Tip: Those destinations are not reachable, you can not travel to them because your point of origin is also in those destinations addresses."
-              onClick={() => setShowUnreachable(!showUnreachable)}
-            />
-            Show unreachable addresses
-          </label>
           <label htmlFor="oneway">
             <input
               id="oneway"
@@ -30,6 +20,16 @@ const AddressBook = ({ addressList }) => {
               onClick={() => setShowOneWay(!showOneWay)}
             />
             Show one-way addresses
+          </label>
+          <label htmlFor="unreachable">
+            <input
+              id="unreachable"
+              type="checkbox"
+              checked={showUnreachable}
+              title="Tip: Those destinations are not reachable, you can not travel to them because your point of origin is also in those destinations addresses."
+              onClick={() => setShowUnreachable(!showUnreachable)}
+            />
+            Show unreachable addresses
           </label>
         </div>
 
