@@ -34,152 +34,164 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const [destinationInfo, setDestinationInfo] = useState({});
 
   const resetGate = async () => {
-    setResetting(true);
-    const rollValues = rollCalc(
-      {
-        id: 1,
-        letter: "A",
-        label: "Earth",
-        position: 0,
-      },
-      ringPosition
-    );
-    setRingPosition(rollValues.position);
-    setRollData({ ...rollValues, reset: true });
-    await timeout(rollValues.timing);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_end.wav`
-    ).play();
-    await timeout(150);
-    handleChev(null, setChevrons);
-    setLocking(false);
-    setDestLock(false);
-    setPooActive(false);
-    setInputAddress([]);
-    return setResetting(false);
-  };
-
-  const handleInput = async () => {
-    if (currentPlanet.dialMode === "EARTH") {
-      setProcessingInput(true);
-      const symbolToProcess = inputAddress.map((address) => address).pop();
-      const rollValues = rollCalc(symbolToProcess, ringPosition);
+    try {
+      setResetting(true);
+      const rollValues = rollCalc(
+        {
+          id: 1,
+          letter: "A",
+          label: "Earth",
+          position: 0,
+        },
+        ringPosition
+      );
       setRingPosition(rollValues.position);
-      setRollData(rollValues);
-
-      await timeout(rollValues.timing - 200);
+      setRollData({ ...rollValues, reset: true });
+      await timeout(rollValues.timing);
       new Audio(
         `${
           import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/chev_lock1.mp3`
+        }/assets/sounds/stargate/chev_usual_end.wav`
       ).play();
-      setLocking(true);
-      await timeout(700);
-      setLockChev(true);
-      handleChev(inputAddress.length, setChevrons);
-      await timeout(350);
+      await timeout(150);
+      handleChev(null, setChevrons);
       setLocking(false);
-      await timeout(620);
-      setLockChev(false);
-      return setProcessingInput(false);
+      setDestLock(false);
+      setPooActive(false);
+      setInputAddress([]);
+      return setResetting(false);
+    } catch (err) {
+      return console.warn(err);
     }
-
-    setProcessingInput(true);
-    new Audio(
-      `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/dhd/dhd_usual_${
-        inputAddress.length
-      }.wav`
-    ).play();
-    await timeout(300);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
-    ).play();
-    handleChev(inputAddress.length, setChevrons);
-    return setProcessingInput(false);
   };
 
-  const checkMatching = async (poo) => {
-    if (currentPlanet.dialMode !== "EARTH") {
+  const handleInput = async () => {
+    try {
+      if (currentPlanet.dialMode === "EARTH") {
+        setProcessingInput(true);
+        const symbolToProcess = inputAddress.map((address) => address).pop();
+        const rollValues = rollCalc(symbolToProcess, ringPosition);
+        setRingPosition(rollValues.position);
+        setRollData(rollValues);
+
+        await timeout(rollValues.timing - 200);
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/stargate/chev_lock1.mp3`
+        ).play();
+        setLocking(true);
+        await timeout(700);
+        setLockChev(true);
+        handleChev(inputAddress.length, setChevrons);
+        await timeout(350);
+        setLocking(false);
+        await timeout(620);
+        setLockChev(false);
+        return setProcessingInput(false);
+      }
+
+      setProcessingInput(true);
       new Audio(
         `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/dhd/dhd_usual_${
           inputAddress.length
         }.wav`
       ).play();
-    }
-    if (currentPlanet.dialMode === "EARTH") {
-      const rollValues = rollCalc(poo, ringPosition);
-      setRingPosition(rollValues.position);
-      setRollData(rollValues);
-
-      await timeout(rollValues.timing);
-    }
-
-    const destAddress = inputAddress
-      .map((symbol) => symbol.letter)
-      .toString()
-      .replace(/,/g, "");
-
-    if (currentPlanet.gateAddress === destAddress) {
-      return false;
-    }
-
-    const match = addressList.some((destination) => {
-      const { gateAddress } = destination;
-
-      if (gateAddress === destAddress) {
-        setDestinationInfo(destination);
-        return true;
-      }
-      return false;
-    });
-
-    if (currentPlanet.dialMode === "EARTH") {
-      if (!match) {
-        console.warn("wrong Address");
-        new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/stargate/chev_usual_2.wav`
-        ).play();
-        setLocking(true);
-        await timeout(400);
-        setDestLock(false);
-        await timeout(600);
-        return false;
-      }
-    }
-
-    if (!match) {
-      console.warn("wrong Address");
-      return false;
-    }
-    if (currentPlanet.poo !== poo.letter) {
-      console.warn("wrong Poo");
-      return false;
-    }
-    if (currentPlanet.dialMode === "EARTH") {
+      await timeout(300);
       new Audio(
         `${
           import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/chev_usual_lock2.wav`
+        }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
       ).play();
-      setLocking(true);
-      await timeout(400);
-      setDestLock(true);
-      await timeout(600);
-      return setLocking(false);
+      handleChev(inputAddress.length, setChevrons);
+      return setProcessingInput(false);
+    } catch (err) {
+      return console.warn(err);
     }
-    await timeout(800);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_7.wav`
-    ).play();
-    return setDestLock(true);
+  };
+
+  const checkMatching = async (poo) => {
+    try {
+      if (currentPlanet.dialMode !== "EARTH") {
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
+        ).play();
+      }
+      if (currentPlanet.dialMode === "EARTH") {
+        const rollValues = rollCalc(poo, ringPosition);
+        setRingPosition(rollValues.position);
+        setRollData(rollValues);
+
+        await timeout(rollValues.timing);
+      }
+
+      const destAddress = inputAddress
+        .map((symbol) => symbol.letter)
+        .toString()
+        .replace(/,/g, "");
+
+      if (currentPlanet.gateAddress === destAddress) {
+        return false;
+      }
+
+      const match = addressList.some((destination) => {
+        const { gateAddress } = destination;
+
+        if (gateAddress === destAddress) {
+          setDestinationInfo(destination);
+          return true;
+        }
+        return false;
+      });
+
+      if (currentPlanet.dialMode === "EARTH") {
+        if (!match) {
+          console.warn("wrong Address");
+          new Audio(
+            `${
+              import.meta.env.VITE_FRONTEND_SRC_URL
+            }/assets/sounds/stargate/chev_usual_2.wav`
+          ).play();
+          setLocking(true);
+          await timeout(400);
+          setDestLock(false);
+          await timeout(600);
+          return false;
+        }
+      }
+
+      if (!match) {
+        console.warn("wrong Address");
+        return false;
+      }
+      if (currentPlanet.poo !== poo.letter) {
+        console.warn("wrong Poo");
+        return false;
+      }
+      if (currentPlanet.dialMode === "EARTH") {
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/stargate/chev_usual_lock2.wav`
+        ).play();
+        setLocking(true);
+        await timeout(400);
+        setDestLock(true);
+        await timeout(600);
+        return setLocking(false);
+      }
+      await timeout(800);
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/chev_usual_7.wav`
+      ).play();
+      return setDestLock(true);
+    } catch (err) {
+      return console.warn(err);
+    }
   };
 
   useEffect(() => {
@@ -189,28 +201,36 @@ export const Stargate = ({ addressList, windowWidth }) => {
   }, [inputAddress]);
 
   const openGate = async () => {
-    if (!destLock || inputAddress.length === 0) {
-      return null;
+    try {
+      if (!destLock || inputAddress.length === 0) {
+        return null;
+      }
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/gateOpen.wav`
+      ).play();
+      await timeout(1200);
+      return setIsOpen(true);
+    } catch (err) {
+      return console.warn(err);
     }
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/gateOpen.wav`
-    ).play();
-    await timeout(1200);
-    return setIsOpen(true);
   };
 
   const closeGate = async () => {
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/gateClose.wav`
-    ).play();
-    await timeout(2400);
-    setIsOpen(false);
-    await timeout(100);
-    return resetGate();
+    try {
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/gateClose.wav`
+      ).play();
+      await timeout(2400);
+      setIsOpen(false);
+      await timeout(100);
+      return resetGate();
+    } catch (err) {
+      return console.warn(err);
+    }
   };
 
   useEffect(() => {
@@ -232,8 +252,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
   }, [destLock, isOpen]);
 
   const wrongAddress = async () => {
-    await timeout(1200);
-    return resetGate();
+    try {
+      await timeout(1200);
+      return resetGate();
+    } catch (err) {
+      return console.warn(err);
+    }
   };
 
   const travelGate = () => {
