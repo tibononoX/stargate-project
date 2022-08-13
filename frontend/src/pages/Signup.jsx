@@ -43,7 +43,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
     e.preventDefault();
 
     try {
-      if (confirmPassword !== password) {
+      if (formData.confirmPassword !== formData.password) {
         return alert("Password do not match");
       }
 
