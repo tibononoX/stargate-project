@@ -1,11 +1,13 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState, useEffect, useContext } from "react";
+import socketIOClient from "socket.io-client";
 import "@styles/stargate/main.scss";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import PlanetContext from "@contexts/PlanetContext";
 import { rollCalc, handleChev } from "@services/dial";
 import Dhd from "./Dhd";
+import UserContext from "@contexts/UserContext";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,6 +16,7 @@ function timeout(ms) {
 const chevInit = [false, false, false, false, false, false, false, false];
 
 export const Stargate = ({ addressList, windowWidth }) => {
+  const { userData } = useContext(UserContext);
   const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
   const [inputAddress, setInputAddress] = useState([]);
   const [processingInput, setProcessingInput] = useState(false);
@@ -24,6 +27,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const [rollData, setRollData] = useState({});
   const [isRolling, setIsRolling] = useState(false);
 
+  const [dhdActive, setDhdActive] = useState(false);
+
   const [isOpen, setIsOpen] = useState(false);
 
   const [lockChev, setLockChev] = useState(false); // Lock chevron light
@@ -32,6 +37,17 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const [destLock, setDestLock] = useState(false);
   const [destinationInfo, setDestinationInfo] = useState({});
+
+  const [offworld, setOffworld] = useState(false);
+
+  const [socket, setSocket] = useState(null);
+
+  const emitVortex = () => {
+    socket.emit("destLock", { destId: destinationInfo.id });
+  };
+  const emitCloseVortex = () => {
+    socket.emit("close", { destId: destinationInfo.id });
+  };
 
   const resetGate = async () => {
     try {
@@ -58,6 +74,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
       setLocking(false);
       setDestLock(false);
       setPooActive(false);
+      // setDestinationInfo({});
+      setOffworld(false);
       setInputAddress([]);
       return setResetting(false);
     } catch (err) {
@@ -90,13 +108,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
         setLockChev(false);
         return setProcessingInput(false);
       }
-
-      setProcessingInput(true);
       new Audio(
         `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/dhd/dhd_usual_${
           inputAddress.length
         }.wav`
       ).play();
+      setProcessingInput(true);
       await timeout(300);
       new Audio(
         `${
@@ -136,7 +153,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         return false;
       }
 
-      const match = addressList.some((destination) => {
+      const match = await addressList.some((destination) => {
         const { gateAddress } = destination;
 
         if (gateAddress === destAddress) {
@@ -180,7 +197,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
         await timeout(400);
         setDestLock(true);
         await timeout(600);
-        return setLocking(false);
+        setLocking(false);
+        return emitServer();
       }
       await timeout(800);
       new Audio(
@@ -200,11 +218,28 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   }, [inputAddress]);
 
+  const offworldVortex = async () => {
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_7.wav`
+    ).play();
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/gateOpen.wav`
+    ).play();
+
+    await timeout(1200);
+    return setIsOpen(true);
+  };
+
   const openGate = async () => {
     try {
       if (!destLock || inputAddress.length === 0) {
         return null;
       }
+
       new Audio(
         `${
           import.meta.env.VITE_FRONTEND_SRC_URL
@@ -261,6 +296,20 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const travelGate = () => {
+    if (offworld) {
+      new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/roblox-death.mp3`
+      ).play();
+      return new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/teleport_${Math.floor(
+          Math.random() * (8 - 1) + 1
+        )}.mp3`
+      ).play();
+    }
     new Audio(
       `${
         import.meta.env.VITE_FRONTEND_SRC_URL
@@ -271,10 +320,106 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return setCurrentPlanet(destinationInfo);
   };
 
+  const offworldSequence = async () => {
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(1, setChevrons);
+    await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(2, setChevrons);
+    await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(3, setChevrons);
+    await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(4, setChevrons);
+    await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(5, setChevrons);
+    await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    handleChev(6, setChevrons);
+    await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
+    return setDestLock(true);
+  };
+
+  const [offId, setOffId] = useState(null);
+
+  const offworldActivation = async () => {
+    setOffworld(true);
+    await offworldSequence();
+    await timeout(400);
+    return offworldVortex();
+  };
+
+  useEffect(() => {
+    if (destinationInfo && socket && !isOpen) {
+      emitVortex();
+    }
+    if (destinationInfo && socket && isOpen) {
+      emitCloseVortex();
+    }
+  }, [dhdActive]);
+
+  useEffect(() => {
+    if (offId && offId?.destId === currentPlanet.id) {
+      offworldActivation();
+    }
+  }, [offId]);
+
+  useEffect(() => {
+    if (!socket) {
+      const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
+      setSocket(socketServer);
+    }
+
+    if (socket) {
+      socket.on("offworld", (socketData) => {
+        setOffId(socketData);
+      });
+      socket.on("close", () => {
+        setOffId(null);
+        closeGate();
+      });
+    }
+  }, [socket]);
+
   return (
     <div className="gameContainer">
       <p className="currentPlanet">
-        Current planet: {currentPlanet?.planetName}
+        {offworld ? (
+          <span className="offworld">OFFWORLD ACTIVATION</span>
+        ) : (
+          `Current planet: ${currentPlanet?.planetName}`
+        )}
       </p>
       <div className="stargate">
         {isOpen && (
@@ -282,9 +427,14 @@ export const Stargate = ({ addressList, windowWidth }) => {
             <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
           </audio>
         )}
-        {isOpen && currentPlanet?.id === 1 && (
+        {isOpen && currentPlanet?.id === 1 && !offworld && (
           <audio loop autoPlay id="sgcAlarm">
             <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
+          </audio>
+        )}
+        {offworld && currentPlanet?.id === 1 && (
+          <audio loop autoPlay id="sgcAlarm">
+            <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
           </audio>
         )}
         <SG1Render
@@ -312,6 +462,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
         closeGate={closeGate}
         wrongAddress={wrongAddress}
         checkMatching={checkMatching}
+        dhdActive={dhdActive}
+        setDhdActive={setDhdActive}
+        offworld={offworld}
       />
     </div>
   );

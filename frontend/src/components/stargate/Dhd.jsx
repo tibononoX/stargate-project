@@ -20,9 +20,11 @@ const Dhd = ({
   closeGate,
   wrongAddress,
   checkMatching,
+  dhdActive,
+  setDhdActive,
+  offworld,
 }) => {
   const { currentPlanet } = useContext(PlanetContext);
-  const [dhdActive, setDhdActive] = useState(false);
   const [dhdOpen, setDhdOpen] = useState(false);
 
   const handleDhdClassName = (type, id) => {
@@ -48,6 +50,9 @@ const Dhd = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (offworld) {
+        return null;
+      }
       if (isOpen) {
         setDhdActive(false);
         closeGate();
