@@ -321,18 +321,53 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const offworldSequence = async () => {
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     handleChev(1, setChevrons);
     await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     handleChev(2, setChevrons);
     await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     handleChev(3, setChevrons);
     await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     handleChev(4, setChevrons);
     await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     handleChev(5, setChevrons);
     await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     handleChev(6, setChevrons);
     await timeout(200);
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
+    ).play();
     return setDestLock(true);
   };
 
@@ -370,19 +405,21 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("offworld", (socketData) => {
         setOffId(socketData);
       });
-      socket.on("close", (socketData) => {
+      socket.on("close", () => {
         setOffId(null);
         closeGate();
       });
     }
-
-    // offworldActivation();
   }, [socket]);
 
   return (
     <div className="gameContainer">
       <p className="currentPlanet">
-        Current planet: {currentPlanet?.planetName}
+        {offworld ? (
+          <span className="offworld">OFFWORLD ACTIVATION</span>
+        ) : (
+          `Current planet: ${currentPlanet?.planetName}`
+        )}
       </p>
       <div className="stargate">
         {isOpen && (

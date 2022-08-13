@@ -17,13 +17,6 @@ export const rollRing = (rollValues) => {
 };
 
 export const handleChev = (chev, setChevrons) => {
-  if (chev !== null) {
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_${chev}.wav`
-    ).play();
-  }
   switch (chev) {
     case 1:
       return setChevrons([
