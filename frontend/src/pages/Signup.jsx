@@ -214,14 +214,14 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
               </select>
             </label>
             <p>
-              Gate address: <span className="inputAddress">{gateAddress}</span>
+              <span className="inputAddress">
+                {gateAddress} | {poo?.letter}
+              </span>
             </p>
-            <p>
-              Point of origin:{" "}
-              <span className="inputAddress">{poo?.letter}</span>
+            <p className="tuto">
+              Enter your address of 6 symbols, and a 7th for the origin point
             </p>
           </div>
-
           <button
             type="button"
             onClick={(e) => {
