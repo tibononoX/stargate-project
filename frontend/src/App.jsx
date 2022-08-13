@@ -19,8 +19,7 @@ function App() {
     id: 1,
     gateAddress: "bZEjKc",
     dialMode: "EARTH",
-    poo: "A",
-    poo_id: 1,
+    pooLetter: "A",
     planetName: "Earth",
   });
   const checkConnection = async () => {
@@ -64,8 +63,7 @@ function App() {
             id: 1,
             gateAddress: "bZEjKc",
             dialMode: "EARTH",
-            poo: "A",
-            poo_id: 1,
+            pooLetter: "A",
             planetName: "Earth",
           });
         }
@@ -75,8 +73,7 @@ function App() {
         id: 1,
         gateAddress: "bZEjKc",
         dialMode: "EARTH",
-        poo: "A",
-        poo_id: 1,
+        pooLetter: "A",
         planetName: "Earth",
       });
     } catch (err) {
