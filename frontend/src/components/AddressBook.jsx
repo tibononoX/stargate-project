@@ -15,7 +15,7 @@ const AddressBook = ({ addressList }) => {
             <input
               id="oneway"
               type="checkbox"
-              checked={showOneWay}
+              defaultChecked={showOneWay}
               title="Tip: Those destinations point of origin is also in your current planet's address, you can travel to them, but can not come back."
               onClick={() => setShowOneWay(!showOneWay)}
             />
@@ -25,7 +25,7 @@ const AddressBook = ({ addressList }) => {
             <input
               id="unreachable"
               type="checkbox"
-              checked={showUnreachable}
+              defaultChecked={showUnreachable}
               title="Tip: Those destinations are not reachable, you can not travel to them because your point of origin is also in those destinations addresses."
               onClick={() => setShowUnreachable(!showUnreachable)}
             />

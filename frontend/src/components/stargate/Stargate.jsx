@@ -47,7 +47,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     socket.emit("destLock", { destId: destinationInfo.id });
   };
   const emitCloseVortex = () => {
-    socket.emit("close", { destId: destinationInfo.id });
+    socket.emit("closeOff", { destId: destinationInfo.id });
   };
 
   const resetGate = async () => {
@@ -198,8 +198,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         await timeout(400);
         setDestLock(true);
         await timeout(600);
-        setLocking(false);
-        return emitServer();
+        return setLocking(false);
       }
       await timeout(800);
       new Audio(
@@ -318,6 +317,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
         Math.random() * (8 - 1) + 1
       )}.mp3`
     ).play();
+    if (!userData) {
+      return setCurrentPlanet(destinationInfo);
+    }
     const changeLocation = await axios.put(
       `/users/${userData.id}`,
       {
@@ -416,9 +418,48 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("offworld", (socketData) => {
         setOffId(socketData);
       });
-      socket.on("close", () => {
+
+      socket.on("closeOff", () => {
         setOffId(null);
         closeGate();
+      });
+
+      socket.on("wrongAddress", (data) => {
+        if (data.id === currentPlanet.id && data.userId !== userData?.id) {
+          setPooActive(false);
+          wrongAddress();
+        }
+      });
+
+      socket.on("inputUpdate", (data) => {
+        console.log(data.userId, userData.id);
+        if (data.id === currentPlanet.id && data.userId !== userData?.id) {
+          setInputAddress(data.inputAddress);
+        }
+      });
+
+      socket.on("openGate", (data) => {
+        if (data.id === currentPlanet.id && data.userId !== userData?.id) {
+          openGate();
+        }
+      });
+
+      socket.on("closeGate", (data) => {
+        if (data.id === currentPlanet.id && data.userId !== userData?.id) {
+          closeGate();
+        }
+      });
+
+      socket.on("setPooActive", (data) => {
+        if (data.id === currentPlanet.id && data.userId !== userData?.id) {
+          setPooActive(data.dhdSymbol);
+        }
+      });
+
+      socket.on("checkMatch", (data) => {
+        if (data.id === currentPlanet.id && data.userId !== userData?.id) {
+          checkMatching(data.dhdSymbol);
+        }
       });
     }
   }, [socket]);
@@ -476,6 +517,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
         dhdActive={dhdActive}
         setDhdActive={setDhdActive}
         offworld={offworld}
+        socket={socket}
+        setSocket={setSocket}
       />
     </div>
   );

@@ -1,7 +1,9 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
+import socketIOClient from "socket.io-client";
 import PlanetContext from "@contexts/PlanetContext";
+import UserContext from "@contexts/UserContext";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,7 +25,10 @@ const Dhd = ({
   dhdActive,
   setDhdActive,
   offworld,
+  socket,
+  setSocket,
 }) => {
+  const { userData } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [dhdOpen, setDhdOpen] = useState(false);
 
@@ -57,7 +62,10 @@ const Dhd = ({
         setDhdActive(false);
         closeGate();
         await timeout(2700);
-        return setPooActive(false);
+        return socket.emit("closeGate", {
+          id: currentPlanet.id,
+          userId: userData.id,
+        });
       }
       if (inputAddress.length === 0 || inputAddress.length === 7) {
         return null;
@@ -69,6 +77,10 @@ const Dhd = ({
           }/assets/sounds/dhd/dhd_usual_fail.mp3`
         ).play();
         setPooActive(false);
+        socket.emit("wrongAddress", {
+          id: currentPlanet.id,
+          userId: userData.id,
+        });
         return wrongAddress();
       }
 
@@ -78,7 +90,11 @@ const Dhd = ({
         }/assets/sounds/dhd/dhd_usual_dial.wav`
       ).play();
       setDhdActive(true);
-      return openGate();
+      openGate();
+      return socket.emit("openGate", {
+        id: currentPlanet.id,
+        userId: userData.id,
+      });
     } catch (err) {
       return console.warn(err);
     }
@@ -97,9 +113,16 @@ const Dhd = ({
     }
     if (inputAddress.length === 6) {
       setPooActive(dhdSymbol);
-      return checkMatching(dhdSymbol);
+      checkMatching(dhdSymbol);
+      socket.emit("setPooActive", { dhdSymbol, id: currentPlanet.id });
+      return socket.emit("checkMatch", { dhdSymbol, id: currentPlanet.id });
     }
-    return setInputAddress([...inputAddress, dhdSymbol]);
+    setInputAddress([...inputAddress, dhdSymbol]);
+    return socket.emit("inputUpdate", {
+      inputAddress: [...inputAddress, dhdSymbol],
+      id: currentPlanet.id,
+      userId: userData.id,
+    });
   };
 
   return (

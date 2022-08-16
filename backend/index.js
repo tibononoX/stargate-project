@@ -1,11 +1,5 @@
 require("dotenv").config();
-const uniqid = require("uniqid");
-
-const message = {
-  id: uniqid(),
-  author: "server",
-  text: "Stargate React",
-};
+// const uniqid = require("uniqid");
 
 const app = require("./src/app");
 
@@ -20,6 +14,7 @@ const server = app.listen(port, (err) => {
   }
 });
 
+// Online functionalities
 const io = require("socket.io")(server, {
   cors: {
     origin: process.env.FRONTEND_URL.split(",") ?? "http://localhost:3000",
@@ -35,17 +30,39 @@ io.on("connect", (socket) => {
     console.log("user disconnected");
   });
 
-  socket.on("destLock", (data) => {
-    if (!data) {
-      console.log("error retrieving socket");
-    }
-    io.emit("offworld", data);
+  socket.on("inputUpdate", (inputAddress) => {
+    // console.log(inputAddress);
+    io.emit("inputUpdate", inputAddress);
   });
 
-  socket.on("close", (data) => {
+  socket.on("setPooActive", (dhdSymbol) => {
+    io.emit("setPooActive", dhdSymbol);
+  });
+
+  socket.on("checkMatch", (dhdSymbol) => {
+    io.emit("checkMatch", dhdSymbol);
+  });
+
+  socket.on("wrongAddress", (id) => {
+    console.log("wrong address", id);
+    io.emit("wrongAddress", id);
+  });
+
+  socket.on("openGate", (id) => {
+    console.log("open gate", id);
+
+    io.emit("openGate", id);
+  });
+
+  socket.on("closeGate", (id) => {
+    console.log("close gate", id);
+    io.emit("closeGate", id);
+  });
+
+  socket.on("closeOff", (data) => {
     if (!data) {
       console.log("error retrieving socket");
     }
-    io.emit("close", data);
+    io.emit("closeOff", data);
   });
 });
