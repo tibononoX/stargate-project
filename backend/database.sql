@@ -11,6 +11,7 @@ CREATE TABLE
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    current_location_id INT NOT NULL DEFAULT 1,
     role ENUM("Admin", "User") DEFAULT "User" NOT NULL
   );
 

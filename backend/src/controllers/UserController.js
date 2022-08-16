@@ -107,18 +107,22 @@ class UserController {
 
   //  Checks that the data recieved is valid, checks if the account to be modified exists, then updates the dabase with the new data
   static edit = async (req, res) => {
-    const { role } = req.body;
+    const { currentLocationId } = req.body;
 
-    if (!role || !req.params.id) {
+    if (!currentLocationId || !req.params.id) {
       return res.status(400).send("Please provide a role and an ID");
     }
 
     try {
       await models.user
-        .updateUser({ role }, parseInt(req.params.id, 10))
+        .updateUser(
+          { current_location_id: currentLocationId },
+          parseInt(req.params.id, 10)
+        )
         .then((result) => result);
       return res.status(200).send("modified user");
     } catch (err) {
+      console.log(err);
       return res.status(500).send(err);
     }
   };

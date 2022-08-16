@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState, useEffect, useContext } from "react";
+import axios from "@services/axios";
 import socketIOClient from "socket.io-client";
 import "@styles/stargate/main.scss";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
@@ -295,7 +296,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   };
 
-  const travelGate = () => {
+  const travelGate = async () => {
     if (offworld) {
       new Audio(
         `${
@@ -317,6 +318,16 @@ export const Stargate = ({ addressList, windowWidth }) => {
         Math.random() * (8 - 1) + 1
       )}.mp3`
     ).play();
+    const changeLocation = await axios.put(
+      `/users/${userData.id}`,
+      {
+        currentLocationId: destinationInfo.id,
+      },
+      { withCredentials: true }
+    );
+    if (!changeLocation) {
+      return console.warn("location not updated");
+    }
     return setCurrentPlanet(destinationInfo);
   };
 

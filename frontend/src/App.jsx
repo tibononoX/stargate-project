@@ -53,7 +53,7 @@ function App() {
     try {
       if (userData) {
         const userPlanet = await addressList
-          .filter((planet) => planet.id === userData.planetId)
+          .filter((planet) => planet.id === userData.current_location_id)
           .map((planet) => planet);
         if (!userPlanet) {
           console.warn(

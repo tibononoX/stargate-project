@@ -39,6 +39,7 @@ class AuthController {
       }
       return res.status(403).send("Invalid creditentials");
     } catch (err) {
+      console.log(err);
       return res.status(500).send(err);
     }
   };
