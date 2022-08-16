@@ -53,17 +53,27 @@ class PlanetController {
       });
   };
 
-  static add = (req, res) => {
+  static add = async (req, res) => {
     const planet = req.body;
 
-    models.planet
+    const alreadyTaken = await models.planet
+      .findByAddress(planet.gateAddress)
+      .then((result) => result[0]);
+
+    if (alreadyTaken.length !== 0) {
+      return res
+        .status(403)
+        .send("This gate address is already taken, please choose another one");
+    }
+
+    return models.planet
       .insert(planet)
       .then(([result]) => {
-        res.status(201).send({ ...planet, id: result.insertId });
+        return res.status(201).send({ ...planet, id: result.insertId });
       })
       .catch((err) => {
         console.error(err);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       });
   };
 

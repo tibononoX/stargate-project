@@ -208,7 +208,30 @@ class UserController {
     if (!user) {
       return res.sendStatus(400);
     }
+
     try {
+      const addressAlreadyTaken = await models.planet
+        .findByAddress(user.gateAddress)
+        .then((result) => result[0]);
+
+      if (addressAlreadyTaken.length !== 0) {
+        return res
+          .status(403)
+          .send(
+            "This gate address is already taken, please choose another one"
+          );
+      }
+
+      const nameAlreadyTaken = await models.planet
+        .findByName(user.planetName)
+        .then((result) => result[0]);
+
+      if (nameAlreadyTaken.length !== 0) {
+        return res
+          .status(403)
+          .send("This planet name is already taken, please choose another one");
+      }
+
       // Checks if email is already present in the database, if yes, sends an error
       const emailAlreadyUsed = await models.user.emailAlreadyExist(user.email);
       if (emailAlreadyUsed) {
