@@ -20,6 +20,7 @@ const server = app.listen(port, (err) => {
   }
 });
 
+// Online functionalities
 const io = require("socket.io")(server, {
   cors: {
     origin: process.env.FRONTEND_URL.split(",") ?? "http://localhost:3000",
@@ -33,6 +34,11 @@ io.on("connect", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
+  });
+
+  socket.on("inputUpdate", (data) => {
+    console.log(data);
+    io.emit("inputUpdate", data);
   });
 
   socket.on("destLock", (data) => {
