@@ -1,5 +1,11 @@
 require("dotenv").config();
-// const uniqid = require("uniqid");
+const uniqid = require("uniqid");
+
+const message = {
+  id: uniqid(),
+  author: "server",
+  text: "Stargate React",
+};
 
 const app = require("./src/app");
 
@@ -30,39 +36,22 @@ io.on("connect", (socket) => {
     console.log("user disconnected");
   });
 
-  socket.on("inputUpdate", (inputAddress) => {
-    // console.log(inputAddress);
-    io.emit("inputUpdate", inputAddress);
+  socket.on("inputUpdate", (data) => {
+    console.log(data);
+    io.emit("inputUpdate", data);
   });
 
-  socket.on("setPooActive", (dhdSymbol) => {
-    io.emit("setPooActive", dhdSymbol);
-  });
-
-  socket.on("checkMatch", (dhdSymbol) => {
-    io.emit("checkMatch", dhdSymbol);
-  });
-
-  socket.on("wrongAddress", (id) => {
-    console.log("wrong address", id);
-    io.emit("wrongAddress", id);
-  });
-
-  socket.on("openGate", (id) => {
-    console.log("open gate", id);
-
-    io.emit("openGate", id);
-  });
-
-  socket.on("closeGate", (id) => {
-    console.log("close gate", id);
-    io.emit("closeGate", id);
-  });
-
-  socket.on("closeOff", (data) => {
+  socket.on("destLock", (data) => {
     if (!data) {
       console.log("error retrieving socket");
     }
-    io.emit("closeOff", data);
+    io.emit("offworld", data);
+  });
+
+  socket.on("close", (data) => {
+    if (!data) {
+      console.log("error retrieving socket");
+    }
+    io.emit("close", data);
   });
 });
