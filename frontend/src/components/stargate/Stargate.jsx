@@ -198,8 +198,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         await timeout(400);
         setDestLock(true);
         await timeout(600);
-        setLocking(false);
-        return emitServer();
+        return setLocking(false);
       }
       await timeout(800);
       new Audio(
@@ -318,6 +317,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
         Math.random() * (8 - 1) + 1
       )}.mp3`
     ).play();
+    if (!userData) {
+      return setCurrentPlanet(destinationInfo);
+    }
     const changeLocation = await axios.put(
       `/users/${userData.id}`,
       {
