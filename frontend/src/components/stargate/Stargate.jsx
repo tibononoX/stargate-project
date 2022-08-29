@@ -463,7 +463,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (!userData) {
       setPrevPlanet(currentPlanet.planetName);
       leavePlanet(currentPlanet.planetName);
-      joinPlanet(destinationInfo.planetName);
       setCurrentPlanet(destinationInfo);
       setOffworld(true);
       await timeout(5000);
@@ -481,7 +480,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
     setPrevPlanet(currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName);
-    joinPlanet(destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
     setOffworld(true);
     await timeout(5000);
