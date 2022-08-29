@@ -430,10 +430,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   }, [destLock, isOpen]);
 
-  const joinPlanet = (planetName) => {
-    socket.emit("join planet", planetName);
-  };
-
   const leavePlanet = (planetName) => {
     socket.emit("leave planet", planetName);
   };

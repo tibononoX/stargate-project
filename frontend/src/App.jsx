@@ -25,6 +25,7 @@ function App() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [addressList, setAddressList] = useState();
   const [socket, setSocket] = useState(null);
+  let prevPlanet = currentPlanet.planetName;
 
   const checkConnection = async () => {
     try {
@@ -41,6 +42,10 @@ function App() {
 
   const joinPlanet = (planetName) => {
     socket.emit("join planet", planetName);
+  };
+
+  const leavePlanet = (planetName) => {
+    socket.emit("leave planet", planetName);
   };
 
   const connect = () => {
@@ -96,7 +101,9 @@ function App() {
 
   useEffect(() => {
     if (socket) {
+      leavePlanet(prevPlanet);
       joinPlanet(currentPlanet.planetName);
+      prevPlanet = currentPlanet.planetName;
     }
   }, [currentPlanet]);
 
