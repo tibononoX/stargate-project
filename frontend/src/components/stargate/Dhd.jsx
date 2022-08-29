@@ -1,7 +1,8 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
 import PlanetContext from "@contexts/PlanetContext";
+import UserContext from "@contexts/UserContext";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,6 +16,7 @@ const Dhd = ({
   setPooActive,
   isRolling,
   destLock,
+  destinationInfo,
   isOpen,
   openGate,
   closeGate,
@@ -23,7 +25,9 @@ const Dhd = ({
   dhdActive,
   setDhdActive,
   offworld,
+  handleRoll,
 }) => {
+  const { socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [dhdOpen, setDhdOpen] = useState(false);
 
@@ -47,6 +51,33 @@ const Dhd = ({
     }
   };
 
+  const dhdFail = () => {
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/dhd/dhd_usual_fail.mp3`
+    ).play();
+    setPooActive(false);
+    return wrongAddress();
+  };
+
+  const dhdOpenGate = () => {
+    new Audio(
+      `${
+        import.meta.env.VITE_FRONTEND_SRC_URL
+      }/assets/sounds/dhd/dhd_usual_dial.wav`
+    ).play();
+    setDhdActive(true);
+    return openGate();
+  };
+
+  const dhdCloseGate = async () => {
+    setDhdActive(false);
+    closeGate();
+    await timeout(2700);
+    return setPooActive(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -54,37 +85,38 @@ const Dhd = ({
         return null;
       }
       if (isOpen) {
-        setDhdActive(false);
-        closeGate();
-        await timeout(2700);
-        return setPooActive(false);
+        socket.emit("dhdCloseGate", {
+          planetName: currentPlanet.planetName,
+          destinationName: destinationInfo.planetName,
+        });
+        return dhdCloseGate();
       }
       if (inputAddress.length === 0 || inputAddress.length === 7) {
         return null;
       }
       if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
-        new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/dhd/dhd_usual_fail.mp3`
-        ).play();
-        setPooActive(false);
-        return wrongAddress();
+        socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
+        return dhdFail();
       }
-
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/dhd/dhd_usual_dial.wav`
-      ).play();
-      setDhdActive(true);
-      return openGate();
+      socket.emit("dhdOpenGate", {
+        planetName: currentPlanet.planetName,
+        destinationName: destinationInfo.planetName,
+      });
+      return dhdOpenGate();
     } catch (err) {
       return console.warn(err);
     }
   };
 
-  const handleClick = (dhdSymbol) => {
+  const handleFinal = async (poo) => {
+    if (currentPlanet.dialMode === "EARTH") {
+      await handleRoll(poo);
+      return setPooActive(poo);
+    }
+    return setPooActive(poo);
+  };
+
+  const handleClick = async (dhdSymbol) => {
     if (
       inputAddress.length === 7 ||
       inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
@@ -96,11 +128,33 @@ const Dhd = ({
       return null;
     }
     if (inputAddress.length === 6) {
-      setPooActive(dhdSymbol);
+      socket.emit("lastChev", {
+        planetName: currentPlanet.planetName,
+        poo: dhdSymbol,
+      });
+      handleFinal(dhdSymbol);
       return checkMatching(dhdSymbol);
     }
+    socket.emit("newInput", {
+      planetName: currentPlanet.planetName,
+      inputAddress: [...inputAddress, dhdSymbol],
+    });
     return setInputAddress([...inputAddress, dhdSymbol]);
   };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("lastChev", (poo) => {
+        handleFinal(poo);
+      });
+      socket.on("wrongAddress", () => {
+        dhdFail();
+      });
+      socket.on("dhdCloseGate", () => {
+        dhdCloseGate();
+      });
+    }
+  }, [socket]);
 
   return (
     <div className={dhdOpen ? "dhd open" : "dhd"}>

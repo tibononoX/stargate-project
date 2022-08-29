@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import socketIOClient from "socket.io-client  ";
 import PlanetContext from "@contexts/PlanetContext";
 import UserContext from "@contexts/UserContext";
 import axios from "@services/axios";
@@ -12,9 +13,7 @@ import Signup from "@pages/Signup";
 
 function App() {
   const [userData, setUserData] = useState(null);
-
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [addressList, setAddressList] = useState();
+  const [connected, setConnected] = useState(false);
   const [currentPlanet, setCurrentPlanet] = useState({
     id: 1,
     gateAddress: "bZEjKc",
@@ -22,6 +21,28 @@ function App() {
     pooLetter: "A",
     planetName: "Earth",
   });
+
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    if (!socket) {
+      const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
+      setSocket(socketServer);
+    }
+  }, [userData]);
+
+  const joinPlanet = (planetName) => {
+    socket.emit("join planet", planetName);
+  };
+
+  const connect = () => {
+    socket.emit("joinServer", userData ? userData.username : "Guest");
+    socket.emit("join planet", currentPlanet.planetName);
+    setConnected(true);
+  };
+
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [addressList, setAddressList] = useState();
   const checkConnection = async () => {
     try {
       const data = await axios
@@ -59,23 +80,26 @@ function App() {
           console.warn(
             "Error updating current planet, setting default to Earth"
           );
-          return setCurrentPlanet({
+          setCurrentPlanet({
             id: 1,
             gateAddress: "bZEjKc",
             dialMode: "EARTH",
             pooLetter: "A",
             planetName: "Earth",
           });
+          return connect();
         }
-        return setCurrentPlanet(userPlanet[0]);
+        setCurrentPlanet(userPlanet[0]);
+        return connect();
       }
-      return setCurrentPlanet({
+      setCurrentPlanet({
         id: 1,
         gateAddress: "bZEjKc",
         dialMode: "EARTH",
         pooLetter: "A",
         planetName: "Earth",
       });
+      return connect();
     } catch (err) {
       return console.warn(err);
     }
@@ -83,7 +107,17 @@ function App() {
 
   useEffect(() => {
     initialPlanet();
+    if (socket) {
+      joinPlanet(currentPlanet.planetName);
+    }
   }, [userData]);
+
+  useEffect(() => {
+    if (socket) {
+      console.log(currentPlanet.planetName);
+      joinPlanet(currentPlanet.planetName);
+    }
+  }, [currentPlanet]);
 
   useEffect(() => {
     fetchAddressList();
@@ -99,7 +133,7 @@ function App() {
   return (
     <div className={currentPlanet?.id !== 1 ? "App sky" : "App"}>
       {/* eslint-disable-next-line react/jsx-no-constructed-context-values */}
-      <UserContext.Provider value={{ userData, setUserData }}>
+      <UserContext.Provider value={{ userData, setUserData, socket }}>
         <PlanetContext.Provider value={{ currentPlanet, setCurrentPlanet }}>
           <Router>
             <Menu />
