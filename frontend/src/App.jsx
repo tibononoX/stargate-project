@@ -59,6 +59,7 @@ function App() {
             "Error updating current planet, setting default to Earth"
           );
           setCurrentPlanet({
+            initial: true,
             id: 1,
             gateAddress: "bZEjKc",
             dialMode: "EARTH",
@@ -71,6 +72,7 @@ function App() {
         return connect();
       }
       setCurrentPlanet({
+        initial: true,
         id: 1,
         gateAddress: "bZEjKc",
         dialMode: "EARTH",
