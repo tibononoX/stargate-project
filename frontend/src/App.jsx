@@ -72,7 +72,6 @@ function App() {
         return connect();
       }
       setCurrentPlanet({
-        initial: true,
         id: 1,
         gateAddress: "bZEjKc",
         dialMode: "EARTH",
