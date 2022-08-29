@@ -18,14 +18,13 @@ const Dhd = ({
   destLock,
   destinationInfo,
   isOpen,
-  openGate,
-  closeGate,
+  openSequence,
+  closingSequence,
   wrongAddress,
   checkMatching,
   dhdActive,
   setDhdActive,
   offworld,
-  handleRoll,
 }) => {
   const { socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
@@ -68,12 +67,12 @@ const Dhd = ({
       }/assets/sounds/dhd/dhd_usual_dial.wav`
     ).play();
     setDhdActive(true);
-    return openGate();
+    return openSequence();
   };
 
   const dhdCloseGate = async () => {
     setDhdActive(false);
-    closeGate();
+    closingSequence();
     await timeout(2700);
     return setPooActive(false);
   };
@@ -85,10 +84,6 @@ const Dhd = ({
         return null;
       }
       if (isOpen) {
-        socket.emit("dhdCloseGate", {
-          planetName: currentPlanet.planetName,
-          destinationName: destinationInfo.planetName,
-        });
         return dhdCloseGate();
       }
       if (inputAddress.length === 0 || inputAddress.length === 7) {
@@ -98,28 +93,17 @@ const Dhd = ({
         socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
         return dhdFail();
       }
-      socket.emit("dhdOpenGate", {
-        planetName: currentPlanet.planetName,
-        destinationName: destinationInfo.planetName,
-      });
       return dhdOpenGate();
     } catch (err) {
       return console.warn(err);
     }
   };
 
-  const handleFinal = async (poo) => {
-    if (currentPlanet.dialMode === "EARTH") {
-      await handleRoll(poo);
-      return setPooActive(poo);
-    }
-    return setPooActive(poo);
-  };
-
   const handleClick = async (dhdSymbol) => {
     if (
       inputAddress.length === 7 ||
       inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
+      pooActive ||
       isRolling ||
       processingInput ||
       destLock ||
@@ -132,7 +116,6 @@ const Dhd = ({
         planetName: currentPlanet.planetName,
         poo: dhdSymbol,
       });
-      handleFinal(dhdSymbol);
       return checkMatching(dhdSymbol);
     }
     socket.emit("newInput", {
@@ -145,13 +128,10 @@ const Dhd = ({
   useEffect(() => {
     if (socket) {
       socket.on("lastChev", (poo) => {
-        handleFinal(poo);
+        checkMatching(poo);
       });
       socket.on("wrongAddress", () => {
         dhdFail();
-      });
-      socket.on("dhdCloseGate", () => {
-        dhdCloseGate();
       });
     }
   }, [socket]);

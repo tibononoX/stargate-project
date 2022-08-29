@@ -37,15 +37,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const [destLock, setDestLock] = useState(false);
   const [destinationInfo, setDestinationInfo] = useState({});
+  const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
 
   const [offworld, setOffworld] = useState(false);
-
-  const emitVortex = () => {
-    socket.emit("destLock", { destId: destinationInfo.id });
-  };
-  const emitCloseVortex = () => {
-    socket.emit("close", { destId: destinationInfo.id });
-  };
 
   const resetGate = async () => {
     try {
@@ -72,7 +66,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       setLocking(false);
       setDestLock(false);
       setPooActive(false);
-      // setDestinationInfo({});
+      setDestinationInfo({});
       setOffworld(false);
       setInputAddress([]);
       return setResetting(false);
@@ -140,7 +134,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
         if (gateAddress === destAddress) {
           setDestinationInfo(destination);
-          console.log("desti updated");
+          console.log("dest updated", destination);
           socket.emit("destinationInfo", {
             planetName: currentPlanet.planetName,
             destination,
@@ -168,7 +162,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
       setLocking(true);
       await timeout(400);
       setDestLock(true);
-
       await timeout(600);
       return setLocking(false);
     }
@@ -178,11 +171,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
         import.meta.env.VITE_FRONTEND_SRC_URL
       }/assets/sounds/stargate/chev_usual_7.wav`
     ).play();
-
-    // socket.emit("destLock", {
-    //   planetName: currentPlanet.planetName,
-    //   destinationName,
-    // });
     return setDestLock(true);
   };
 
@@ -213,17 +201,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
     await timeout(rollValues.timing);
   };
 
-  useEffect(() => {
-    if (pooActive !== false) {
-      handleRoll(pooActive);
-    }
-  }, [pooActive]);
-
   const checkMatching = async (poo) => {
     try {
       if (!currentPlanet) {
         return null;
       }
+      setPooActive(poo);
       if (currentPlanet.dialMode !== "EARTH") {
         new Audio(
           `${
@@ -241,7 +224,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       }
 
       if (!match) {
-        lockFail();
+        await lockFail();
         return socket.emit("lockFail", {
           planetName: currentPlanet.planetName,
           poo,
@@ -275,6 +258,22 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   };
 
+  const openSequence = () => {
+    const inbound = currentPlanet.planetName;
+    const outbound = destinationInfo.planetName;
+
+    if (isOpen || !destLock) {
+      return null;
+    }
+
+    socket.emit("openGate", {
+      planetName: inbound,
+      destinationName: outbound,
+    });
+
+    return openGate();
+  };
+
   const closeGate = async () => {
     try {
       new Audio(
@@ -289,6 +288,22 @@ export const Stargate = ({ addressList, windowWidth }) => {
     } catch (err) {
       return console.warn(err);
     }
+  };
+
+  const closingSequence = () => {
+    const inbound = prevPlanet;
+    const outbound = destinationInfo.planetName;
+
+    if (!isOpen) {
+      return null;
+    }
+
+    socket.emit("closeGate", {
+      planetName: inbound,
+      destinationName: outbound,
+    });
+
+    return closeGate();
   };
 
   const offworldSequence = async () => {
@@ -342,16 +357,34 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return setDestLock(true);
   };
 
+  const wrongAddress = async () => {
+    try {
+      await timeout(1200);
+      return resetGate();
+    } catch (err) {
+      return console.warn(err);
+    }
+  };
+
   useEffect(() => {
     if (socket) {
+      socket.on("user join", (user) => {
+        console.warn(`${user.user} joined ${user.planet}`);
+      });
+      socket.on("user left", (user) => {
+        console.warn(`${user.user} left ${user.planet}`);
+      });
       socket.on("newInput", (data) => {
         setInputAddress(data);
       });
       socket.on("destinationInfo", (data) => {
         updateDestination(data);
       });
-      socket.on("lockFail", () => {
-        lockFail();
+      socket.on("wrongAddress", async () => {
+        await wrongAddress();
+      });
+      socket.on("lockFail", async () => {
+        await lockFail();
       });
       socket.on("destLock", () => {
         syncDestLock();
@@ -359,21 +392,17 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("openGate", () => {
         openGate();
       });
-      socket.on("offworldLock", () => {
-        offworldSequence();
+      socket.on("closeGate", () => {
+        closeGate();
       });
-      socket.on("offworldOpen", () => {
+      socket.on("offworldLock", () => {
         setOffworld(true);
-        openGate();
+        offworldSequence();
       });
       socket.on("offworldClose", () => {
         setOffworld(false);
         closeGate();
       });
-      // socket.on("close", () => {
-      //   setOffId(null);
-      //   closeGate();
-      // });
     }
   }, [socket]);
 
@@ -401,13 +430,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   }, [destLock, isOpen]);
 
-  const wrongAddress = async () => {
-    try {
-      await timeout(1200);
-      return resetGate();
-    } catch (err) {
-      return console.warn(err);
-    }
+  const joinPlanet = (planetName) => {
+    socket.emit("join planet", planetName);
   };
 
   const leavePlanet = (planetName) => {
@@ -450,8 +474,13 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (!changeLocation) {
       return console.warn("location not updated");
     }
+    setOffworld(true);
+    setPrevPlanet(currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName);
-    return setCurrentPlanet(destinationInfo);
+    joinPlanet(destinationInfo.planetName);
+    setCurrentPlanet(destinationInfo);
+    await timeout(5000);
+    return closingSequence();
   };
 
   return (
@@ -469,11 +498,11 @@ export const Stargate = ({ addressList, windowWidth }) => {
             <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
           </audio>
         )}
-        {/* {isOpen && currentPlanet?.id === 1 && !offworld && (
+        {isOpen && currentPlanet?.id === 1 && !offworld && (
           <audio loop autoPlay id="sgcAlarm">
             <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
           </audio>
-        )} */}
+        )}
         {offworld && currentPlanet?.id === 1 && (
           <audio loop autoPlay id="sgcAlarm">
             <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
@@ -501,14 +530,13 @@ export const Stargate = ({ addressList, windowWidth }) => {
         destLock={destLock}
         destinationInfo={destinationInfo}
         isOpen={isOpen}
-        openGate={openGate}
-        closeGate={closeGate}
+        openSequence={openSequence}
+        closingSequence={closingSequence}
         wrongAddress={wrongAddress}
         checkMatching={checkMatching}
         dhdActive={dhdActive}
         setDhdActive={setDhdActive}
         offworld={offworld}
-        handleRoll={handleRoll}
       />
     </div>
   );

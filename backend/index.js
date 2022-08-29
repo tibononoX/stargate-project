@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 require("dotenv").config();
 const uniqid = require("uniqid");
 
@@ -32,8 +33,6 @@ const io = require("socket.io")(server, {
 let users = [];
 
 io.on("connection", (socket) => {
-  console.log(io.sockets.adapter.rooms);
-
   socket.on("joinServer", (username) => {
     const user = {
       username,
@@ -44,9 +43,19 @@ io.on("connection", (socket) => {
 
   socket.on("join planet", (planetName) => {
     socket.join(planetName);
+    const user = users.filter((client) => client.id === socket.id);
+    io.in(planetName).emit("user join", {
+      user: user[0]?.username,
+      planet: planetName,
+    });
   });
   socket.on("leave planet", (planetName) => {
     socket.leave(planetName);
+    const user = users.filter((client) => client.id === socket.id);
+    io.in(planetName).emit("user left", {
+      user: user[0]?.username,
+      planet: planetName,
+    });
   });
 
   socket.on("disconnect", () => {
@@ -76,6 +85,28 @@ io.on("connection", (socket) => {
   socket.on("dhdCloseGate", ({ planetName, destinationName }) => {
     socket.to(planetName).emit("dhdCloseGate");
     socket.to(destinationName).emit("offworldClose");
+  });
+
+  socket.on("openGate", ({ planetName, destinationName }) => {
+    const currentClient = users.filter((client) => client.id === socket.id);
+    console.log(
+      `${currentClient[0].username} triggers gate opening from ${planetName} to ${destinationName}`
+    );
+    if (!planetName || !destinationName) {
+      return null;
+    }
+    socket.to(planetName).emit("openGate");
+    socket.to(destinationName).emit("openGate");
+  });
+
+  socket.on("closeGate", ({ planetName, destinationName }) => {
+    const currentClient = users.filter((client) => client.id === socket.id);
+    console.log(
+      `${currentClient[0].username} triggers gate closing from ${planetName} to ${destinationName}`
+    );
+
+    socket.to(planetName).emit("closeGate");
+    socket.to(destinationName).emit("closeGate");
   });
 
   socket.on("dhdOpenGate", ({ planetName, destinationName }) => {
