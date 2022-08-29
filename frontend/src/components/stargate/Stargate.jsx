@@ -461,8 +461,13 @@ export const Stargate = ({ addressList, windowWidth }) => {
       )}.mp3`
     ).play();
     if (!userData) {
+      setPrevPlanet(currentPlanet.planetName);
       leavePlanet(currentPlanet.planetName);
-      return setCurrentPlanet(destinationInfo);
+      joinPlanet(destinationInfo.planetName);
+      setCurrentPlanet(destinationInfo);
+      setOffworld(true);
+      await timeout(5000);
+      return closingSequence();
     }
     const changeLocation = await axios.put(
       `/users/${userData.id}`,
@@ -474,11 +479,11 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (!changeLocation) {
       return console.warn("location not updated");
     }
-    setOffworld(true);
     setPrevPlanet(currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName);
     joinPlanet(destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
+    setOffworld(true);
     await timeout(5000);
     return closingSequence();
   };
