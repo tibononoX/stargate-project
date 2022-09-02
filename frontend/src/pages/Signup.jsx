@@ -51,6 +51,8 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         username: formData.username,
         email: formData.email,
         password: formData.password,
+        gateAddress,
+        planetName,
       };
 
       const newCreatedUserData = await axios
@@ -98,7 +100,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
       initialPlanet();
       return navigate("/");
     } catch (err) {
-      return console.warn(err);
+      return alert(err.response.data);
     }
   };
 

@@ -16,13 +16,14 @@ CREATE TABLE
   );
 
 INSERT INTO
-  user (username, email, password, role)
+  user (username, email, password, role, current_location_id)
 VALUES
   (
     "Tibuntu",
     "thibault-carre@hotmail.fr",
     "$argon2id$v=19$m=4096,t=3,p=1$CdHsErVVfXbTrGdNvL+kGg$O1yRMyGLmMPq2t+khIiaqfdSyzrG5fg4t8XKv7cFbz0",
-    "Admin"
+    "Admin",
+    "2"
   );
 
 CREATE TABLE
