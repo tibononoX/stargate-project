@@ -116,7 +116,7 @@ const Dhd = ({
         planetName: currentPlanet.planetName,
         poo: dhdSymbol,
       });
-      return checkMatching(dhdSymbol);
+      return setPooActive(dhdSymbol);
     }
     socket.emit("newInput", {
       planetName: currentPlanet.planetName,
@@ -127,9 +127,6 @@ const Dhd = ({
 
   useEffect(() => {
     if (socket) {
-      socket.on("lastChev", (poo) => {
-        checkMatching(poo);
-      });
       socket.on("wrongAddress", () => {
         dhdFail();
       });

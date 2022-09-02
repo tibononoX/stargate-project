@@ -206,6 +206,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       if (!currentPlanet) {
         return null;
       }
+      console.log(currentPlanet.planetName);
       setPooActive(poo);
       if (currentPlanet.dialMode !== "EARTH") {
         new Audio(
@@ -386,9 +387,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("lockFail", async () => {
         await lockFail();
       });
-      socket.on("destLock", () => {
-        syncDestLock();
+      socket.on("lastChev", (poo) => {
+        setPooActive(poo);
       });
+      // socket.on("destLock", () => {
+      //   syncDestLock();
+      // });
       socket.on("openGate", () => {
         openGate();
       });
@@ -405,6 +409,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
       });
     }
   }, [socket]);
+
+  useEffect(() => {
+    if (pooActive !== false) {
+      checkMatching(pooActive);
+    }
+  }, [pooActive]);
 
   useEffect(() => {
     if (inputAddress.length > 0 && !resetting && !isRolling) {
