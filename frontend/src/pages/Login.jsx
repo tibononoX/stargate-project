@@ -83,7 +83,9 @@ const Login = ({ initialPlanet }) => {
             }
           />
         </label>
-        <button type="submit">LOG IN</button>
+        <button className="submitButton" type="submit">
+          LOG IN
+        </button>
       </form>
     </div>
   );

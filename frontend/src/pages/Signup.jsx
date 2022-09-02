@@ -47,6 +47,10 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         return alert("Password do not match");
       }
 
+      if (gateAddress.length > 6 || !poo) {
+        return alert("You must enter a gate address");
+      }
+
       const newUserData = {
         username: formData.username,
         email: formData.email,
@@ -134,6 +138,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
             Username:
             <input
               id="username"
+              name="username"
               type="text"
               placeholder="Username"
               required
@@ -185,7 +190,6 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
               }
             />
           </label>
-          <button type="submit">SIGN UP</button>
         </div>
 
         <div className="dhd signup">
@@ -195,6 +199,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
               <input
                 id="planetName"
                 type="text"
+                required
                 value={planetName}
                 placeholder="Planet name"
                 onChange={(e) => setPlanetName(e.target.value)}
@@ -254,6 +259,9 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
             })}
           </ul>
         </div>
+        <button className="submitButton" type="submit">
+          SIGN UP
+        </button>
       </form>
     </div>
   );
