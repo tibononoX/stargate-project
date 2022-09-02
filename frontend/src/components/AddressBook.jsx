@@ -32,7 +32,7 @@ const AddressBook = ({ addressList }) => {
             Show unreachable addresses
           </label>
         </div>
-
+        <p>Number of addresses: {addressList.length}</p>
         {addressList.map((address) => {
           if (
             address.gateAddress.includes(currentPlanet.pooLetter) &&

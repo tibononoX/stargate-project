@@ -303,7 +303,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
       planetName: inbound,
       destinationName: outbound,
     });
-
     return closeGate();
   };
 

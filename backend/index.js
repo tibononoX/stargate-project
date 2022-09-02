@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     users = users.filter((user) => user.id !== socket.id);
   });
-
+  
   socket.on("newInput", ({ planetName, inputAddress }) => {
     socket.to(planetName).emit("newInput", inputAddress);
   });
