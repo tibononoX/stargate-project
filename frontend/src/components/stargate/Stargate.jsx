@@ -134,7 +134,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
         if (gateAddress === destAddress) {
           setDestinationInfo(destination);
-          console.log("dest updated", destination);
           socket.emit("destinationInfo", {
             planetName: currentPlanet.planetName,
             destination,
