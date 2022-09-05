@@ -196,6 +196,12 @@
 
   .currentPlanet {
     margin-top: 10%;
+    .offworld {
+      background-color: rgba(7, 7, 7, 0.5);
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: red;
+    }
   }
 
   .dhd {
