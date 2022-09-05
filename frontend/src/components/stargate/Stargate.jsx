@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState, useEffect, useContext } from "react";
@@ -495,8 +496,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
       <p className="currentPlanet">
         {offworld ? (
           <span className="offworld">OFFWORLD ACTIVATION</span>
-        ) : (
+        ) : !isOpen ? (
           `Current planet: ${currentPlanet?.planetName}`
+        ) : (
+          destinationInfo &&
+          isOpen &&
+          `Wormhole open to ${destinationInfo?.planetName}`
         )}
       </p>
       <div className="stargate">
