@@ -16,7 +16,10 @@ const Dhd = ({
   setPooActive,
   isRolling,
   destLock,
+  ready,
+  opening,
   isOpen,
+  closing,
   openSequence,
   closingSequence,
   wrongAddress,
@@ -49,11 +52,6 @@ const Dhd = ({
   };
 
   const dhdFail = () => {
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/dhd/dhd_usual_fail.mp3`
-    ).play();
     setPooActive(false);
     return wrongAddress();
   };
@@ -78,10 +76,10 @@ const Dhd = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (offworld) {
+      if (offworld || !ready || opening) {
         return null;
       }
-      if (isOpen) {
+      if (isOpen && !closing) {
         return dhdCloseGate();
       }
       if (inputAddress.length === 0 || inputAddress.length === 7) {
