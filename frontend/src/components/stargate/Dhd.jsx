@@ -76,10 +76,10 @@ const Dhd = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (offworld || !ready || opening) {
+      if (offworld || opening || closing) {
         return null;
       }
-      if (isOpen && !closing) {
+      if (isOpen) {
         return dhdCloseGate();
       }
       if (inputAddress.length === 0 || inputAddress.length === 7) {
@@ -88,6 +88,9 @@ const Dhd = ({
       if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
         socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
         return dhdFail();
+      }
+      if (!ready) {
+        return null;
       }
       return dhdOpenGate();
     } catch (err) {
