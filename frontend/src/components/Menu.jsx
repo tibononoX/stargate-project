@@ -8,16 +8,16 @@ const Menu = () => {
   return (
     <ul className="navMenu">
       {!userData && (
-        <li>
+        <li className="navButton">
           <NavLink to="/signup">Sign up</NavLink>
         </li>
       )}
       {!userData ? (
-        <li>
+        <li className="navButton">
           <NavLink to="/login">Log in</NavLink>
         </li>
       ) : (
-        <li>
+        <li className="navButton">
           <NavLink to="/logout">Log out</NavLink>
         </li>
       )}
