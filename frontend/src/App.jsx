@@ -61,8 +61,6 @@ function App() {
     socket.emit("join planet", planetName);
   };
 
-  console.log(userList);
-
   const connect = (planetName) => {
     socket.emit("joinServer", {
       username: userData ? userData.username : guestName,
