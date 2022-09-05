@@ -21,7 +21,7 @@ function App() {
     pooLetter: "A",
     planetName: "Earth",
   });
-
+  const [userRoom, setUserRoom] = useState("");
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [addressList, setAddressList] = useState();
   const [socket, setSocket] = useState(null);
@@ -39,13 +39,18 @@ function App() {
     }
   };
 
+  const leavePlanet = (planetName) => {
+    setUserRoom("");
+    socket.emit("leave planet", planetName);
+  };
+  console.log(userRoom);
   const joinPlanet = (planetName) => {
+    setUserRoom(planetName);
     socket.emit("join planet", planetName);
   };
 
   const connect = () => {
     socket.emit("joinServer", userData ? userData.username : "Guest");
-    socket.emit("join planet", userData ? currentPlanet.planetName : "Earth");
   };
 
   const initialPlanet = async () => {
@@ -72,6 +77,7 @@ function App() {
         return connect();
       }
       setCurrentPlanet({
+        initial: true,
         id: 1,
         gateAddress: "bZEjKc",
         dialMode: "EARTH",
@@ -96,6 +102,9 @@ function App() {
   }, [userData]);
 
   useEffect(() => {
+    if (socket) {
+      leavePlanet();
+    }
     if (socket && !currentPlanet.initial) {
       joinPlanet(currentPlanet.planetName);
     }
