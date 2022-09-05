@@ -40,17 +40,22 @@ function App() {
   };
 
   const leavePlanet = () => {
+    console.log(userRoom);
     socket.emit("leave planet", userRoom);
     setUserRoom("");
   };
-  console.log(userRoom);
   const joinPlanet = (planetName) => {
     setUserRoom(planetName);
     socket.emit("join planet", planetName);
   };
 
   const connect = () => {
-    socket.emit("joinServer", userData ? userData.username : "Guest");
+    socket.emit(
+      "joinServer",
+      userData
+        ? userData.username
+        : `Guest${Math.floor(Math.random() * (9999 - 1000 + 1) + 1000)}`
+    );
   };
 
   const initialPlanet = async () => {

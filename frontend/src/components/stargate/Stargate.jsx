@@ -455,13 +455,15 @@ export const Stargate = ({ addressList, windowWidth }) => {
   }, [isOpen]);
 
   useEffect(() => {
-    if (destLock && !isOpen) {
+    if (destLock && !isOpen && ready) {
       const expires = setTimeout(() => {
-        wrongAddress();
+        if (ready) {
+          wrongAddress();
+        }
       }, 60000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen]);
+  }, [destLock, isOpen, ready]);
 
   useEffect(() => {
     if (!destLock && !isOpen && inputAddress.length > 0) {
@@ -517,7 +519,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return console.warn("location not updated");
     }
     setPrevPlanet(currentPlanet.planetName);
-    leavePlanet(currentPlanet.planetName);
     setCurrentPlanet(destinationInfo);
     setOffworld(true);
     socket.emit("playerTravels", {

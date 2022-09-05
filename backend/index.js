@@ -63,8 +63,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerTravels", ({ planetName, destinationName }) => {
-    io.to(planetName).emit("playerTravels");
-    io.to(destinationName).emit("playerTravels");
+    socket.to(planetName).emit("playerTravels");
+    socket.to(destinationName).emit("playerTravels");
   });
 
   socket.on("disconnect", () => {
@@ -178,8 +178,6 @@ io.on("connection", (socket) => {
     );
     gateStates.splice(outbound);
 
-    console.log(gateStates, gateStates.length);
-
     socket.to(planetName).emit("closeGate");
     socket.to(destinationName).emit("closeGate");
   });
@@ -204,12 +202,5 @@ io.on("connection", (socket) => {
     gateStates[outbound] = { ...gateStates[outbound], isLocked: true };
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
-  });
-
-  socket.on("close", (data) => {
-    if (!data) {
-      console.log("error retrieving socket");
-    }
-    io.emit("close", data);
   });
 });
