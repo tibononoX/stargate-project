@@ -203,7 +203,6 @@ io.on("connection", (socket) => {
   socket.on("dhdOpenGate", ({ planetName, destinationName }) => {
     socket.to(planetName).emit("dhdOpenGate");
     socket.to(planetName).emit("openGate");
-    console.log(destinationName);
     socket.to(destinationName).emit("offworldOpen");
   });
 
@@ -211,11 +210,9 @@ io.on("connection", (socket) => {
     const inbound = gateStates.findIndex(
       (gate) => gate.planetName === planetName
     );
-    console.log("inbound:", inbound);
     const outbound = gateStates.findIndex(
       (gate) => gate.planetName === destinationName
     );
-    console.log("outbound:", outbound);
     gateStates[inbound] = { ...gateStates[inbound], isLocked: true };
     gateStates[outbound] = { ...gateStates[outbound], isLocked: true };
     socket.to(planetName).emit("destLock");
