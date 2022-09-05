@@ -43,7 +43,7 @@ function App() {
     socket.emit("leave planet", userRoom);
     setUserRoom("");
   };
-
+  console.log(userRoom);
   const joinPlanet = (planetName) => {
     setUserRoom(planetName);
     socket.emit("join planet", planetName);
@@ -105,10 +105,8 @@ function App() {
   }, [userData]);
 
   useEffect(() => {
-    if (socket) {
-      leavePlanet();
-    }
     if (socket && !currentPlanet.initial) {
+      leavePlanet();
       joinPlanet(currentPlanet.planetName);
     }
   }, [currentPlanet]);
