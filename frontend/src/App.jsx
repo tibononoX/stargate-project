@@ -43,7 +43,7 @@ function App() {
     socket.emit("leave planet", userRoom);
     setUserRoom("");
   };
-  console.log(userRoom);
+
   const joinPlanet = (planetName) => {
     setUserRoom(planetName);
     socket.emit("join planet", planetName);
@@ -63,7 +63,9 @@ function App() {
           console.warn(
             "Error updating current planet, setting default to Earth"
           );
-          setCurrentPlanet({
+          connect();
+          joinPlanet("Earth");
+          return setCurrentPlanet({
             initial: true,
             id: 1,
             gateAddress: "bZEjKc",
@@ -71,12 +73,14 @@ function App() {
             pooLetter: "A",
             planetName: "Earth",
           });
-          return connect();
         }
-        setCurrentPlanet(userPlanet[0]);
-        return connect();
+        connect();
+        joinPlanet(userPlanet[0].planetName);
+        return setCurrentPlanet(userPlanet[0]);
       }
-      setCurrentPlanet({
+      connect();
+      joinPlanet("Earth");
+      return setCurrentPlanet({
         initial: true,
         id: 1,
         gateAddress: "bZEjKc",
@@ -84,7 +88,6 @@ function App() {
         pooLetter: "A",
         planetName: "Earth",
       });
-      return connect();
     } catch (err) {
       return console.warn(err);
     }

@@ -40,11 +40,14 @@ io.on("connection", (socket) => {
       id: socket.id,
     };
     users.push(user);
+    console.log(users);
+    console.log(user.username, "joined server");
   });
 
   socket.on("join planet", (planetName) => {
     socket.join(planetName);
     const user = users.filter((client) => client.id === socket.id);
+    console.log(user);
     io.in(planetName).emit("user join", {
       user: user[0]?.username,
       planet: planetName,
@@ -81,7 +84,6 @@ io.on("connection", (socket) => {
         isOpen: false,
       };
       gateStates.push(gateStatus);
-      console.log(gateStates.length);
 
       return socket.to(planetName).emit("newInput", inputAddress);
     }
@@ -93,7 +95,6 @@ io.on("connection", (socket) => {
       ...gateStates[inbound],
       currentInputs: inputAddress,
     };
-    console.log(gateStates.length);
 
     return socket.to(planetName).emit("newInput", inputAddress);
   });
@@ -114,11 +115,9 @@ io.on("connection", (socket) => {
         offworld: true,
         isOpen: false,
       };
-      console.log(gateStates.length);
 
       return gateStates.push(gateStatus);
     }
-    console.log(gateStates.length);
 
     return socket.to(planetName).emit("destinationInfo", destination);
   });
@@ -132,7 +131,6 @@ io.on("connection", (socket) => {
       (gate) => gate.planetName === planetName
     );
     gateStates.splice(inbound);
-    console.log(gateStates.length);
 
     socket.to(planetName).emit("wrongAddress");
   });
@@ -144,7 +142,6 @@ io.on("connection", (socket) => {
 
   socket.on("openGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
-    console.log(currentClient);
     console.log(
       `${currentClient[0].username} triggers gate opening from ${planetName} to ${destinationName}`
     );
@@ -161,7 +158,6 @@ io.on("connection", (socket) => {
 
     gateStates[inbound] = { ...gateStates[inbound], isOpen: true };
     gateStates[outbound] = { ...gateStates[outbound], isOpen: true };
-    console.log(gateStates);
     socket.to(planetName).emit("openGate");
     return socket.to(destinationName).emit("openGate");
   });
