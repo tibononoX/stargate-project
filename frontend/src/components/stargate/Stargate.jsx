@@ -466,8 +466,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   }, [destLock, isOpen, chevrons]);
 
-  const leavePlanet = (planetName) => {
-    socket.emit("leave planet", planetName);
+  const leavePlanet = (planetName, destinationName) => {
+    socket.emit("leave planet", planetName, destinationName);
   };
 
   useEffect(() => {
@@ -525,7 +525,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
     setPrevPlanet(currentPlanet.planetName);
     console.log("prev planet:", currentPlanet.planetName);
-    leavePlanet(currentPlanet.planetName);
+    leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
     console.log("next planet:", destinationInfo.planetName);
     setOffworld(true);

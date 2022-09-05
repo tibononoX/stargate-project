@@ -49,24 +49,34 @@ io.on("connection", (socket) => {
     io.emit("user connected", users);
   });
 
-  socket.on("join planet", (planetName, cb) => {
+  socket.on("join planet", (planetName) => {
     socket.join(planetName);
     const userIndex = users.findIndex((person) => person.id === socket.id);
     users[userIndex] = { ...users[userIndex], currentPlanet: planetName };
     const user = users.filter((client) => client.id === socket.id);
-    io.in(planetName).emit("user join", {
-      user: user[0]?.username,
-      planet: planetName,
-    });
+    io.in(planetName).emit(
+      "user join",
+      {
+        user: user[0]?.username,
+        planet: planetName,
+      },
+      users
+    );
   });
 
-  socket.on("leave planet", (planetName) => {
+  socket.on("leave planet", (planetName, destinationName) => {
     socket.leave(planetName);
+    const userIndex = users.findIndex((person) => person.id === socket.id);
+    users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
     const user = users.filter((client) => client.id === socket.id);
-    io.in(planetName).emit("user left", {
-      user: user[0]?.username,
-      planet: planetName,
-    });
+    io.in(planetName).emit(
+      "user left",
+      {
+        user: user[0]?.username,
+        planet: planetName,
+      },
+      users
+    );
   });
 
   socket.on("fetchUsers", (cb) => {

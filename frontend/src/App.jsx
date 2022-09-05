@@ -59,7 +59,6 @@ function App() {
   const joinPlanet = (planetName) => {
     setUserRoom(planetName);
     socket.emit("join planet", planetName);
-    fetchUsers();
   };
 
   console.log(userList);
@@ -126,10 +125,12 @@ function App() {
       socket.on("disconnect", () => {
         leavePlanet();
       });
-      socket.on("user join", (user) => {
-        console.warn(`${user.user} joined ${user.planet}`);
+      socket.on("user join", (client, clients) => {
+        setUserList(clients);
+        console.warn(`${client.user} joined ${client.planet}`);
       });
-      socket.on("user left", (client) => {
+      socket.on("user left", (client, clients) => {
+        setUserList(clients);
         console.warn(`${client.user} left ${client.planet}`);
       });
     }
