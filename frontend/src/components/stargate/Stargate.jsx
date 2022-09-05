@@ -384,12 +384,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   useEffect(() => {
     if (socket) {
-      socket.on("user join", (user) => {
-        console.warn(`${user.user} joined ${user.planet}`);
-      });
-      socket.on("user left", (user) => {
-        console.warn(`${user.user} left ${user.planet}`);
-      });
       socket.on("newInput", (data) => {
         setInputAddress(data);
       });

@@ -2,8 +2,9 @@ import { useContext, useState } from "react";
 import AddressBook from "@components/AddressBook";
 import { Stargate } from "@components/stargate/Stargate";
 import PlanetContext from "@contexts/PlanetContext";
+import UserList from "@components/UserList";
 
-const StargatePage = ({ addressList, windowWidth }) => {
+const StargatePage = ({ userList, addressList, windowWidth }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
 
@@ -22,6 +23,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
       {addressBookOpen && addressList && (
         <AddressBook addressList={addressList} />
       )}
+      <UserList userList={userList} currentPlanet={currentPlanet} />
     </div>
   );
 };

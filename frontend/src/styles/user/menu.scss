@@ -8,7 +8,6 @@
 
   .navButton {
     margin: 0px;
-    padding: 8px;
     background-color: rgb(65, 63, 63);
     transition: 100ms;
     border: solid 2px rgb(61, 45, 37);
@@ -24,9 +23,16 @@
     }
 
     a {
+      padding: 8px;
       text-decoration: none;
       transition: 100ms;
       color: rgb(119, 115, 113);
     }
   }
+}
+
+.connectedInfo {
+  position: fixed;
+  top: 25px;
+  right: 2px;
 }

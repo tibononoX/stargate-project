@@ -76,7 +76,7 @@ const Dhd = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (offworld || opening || closing) {
+      if (offworld || opening || closing || isRolling) {
         return null;
       }
       if (isOpen) {

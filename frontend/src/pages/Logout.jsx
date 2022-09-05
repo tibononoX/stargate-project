@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import UserContext from "@contexts/UserContext";
 
 const Logout = () => {
-  const { userData, setUserData } = useContext(UserContext);
+  const { userData, setUserData, socket } = useContext(UserContext);
   const navigate = useNavigate();
 
   const logout = async () => {

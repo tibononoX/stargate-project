@@ -1,0 +1,16 @@
+.userInfos {
+  position: fixed;
+  right: 0;
+  top: 60px;
+
+  .userList {
+    list-style: none;
+    li {
+      background-color: rgba(78, 72, 69, 0.5);
+
+      &.colorAdmin {
+        color: red;
+      }
+    }
+  }
+}
