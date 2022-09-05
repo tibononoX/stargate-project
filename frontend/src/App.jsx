@@ -39,9 +39,9 @@ function App() {
     }
   };
 
-  const leavePlanet = (planetName) => {
+  const leavePlanet = () => {
+    socket.emit("leave planet", userRoom);
     setUserRoom("");
-    socket.emit("leave planet", planetName);
   };
   console.log(userRoom);
   const joinPlanet = (planetName) => {
