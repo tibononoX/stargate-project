@@ -389,9 +389,15 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("lastChev", (poo) => {
         setPooActive(poo);
       });
-      // socket.on("destLock", () => {
-      //   syncDestLock();
-      // });
+      socket.on("playerTravels", () => {
+        new Audio(
+          `${
+            import.meta.env.VITE_FRONTEND_SRC_URL
+          }/assets/sounds/stargate/teleport_${Math.floor(
+            Math.random() * (8 - 1) + 1
+          )}.mp3`
+        ).play();
+      });
       socket.on("openGate", () => {
         openGate();
       });
@@ -487,6 +493,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
     leavePlanet(currentPlanet.planetName);
     setCurrentPlanet(destinationInfo);
     setOffworld(true);
+    socket.emit("playerTravels", {
+      planetName: currentPlanet.planetName,
+      destinationName: destinationInfo.planetName,
+    });
     await timeout(5000);
     return closingSequence();
   };

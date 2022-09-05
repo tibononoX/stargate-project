@@ -59,6 +59,11 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("playerTravels", ({ planetName, destinationName }) => {
+    io.in(planetName).emit("playerTravels");
+    io.in(destinationName).emit("playerTravels");
+  });
+
   socket.on("disconnect", () => {
     users = users.filter((user) => user.id !== socket.id);
   });
