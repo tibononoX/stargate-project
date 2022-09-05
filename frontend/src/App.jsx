@@ -111,7 +111,6 @@ function App() {
 
   useEffect(() => {
     if (socket && !currentPlanet.initial) {
-      leavePlanet();
       joinPlanet(currentPlanet.planetName);
     }
   }, [currentPlanet]);

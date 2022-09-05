@@ -68,7 +68,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    users = users.filter((user) => user.id !== socket.id);
+    const [user] = users.filter((client) => client.id === socket.id);
+    console.log(user?.username, "left server");
+    users = users.filter((client) => client.id !== socket.id);
   });
 
   socket.on("newInput", ({ planetName, inputAddress }) => {
@@ -133,11 +135,6 @@ io.on("connection", (socket) => {
     gateStates.splice(inbound);
 
     socket.to(planetName).emit("wrongAddress");
-  });
-
-  socket.on("dhdCloseGate", ({ planetName, destinationName }) => {
-    socket.to(planetName).emit("dhdCloseGate");
-    socket.to(destinationName).emit("offworldClose");
   });
 
   socket.on("openGate", ({ planetName, destinationName }) => {
