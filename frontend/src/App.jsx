@@ -11,6 +11,10 @@ import Logout from "@pages/Logout";
 import "@styles/app.scss";
 import Signup from "@pages/Signup";
 
+const guestName = `Guest${Math.floor(
+  Math.random() * (9999 - 1000 + 1) + 1000
+)}`;
+
 function App() {
   const [userData, setUserData] = useState(null);
   const [currentPlanet, setCurrentPlanet] = useState({
@@ -22,6 +26,7 @@ function App() {
     planetName: "Earth",
   });
   const [userRoom, setUserRoom] = useState("");
+  const [userList, setUserList] = useState([]);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [addressList, setAddressList] = useState();
   const [socket, setSocket] = useState(null);
@@ -39,23 +44,34 @@ function App() {
     }
   };
 
-  const leavePlanet = () => {
-    console.log(userRoom);
-    socket.emit("leave planet", userRoom);
-    setUserRoom("");
+  const fetchUsers = async () => {
+    await socket.emit("getUserList", (userlist) => setUserList(userlist));
   };
+
+  const leavePlanet = () => {
+    setUserRoom("");
+    socket.emit("leave planet", userRoom, (socketData) => {
+      setUserList([]);
+      setUserList(socketData);
+    });
+  };
+
   const joinPlanet = (planetName) => {
     setUserRoom(planetName);
     socket.emit("join planet", planetName);
   };
 
-  const connect = () => {
-    socket.emit(
-      "joinServer",
-      userData
-        ? userData.username
-        : `Guest${Math.floor(Math.random() * (9999 - 1000 + 1) + 1000)}`
-    );
+  console.log(userList);
+
+  const connect = (planetName) => {
+    socket.emit("joinServer", {
+      username: userData ? userData.username : guestName,
+      currentPlanet: planetName,
+    });
+
+    socket.emit("fetchUsers", (users) => {
+      setUserList(users);
+    });
   };
 
   const initialPlanet = async () => {
@@ -68,7 +84,7 @@ function App() {
           console.warn(
             "Error updating current planet, setting default to Earth"
           );
-          connect();
+          connect("Earth");
           joinPlanet("Earth");
           return setCurrentPlanet({
             initial: true,
@@ -79,11 +95,11 @@ function App() {
             planetName: "Earth",
           });
         }
-        connect();
+        connect(userPlanet[0].planetName);
         joinPlanet(userPlanet[0].planetName);
         return setCurrentPlanet(userPlanet[0]);
       }
-      connect();
+      connect("Earth");
       joinPlanet("Earth");
       return setCurrentPlanet({
         initial: true,
@@ -103,16 +119,33 @@ function App() {
       const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
       setSocket(socketServer);
     }
+
+    if (socket) {
+      socket.on("user connected", (clients) => setUserList(clients));
+      socket.on("disconnect", () => {
+        leavePlanet();
+      });
+      socket.on("user join", (client, clients) => {
+        setUserList(clients);
+        console.warn(`${client.user} joined ${client.planet}`);
+      });
+      socket.on("user left", (client, clients) => {
+        setUserList(clients);
+        console.warn(`${client.user} left ${client.planet}`);
+      });
+    }
   }, [socket]);
 
   useEffect(() => {
     initialPlanet();
+    fetchUsers();
   }, [userData]);
 
   useEffect(() => {
     if (socket && !currentPlanet.initial) {
       joinPlanet(currentPlanet.planetName);
     }
+    fetchUsers();
   }, [currentPlanet]);
 
   const fetchAddressList = async () => {
@@ -143,15 +176,30 @@ function App() {
   return (
     <div className={currentPlanet?.id !== 1 ? "App sky" : "App"}>
       {/* eslint-disable-next-line react/jsx-no-constructed-context-values */}
-      <UserContext.Provider value={{ userData, setUserData, socket }}>
+      <UserContext.Provider
+        value={{ guestName, userData, setUserData, socket }}
+      >
         <PlanetContext.Provider value={{ currentPlanet, setCurrentPlanet }}>
           <Router>
             <Menu />
             <Routes>
               <Route
+                path="*"
+                element={
+                  <StargatePage
+                    userList={userList}
+                    currentPlanet={currentPlanet}
+                    addressList={addressList}
+                    windowWidth={windowWidth}
+                  />
+                }
+              />
+              <Route
                 path="/"
                 element={
                   <StargatePage
+                    userList={userList}
+                    currentPlanet={currentPlanet}
                     addressList={addressList}
                     windowWidth={windowWidth}
                   />
@@ -170,7 +218,10 @@ function App() {
                 path="/login"
                 element={<Login initialPlanet={initialPlanet} />}
               />
-              <Route path="/logout" element={<Logout />} />
+              <Route
+                path="/logout"
+                element={<Logout setSocket={setSocket} />}
+              />
             </Routes>
           </Router>
         </PlanetContext.Provider>

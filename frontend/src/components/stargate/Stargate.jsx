@@ -384,12 +384,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   useEffect(() => {
     if (socket) {
-      socket.on("user join", (user) => {
-        console.warn(`${user.user} joined ${user.planet}`);
-      });
-      socket.on("user left", (user) => {
-        console.warn(`${user.user} left ${user.planet}`);
-      });
       socket.on("newInput", (data) => {
         setInputAddress(data);
       });
@@ -472,8 +466,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   }, [destLock, isOpen, chevrons]);
 
-  const leavePlanet = (planetName) => {
-    socket.emit("leave planet", planetName);
+  const leavePlanet = (planetName, destinationName) => {
+    socket.emit("leave planet", planetName, destinationName);
   };
 
   useEffect(() => {
@@ -531,7 +525,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
     setPrevPlanet(currentPlanet.planetName);
     console.log("prev planet:", currentPlanet.planetName);
-    leavePlanet(currentPlanet.planetName);
+    leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
     console.log("next planet:", destinationInfo.planetName);
     setOffworld(true);
