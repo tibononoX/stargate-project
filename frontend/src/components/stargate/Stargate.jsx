@@ -296,10 +296,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   };
 
-  const closingSequence = () => {
-    const inbound = prevPlanet;
-    const outbound = destinationInfo.planetName;
-
+  const closingSequence = (inbound, outbound) => {
+    console.log(inbound, outbound);
     if (!isOpen) {
       return null;
     }
@@ -455,13 +453,15 @@ export const Stargate = ({ addressList, windowWidth }) => {
   }, [isOpen]);
 
   useEffect(() => {
-    if (destLock && !isOpen) {
+    if (destLock && !isOpen && ready) {
       const expires = setTimeout(() => {
-        wrongAddress();
+        if (ready) {
+          wrongAddress();
+        }
       }, 60000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen]);
+  }, [destLock, isOpen, ready]);
 
   useEffect(() => {
     if (!destLock && !isOpen && inputAddress.length > 0) {
@@ -475,6 +475,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const leavePlanet = (planetName) => {
     socket.emit("leave planet", planetName);
   };
+
+  useEffect(() => {
+    setPrevPlanet(currentPlanet.planetName);
+  }, [userData]);
 
   const travelGate = async () => {
     if (offworld) {
@@ -500,11 +504,20 @@ export const Stargate = ({ addressList, windowWidth }) => {
     ).play();
     if (!userData) {
       setPrevPlanet(currentPlanet.planetName);
+      console.log("prev planet:", currentPlanet.planetName);
       leavePlanet(currentPlanet.planetName);
       setCurrentPlanet(destinationInfo);
+      console.log("next planet:", destinationInfo.planetName);
       setOffworld(true);
+      socket.emit("playerTravels", {
+        planetName: currentPlanet.planetName,
+        destinationName: destinationInfo.planetName,
+      });
       await timeout(5000);
-      return closingSequence();
+      return closingSequence(
+        currentPlanet.planetName,
+        destinationInfo.planetName
+      );
     }
     const changeLocation = await axios.put(
       `/users/${userData.id}`,
@@ -517,15 +530,20 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return console.warn("location not updated");
     }
     setPrevPlanet(currentPlanet.planetName);
+    console.log("prev planet:", currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName);
     setCurrentPlanet(destinationInfo);
+    console.log("next planet:", destinationInfo.planetName);
     setOffworld(true);
     socket.emit("playerTravels", {
       planetName: currentPlanet.planetName,
       destinationName: destinationInfo.planetName,
     });
     await timeout(5000);
-    return closingSequence();
+    return closingSequence(
+      currentPlanet.planetName,
+      destinationInfo.planetName
+    );
   };
 
   return (

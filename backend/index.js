@@ -63,12 +63,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerTravels", ({ planetName, destinationName }) => {
-    io.to(planetName).emit("playerTravels");
-    io.to(destinationName).emit("playerTravels");
+    socket.to(planetName).emit("playerTravels");
+    socket.to(destinationName).emit("playerTravels");
   });
 
   socket.on("disconnect", () => {
-    users = users.filter((user) => user.id !== socket.id);
+    const [user] = users.filter((client) => client.id === socket.id);
+    console.log(user?.username, "left server");
+    users = users.filter((client) => client.id !== socket.id);
   });
 
   socket.on("newInput", ({ planetName, inputAddress }) => {
@@ -135,11 +137,6 @@ io.on("connection", (socket) => {
     socket.to(planetName).emit("wrongAddress");
   });
 
-  socket.on("dhdCloseGate", ({ planetName, destinationName }) => {
-    socket.to(planetName).emit("dhdCloseGate");
-    socket.to(destinationName).emit("offworldClose");
-  });
-
   socket.on("openGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
     console.log(
@@ -178,8 +175,6 @@ io.on("connection", (socket) => {
     );
     gateStates.splice(outbound);
 
-    console.log(gateStates, gateStates.length);
-
     socket.to(planetName).emit("closeGate");
     socket.to(destinationName).emit("closeGate");
   });
@@ -204,12 +199,5 @@ io.on("connection", (socket) => {
     gateStates[outbound] = { ...gateStates[outbound], isLocked: true };
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
-  });
-
-  socket.on("close", (data) => {
-    if (!data) {
-      console.log("error retrieving socket");
-    }
-    io.emit("close", data);
   });
 });
