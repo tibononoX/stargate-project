@@ -60,8 +60,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerTravels", ({ planetName, destinationName }) => {
-    io.in(planetName).emit("playerTravels");
-    io.in(destinationName).emit("playerTravels");
+    io.to(planetName).emit("playerTravels");
+    io.to(destinationName).emit("playerTravels");
   });
 
   socket.on("disconnect", () => {
