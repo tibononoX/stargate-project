@@ -31,7 +31,7 @@ const UserList = ({ userList, currentPlanet }) => {
                   ? "s"
                   : ""
               } on ${currentPlanet.planetName}`
-            : `user${userList.length > 1 && "s"} connected`}
+            : `user${userList.length > 1 ? "s" : ""} connected`}
         </p>
         <label htmlFor="oneway">
           <input
