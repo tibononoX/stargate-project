@@ -1,16 +1,16 @@
 /* eslint-disable no-case-declarations */
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
+import audioSelector from "@services/audio";
+import UserContext from "@contexts/UserContext";
 
 const Ring = ({ rollData, setIsRolling }) => {
+  const { audioVolume } = useContext(UserContext);
   const handleRoll = async () => {
     try {
       if (rollData.reset) {
         setIsRolling(true);
-        const rollSound = new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/stargate/ringRollFail.wav`
-        );
+
+        const rollSound = audioSelector(audioVolume, "ringRollFail");
         rollSound.play();
 
         return setTimeout(() => {
@@ -20,11 +20,7 @@ const Ring = ({ rollData, setIsRolling }) => {
         }, rollData.timing);
       }
       setIsRolling(true);
-      const rollSound = new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/ringRoll.wav`
-      );
+      const rollSound = audioSelector(audioVolume, "ringRoll");
       rollSound.play();
 
       return setTimeout(() => {

@@ -25,14 +25,22 @@ html {
   overflow: hidden;
   background-color: rgb(121, 110, 103);
 
+  .volumeControl {
+    display: flex;
+    .volumeRange {
+      display: flex;
+      width: 120px;
+      justify-content: space-between;
+      z-index: 50;
+
+      input {
+        width: 80px;
+      }
+    }
+  }
+
   &.sky {
     background-color: rgb(163, 139, 71);
-
-    // background: linear-gradient(
-    //   0deg,
-    //   rgba(236, 246, 247, 1) 40%,
-    //   rgba(102, 186, 217, 1) 83%
-    // );
   }
 
   .background {
@@ -85,21 +93,37 @@ html {
 }
 
 @media screen and (min-width: 650px) {
-  .openAddressBook {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: rgb(65, 63, 63);
-    border: solid 2px rgb(61, 45, 37);
-    color: rgb(119, 115, 113);
-    padding: 8px 16px;
-    border-radius: 0 0 1rem 0;
-    transition: 100ms;
+  .App {
+    .volumeControl {
+      display: flex;
+      .volumeRange {
+        display: flex;
+        width: 200px;
+        justify-content: space-between;
+        z-index: 50;
 
-    &:hover {
-      border: solid 2px rgb(231, 89, 26);
-      color: rgb(238, 127, 79);
-      cursor: pointer;
+        input {
+          width: 150px;
+        }
+      }
+    }
+
+    .openAddressBook {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgb(65, 63, 63);
+      border: solid 2px rgb(61, 45, 37);
+      color: rgb(119, 115, 113);
+      padding: 8px 16px;
+      border-radius: 0 0 1rem 0;
+      transition: 100ms;
+
+      &:hover {
+        border: solid 2px rgb(231, 89, 26);
+        color: rgb(238, 127, 79);
+        cursor: pointer;
+      }
     }
   }
 }

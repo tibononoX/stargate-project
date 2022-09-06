@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useState, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
+import audioSelector from "@services/audio";
 import PlanetContext from "@contexts/PlanetContext";
 import UserContext from "@contexts/UserContext";
 
@@ -27,7 +28,7 @@ const Dhd = ({
   setDhdActive,
   offworld,
 }) => {
-  const { socket } = useContext(UserContext);
+  const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [dhdOpen, setDhdOpen] = useState(false);
 
@@ -57,11 +58,7 @@ const Dhd = ({
   };
 
   const dhdOpenGate = () => {
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/dhd/dhd_usual_dial.wav`
-    ).play();
+    audioSelector(audioVolume, "dhdOpen");
     setDhdActive(true);
     return openSequence();
   };
@@ -111,11 +108,25 @@ const Dhd = ({
       return null;
     }
     if (inputAddress.length === 6) {
+      if (currentPlanet.dialMode !== "EARTH") {
+        audioSelector(
+          audioVolume,
+          "dhdInput",
+          inputAddress.length === 0 ? 1 : inputAddress.length + 1
+        );
+      }
       socket.emit("lastChev", {
         planetName: currentPlanet.planetName,
         poo: dhdSymbol,
       });
       return setPooActive(dhdSymbol);
+    }
+    if (currentPlanet.dialMode !== "EARTH") {
+      audioSelector(
+        audioVolume,
+        "dhdInput",
+        inputAddress.length === 0 ? 1 : inputAddress.length + 1
+      );
     }
     socket.emit("newInput", {
       planetName: currentPlanet.planetName,
