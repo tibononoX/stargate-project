@@ -460,11 +460,13 @@ export const Stargate = ({ addressList, windowWidth }) => {
   useEffect(() => {
     if (!destLock && !isOpen && inputAddress.length > 0) {
       const expires = setTimeout(() => {
-        wrongAddress();
+        if (inputAddress.length > 0) {
+          wrongAddress();
+        }
       }, 60000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen, chevrons]);
+  }, [destLock, isOpen, chevrons, inputAddress.length]);
 
   const leavePlanet = (planetName, destinationName) => {
     socket.emit("leave planet", planetName, destinationName);
