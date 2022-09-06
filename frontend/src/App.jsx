@@ -19,7 +19,7 @@ function App() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [userData, setUserData] = useState(null);
   const [audioVolume, setAudioVolume] = useState(
-    windowWidth >= 650 ? localStorage.getItem("volume") : 0.8
+    windowWidth >= 650 ? 0.5 : 0.8
   );
   const [currentPlanet, setCurrentPlanet] = useState({
     initial: true,
