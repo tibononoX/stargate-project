@@ -21,7 +21,10 @@ const UserList = ({ userList, currentPlanet }) => {
                 : user.currentPlanet === currentPlanet.planetName;
             }).length
           }{" "}
-          {showAll ? "currently connected" : "on current planet"}
+          {showAll
+            ? "currently connected"
+            : `on current planet (
+          ${userList.length} total)`}
         </p>
         <label htmlFor="oneway">
           <input
