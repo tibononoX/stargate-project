@@ -48,7 +48,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const resetGate = async () => {
     try {
-      handleChev(null, setChevrons);
       const rollValues = rollCalc(
         {
           id: 1,
@@ -63,6 +62,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       await timeout(rollValues.timing);
       audioSelector(audioVolume, "chevEnd");
       await timeout(150);
+      handleChev(null, setChevrons);
       setLocking(false);
       setDestLock(false);
       setPooActive(false);
@@ -231,6 +231,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
     const inbound = currentPlanet.planetName;
     const outbound = destinationInfo.planetName;
 
+    console.warn("Opening link from", inbound, "to", outbound);
+
     if (isOpen || !destLock) {
       return null;
     }
@@ -258,7 +260,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const closingSequence = (inbound, outbound) => {
-    console.log(inbound, outbound);
+    console.warn("Closing link from", inbound, "to", outbound);
     if (!isOpen) {
       return null;
     }
@@ -409,10 +411,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
     audioSelector(audioVolume, "travelWormhole");
     if (!userData) {
       setPrevPlanet(currentPlanet.planetName);
-      console.log("prev planet:", currentPlanet.planetName);
+      console.warn("prev planet:", currentPlanet.planetName);
       leavePlanet(currentPlanet.planetName);
       setCurrentPlanet(destinationInfo);
-      console.log("next planet:", destinationInfo.planetName);
+      console.warn("next planet:", destinationInfo.planetName);
       setOffworld(true);
       socket.emit("playerTravels", {
         planetName: currentPlanet.planetName,
@@ -435,10 +437,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return console.warn("location not updated");
     }
     setPrevPlanet(currentPlanet.planetName);
-    console.log("prev planet:", currentPlanet.planetName);
+    console.warn("prev planet:", currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
-    console.log("next planet:", destinationInfo.planetName);
+    console.warn("next planet:", destinationInfo.planetName);
     setOffworld(true);
     socket.emit("playerTravels", {
       planetName: currentPlanet.planetName,
