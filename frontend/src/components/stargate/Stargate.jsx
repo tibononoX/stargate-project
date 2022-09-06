@@ -272,25 +272,26 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const offworldSequence = async () => {
-    audioSelector(audioVolume, "dhdChev", 1);
+    const volume = audioVolume;
+    audioSelector(volume, "dhdChev", 1);
     handleChev(1, setChevrons);
     await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 2);
+    audioSelector(volume, "dhdChev", 2);
     handleChev(2, setChevrons);
     await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 3);
+    audioSelector(volume, "dhdChev", 3);
     handleChev(3, setChevrons);
     await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 4);
+    audioSelector(volume, "dhdChev", 4);
     handleChev(4, setChevrons);
     await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 5);
+    audioSelector(volume, "dhdChev", 5);
     handleChev(5, setChevrons);
     await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 6);
+    audioSelector(volume, "dhdChev", 6);
     handleChev(6, setChevrons);
     await timeout(300);
-    audioSelector(audioVolume, "dhdChev", 7);
+    audioSelector(volume, "dhdChev", 7);
     return setDestLock(true);
   };
 
@@ -449,6 +450,22 @@ export const Stargate = ({ addressList, windowWidth }) => {
       destinationInfo.planetName
     );
   };
+  useEffect(() => {
+    const openVortexAudio = document.getElementById("wormholeLoopAudio");
+    if (openVortexAudio !== null) {
+      openVortexAudio.volume = audioVolume;
+    }
+    const sgcAlarmAudio = document.getElementById("sgcAlarmAudio");
+    if (sgcAlarmAudio !== null) {
+      sgcAlarmAudio.volume = audioVolume;
+    }
+    const sgcOffworldAlarmAudio = document.getElementById(
+      "sgcOffworldAlarmAudio"
+    );
+    if (sgcOffworldAlarmAudio !== null) {
+      sgcOffworldAlarmAudio.volume = audioVolume;
+    }
+  }, [isOpen, offworld]);
 
   return (
     <div className="gameContainer">
@@ -465,17 +482,17 @@ export const Stargate = ({ addressList, windowWidth }) => {
       </p>
       <div className="stargate">
         {isOpen && (
-          <audio loop autoPlay id="wormholeLoop">
+          <audio loop autoPlay id="wormholeLoopAudio">
             <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
           </audio>
         )}
         {isOpen && currentPlanet?.id === 1 && !offworld && (
-          <audio loop autoPlay id="sgcAlarm">
+          <audio loop autoPlay id="sgcAlarmAudio">
             <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
           </audio>
         )}
         {offworld && currentPlanet?.id === 1 && (
-          <audio loop autoPlay id="sgcAlarm">
+          <audio loop autoPlay id="sgcOffworldAlarmAudio">
             <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
           </audio>
         )}
