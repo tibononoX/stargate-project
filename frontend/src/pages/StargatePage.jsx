@@ -12,21 +12,23 @@ const StargatePage = ({ userList, addressList, windowWidth }) => {
 
   return (
     <div className="page">
-      <div className="volumeControl">
-        <label className="volumeRange">
-          {Math.floor(audioVolume * 100)}%
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.02}
-            value={audioVolume}
-            onChange={(event) => {
-              setAudioVolume(event.target.valueAsNumber);
-            }}
-          />
-        </label>
-      </div>
+      {windowWidth >= 650 && (
+        <div className="volumeControl">
+          <label className="volumeRange">
+            {Math.floor(audioVolume * 100)}%
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.02}
+              value={audioVolume}
+              onChange={(event) => {
+                setAudioVolume(event.target.valueAsNumber);
+              }}
+            />
+          </label>
+        </div>
+      )}
 
       {currentPlanet?.id !== 1 && <div className="background" />}
       <Stargate addressList={addressList} windowWidth={windowWidth} />

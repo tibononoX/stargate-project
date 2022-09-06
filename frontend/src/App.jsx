@@ -16,8 +16,11 @@ const guestName = `Guest${Math.floor(
 )}`;
 
 function App() {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [userData, setUserData] = useState(null);
-  const [audioVolume, setAudioVolume] = useState(0.25);
+  const [audioVolume, setAudioVolume] = useState(
+    windowWidth >= 650 ? 0.25 : 0.8
+  );
   const [currentPlanet, setCurrentPlanet] = useState({
     initial: true,
     id: 1,
@@ -28,7 +31,6 @@ function App() {
   });
   const [userRoom, setUserRoom] = useState("");
   const [userList, setUserList] = useState([]);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [addressList, setAddressList] = useState();
   const [socket, setSocket] = useState(null);
 
