@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import AddressBook from "@components/AddressBook";
 import { Stargate } from "@components/stargate/Stargate";
 import PlanetContext from "@contexts/PlanetContext";
@@ -9,6 +9,10 @@ const StargatePage = ({ userList, addressList, windowWidth }) => {
   const { audioVolume, setAudioVolume } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("volume", audioVolume);
+  }, [audioVolume]);
 
   return (
     <div className="page">
@@ -22,8 +26,8 @@ const StargatePage = ({ userList, addressList, windowWidth }) => {
               max={1}
               step={0.02}
               value={audioVolume}
-              onChange={(event) => {
-                setAudioVolume(event.target.valueAsNumber);
+              onChange={(e) => {
+                setAudioVolume(e.target.valueAsNumber);
               }}
             />
           </label>
