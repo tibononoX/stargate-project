@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import socketIOClient from "socket.io-client  ";
@@ -19,7 +20,11 @@ function App() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [userData, setUserData] = useState(null);
   const [audioVolume, setAudioVolume] = useState(
-    windowWidth >= 650 ? 0.5 : 0.8
+    localStorage.getItem("volume")
+      ? localStorage.getItem("volume")
+      : windowWidth >= 650
+      ? 0.5
+      : 0.8
   );
   const [currentPlanet, setCurrentPlanet] = useState({
     initial: true,

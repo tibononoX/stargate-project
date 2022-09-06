@@ -17,6 +17,7 @@ const Dhd = ({
   setPooActive,
   isRolling,
   destLock,
+  destinationInfo,
   ready,
   opening,
   isOpen,
@@ -65,7 +66,7 @@ const Dhd = ({
 
   const dhdCloseGate = async () => {
     setDhdActive(false);
-    closingSequence();
+    closingSequence(currentPlanet.planetName, destinationInfo.planetName);
     await timeout(2700);
     return setPooActive(false);
   };

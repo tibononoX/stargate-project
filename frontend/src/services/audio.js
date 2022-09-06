@@ -11,6 +11,16 @@ const audioSelector = (volume, type, chev = null) => {
       );
       break;
 
+    case "wormholeSound":
+      audio = new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/wormholeLoop.wav`
+      );
+      audio.volume = volume;
+      audio.loop = true;
+      return audio.play();
+
     case "travelWormhole":
       audio = new Audio(
         `${

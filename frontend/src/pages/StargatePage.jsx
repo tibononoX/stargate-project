@@ -22,6 +22,7 @@ const StargatePage = ({ userList, addressList, windowWidth }) => {
             {Math.floor(audioVolume * 100)}%
             <input
               type="range"
+              title="Volume slider"
               min={0}
               max={1}
               step={0.02}
