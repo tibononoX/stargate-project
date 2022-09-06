@@ -5,7 +5,7 @@ import "@styles/userList.scss";
 
 const UserList = ({ userList, currentPlanet }) => {
   const [open, setOpen] = useState(false);
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
 
   return (
     <div className="userInfos">
@@ -17,14 +17,21 @@ const UserList = ({ userList, currentPlanet }) => {
           {
             userList?.filter((user) => {
               return showAll
-                ? user
-                : user.currentPlanet === currentPlanet.planetName;
+                ? user.currentPlanet === currentPlanet.planetName
+                : user;
             }).length
           }{" "}
           {showAll
-            ? "currently connected"
-            : `on current planet (
-          ${userList.length} total)`}
+            ? `user${
+                userList
+                  .filter(
+                    (user) => user.currentPlanet === currentPlanet.planetName
+                  )
+                  .map((user) => user).length > 1
+                  ? "s"
+                  : ""
+              } on ${currentPlanet.planetName}`
+            : `user${userList.length > 1 && "s"} connected`}
         </p>
         <label htmlFor="oneway">
           <input
@@ -34,13 +41,13 @@ const UserList = ({ userList, currentPlanet }) => {
             title="Switch between all users and current planet users."
             onClick={() => setShowAll(!showAll)}
           />
-          Everyone
+          Planet filter
         </label>
         {userList
           .filter((user) => {
             return showAll
-              ? user
-              : user.currentPlanet === currentPlanet.planetName;
+              ? user.currentPlanet === currentPlanet.planetName
+              : user;
           })
           .map((user) => (
             <li>
