@@ -17,6 +17,7 @@ const guestName = `Guest${Math.floor(
 
 function App() {
   const [userData, setUserData] = useState(null);
+  const [audioVolume, setAudioVolume] = useState(0.25);
   const [currentPlanet, setCurrentPlanet] = useState({
     initial: true,
     id: 1,
@@ -175,7 +176,14 @@ function App() {
     <div className={currentPlanet?.id !== 1 ? "App sky" : "App"}>
       {/* eslint-disable-next-line react/jsx-no-constructed-context-values */}
       <UserContext.Provider
-        value={{ guestName, userData, setUserData, socket }}
+        value={{
+          audioVolume,
+          setAudioVolume,
+          guestName,
+          userData,
+          setUserData,
+          socket,
+        }}
       >
         <PlanetContext.Provider value={{ currentPlanet, setCurrentPlanet }}>
           <Router>

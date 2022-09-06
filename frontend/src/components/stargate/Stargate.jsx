@@ -8,6 +8,7 @@ import SG1Render from "@components/graphics/Stargate/SG1Render";
 import UserContext from "@contexts/UserContext";
 import PlanetContext from "@contexts/PlanetContext";
 import { rollCalc, handleChev } from "@services/dial";
+import audioSelector from "@services/audio";
 import Dhd from "./Dhd";
 
 function timeout(ms) {
@@ -17,7 +18,7 @@ function timeout(ms) {
 const chevInit = [false, false, false, false, false, false, false, false];
 
 export const Stargate = ({ addressList, windowWidth }) => {
-  const { userData, socket } = useContext(UserContext);
+  const { audioVolume, userData, socket } = useContext(UserContext);
   const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
   const [inputAddress, setInputAddress] = useState([]);
   const [processingInput, setProcessingInput] = useState(false);
@@ -60,14 +61,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
       setRingPosition(rollValues.position);
       setRollData({ ...rollValues, reset: true });
       await timeout(rollValues.timing);
-
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/chev_usual_end.wav`
-      ).play();
+      audioSelector(audioVolume, "chevEnd");
       await timeout(150);
-
       setLocking(false);
       setDestLock(false);
       setPooActive(false);
@@ -91,33 +86,25 @@ export const Stargate = ({ addressList, windowWidth }) => {
         setRollData(rollValues);
 
         await timeout(rollValues.timing - 200);
-        new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/stargate/chev_lock1.mp3`
-        ).play();
+        audioSelector(audioVolume, "earthChev");
         setLocking(true);
         await timeout(700);
         setLockChev(true);
         handleChev(inputAddress.length, setChevrons);
         await timeout(350);
         setLocking(false);
-        await timeout(620);
+        await timeout(700);
         setLockChev(false);
         return setProcessingInput(false);
       }
-      new Audio(
-        `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/dhd/dhd_usual_${
-          inputAddress.length
-        }.wav`
-      ).play();
+
       setProcessingInput(true);
       await timeout(300);
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/chev_usual_${inputAddress.length}.wav`
-      ).play();
+      audioSelector(
+        audioVolume,
+        "dhdChev",
+        inputAddress.length === 0 ? 1 : inputAddress.length + 1
+      );
       handleChev(inputAddress.length, setChevrons);
       return setProcessingInput(false);
     } catch (err) {
@@ -159,11 +146,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const lockDest = async () => {
     if (currentPlanet.dialMode === "EARTH") {
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/chev_usual_lock2.wav`
-      ).play();
+      audioSelector(audioVolume, "earthLock");
       setLocking(true);
       await timeout(400);
       setDestLock(true);
@@ -172,22 +155,14 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return setLocking(false);
     }
     await timeout(800);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_7.wav`
-    ).play();
+    audioSelector(audioVolume, "dhdLock");
     setReady(true);
     return setDestLock(true);
   };
   const lockFail = async () => {
     if (currentPlanet.dialMode === "EARTH") {
       console.warn("wrong Address");
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/chev_usual_2.wav`
-      ).play();
+      audioSelector(audioVolume, "earthLockFail");
       setLocking(true);
       await timeout(400);
       setDestLock(false);
@@ -195,7 +170,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return false;
     }
 
-    console.warn("wrong Address");
+    console.warn("Wrong address");
     return false;
   };
 
@@ -213,20 +188,14 @@ export const Stargate = ({ addressList, windowWidth }) => {
         return null;
       }
       setPooActive(poo);
-      if (currentPlanet.dialMode !== "EARTH") {
-        new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/dhd/dhd_usual_${inputAddress.length}.wav`
-        ).play();
-      }
       if (currentPlanet.dialMode === "EARTH") {
         await handleRoll(poo);
       }
       const match = await compareAddresses();
 
       if (currentPlanet.pooLetter !== poo.letter) {
-        return console.warn("wrong poo");
+        await lockFail();
+        return console.warn("Wrong poo");
       }
 
       if (!match) {
@@ -248,11 +217,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const openGate = async () => {
     try {
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/gateOpen.wav`
-      ).play();
+      audioSelector(audioVolume, "gateOpen");
       await timeout(1200);
       setIsOpen(true);
       await timeout(1500);
@@ -281,11 +246,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const closeGate = async () => {
     try {
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/gateClose.wav`
-      ).play();
+      audioSelector(audioVolume, "gateClose");
       await timeout(2400);
       setIsOpen(false);
       await timeout(100);
@@ -311,65 +272,34 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const offworldSequence = async () => {
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_1.wav`
-    ).play();
+    audioSelector(audioVolume, "dhdChev", 1);
     handleChev(1, setChevrons);
-    await timeout(200);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_2.wav`
-    ).play();
+    await timeout(250);
+    audioSelector(audioVolume, "dhdChev", 2);
     handleChev(2, setChevrons);
-    await timeout(200);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_3.wav`
-    ).play();
+    await timeout(250);
+    audioSelector(audioVolume, "dhdChev", 3);
     handleChev(3, setChevrons);
-    await timeout(200);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_4.wav`
-    ).play();
+    await timeout(250);
+    audioSelector(audioVolume, "dhdChev", 4);
     handleChev(4, setChevrons);
-    await timeout(200);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_5.wav`
-    ).play();
+    await timeout(250);
+    audioSelector(audioVolume, "dhdChev", 5);
     handleChev(5, setChevrons);
-    await timeout(200);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_6.wav`
-    ).play();
+    await timeout(250);
+    audioSelector(audioVolume, "dhdChev", 6);
     handleChev(6, setChevrons);
-    await timeout(200);
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/chev_usual_7.wav`
-    ).play();
+    await timeout(300);
+    audioSelector(audioVolume, "dhdChev", 7);
     return setDestLock(true);
   };
 
   const wrongAddress = async () => {
     console.warn("Dialing failed");
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/dhd/dhd_usual_fail.mp3`
-    ).play();
+    audioSelector(audioVolume, "dialFail");
     try {
       await timeout(1200);
+      setLocking(false);
       return setResetting(true);
     } catch (err) {
       return console.warn(err);
@@ -400,13 +330,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         setPooActive(poo);
       });
       socket.on("playerTravels", () => {
-        new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/stargate/teleport_${Math.floor(
-            Math.random() * (8 - 1) + 1
-          )}.mp3`
-        ).play();
+        audioSelector(audioVolume, "travelWormhole");
       });
       socket.on("openGate", () => {
         openGate();
@@ -466,7 +390,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       }, 60000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen, chevrons, inputAddress.length]);
+  }, [destLock, isOpen, inputAddress.length]);
 
   const leavePlanet = (planetName, destinationName) => {
     socket.emit("leave planet", planetName, destinationName);
@@ -478,26 +402,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const travelGate = async () => {
     if (offworld) {
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/roblox-death.mp3`
-      ).play();
-      return new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/teleport_${Math.floor(
-          Math.random() * (8 - 1) + 1
-        )}.mp3`
-      ).play();
+      audioSelector(audioVolume, "robloxDeath");
+      return audioSelector(audioVolume, "travelWormhole");
     }
-    new Audio(
-      `${
-        import.meta.env.VITE_FRONTEND_SRC_URL
-      }/assets/sounds/stargate/teleport_${Math.floor(
-        Math.random() * (8 - 1) + 1
-      )}.mp3`
-    ).play();
+    audioSelector(audioVolume, "travelWormhole");
     if (!userData) {
       setPrevPlanet(currentPlanet.planetName);
       console.log("prev planet:", currentPlanet.planetName);
