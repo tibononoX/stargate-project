@@ -61,6 +61,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
         handleChev(null, setChevrons);
       }
       if (
+        rollData.position === currentPlanet.poo.position &&
+        ringPosition === currentPlanet.poo.position
+      ) {
+        audioSelector(audioVolume, "chevEnd");
+      }
+      if (
         rollData.position !== currentPlanet.poo.position &&
         ringPosition !== currentPlanet.poo.position
       ) {
@@ -158,7 +164,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
           });
           socket.emit("destLock", {
             planetName: currentPlanet.planetName,
-            destination: newPlanet.planetName,
+            destinationName: newPlanet.planetName,
           });
           return true;
         }
