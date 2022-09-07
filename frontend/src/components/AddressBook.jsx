@@ -56,7 +56,12 @@ const AddressBook = ({ addressList }) => {
             ) {
               return (
                 <li className="planet oneway" key={address.id}>
-                  <h3>{address.planetName}</h3>
+                  <h3>
+                    {address.planetName}{" "}
+                    {currentPlanet.planetName === address.planetName
+                      ? "(current location)"
+                      : ""}
+                  </h3>
                   <h4>
                     Address:{" "}
                     <span className="glyphs">{address.gateAddress}</span>
@@ -76,7 +81,12 @@ const AddressBook = ({ addressList }) => {
             ) {
               return (
                 <li className="planet unreachable" key={address.id}>
-                  <h3>{address.planetName}</h3>
+                  <h3>
+                    {address.planetName}{" "}
+                    {currentPlanet.planetName === address.planetName
+                      ? "(current location)"
+                      : ""}
+                  </h3>
                   <h4>
                     Address:{" "}
                     <span className="glyphs">{address.gateAddress}</span>
@@ -92,7 +102,12 @@ const AddressBook = ({ addressList }) => {
             }
             return (
               <li className="planet" key={address.id}>
-                <h3>{address.planetName}</h3>
+                <h3>
+                  {address.planetName}{" "}
+                  {currentPlanet.planetName === address.planetName
+                    ? "(current location)"
+                    : ""}
+                </h3>
                 <h4>
                   Address: <span className="glyphs">{address.gateAddress}</span>
                 </h4>
