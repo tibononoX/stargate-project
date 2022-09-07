@@ -33,25 +33,65 @@ const AddressBook = ({ addressList }) => {
           </label>
         </div>
         <p>Number of addresses: {addressList.length}</p>
-        {addressList.map((address) => {
-          if (
-            address.gateAddress.includes(currentPlanet.pooLetter) &&
-            !showUnreachable
-          ) {
-            return null;
-          }
-          if (
-            currentPlanet.gateAddress.includes(address.pooLetter) &&
-            !showOneWay
-          ) {
-            return null;
-          }
-          if (
-            currentPlanet.gateAddress.includes(address.pooLetter) &&
-            showOneWay
-          ) {
+        {addressList
+          .sort((a, b) =>
+            a.planetName.toLowerCase().localeCompare(b.planetName.toLowerCase())
+          )
+          .map((address) => {
+            if (
+              address.gateAddress.includes(currentPlanet.pooLetter) &&
+              !showUnreachable
+            ) {
+              return null;
+            }
+            if (
+              currentPlanet.gateAddress.includes(address.pooLetter) &&
+              !showOneWay
+            ) {
+              return null;
+            }
+            if (
+              currentPlanet.gateAddress.includes(address.pooLetter) &&
+              showOneWay
+            ) {
+              return (
+                <li className="planet oneway" key={address.id}>
+                  <h3>{address.planetName}</h3>
+                  <h4>
+                    Address:{" "}
+                    <span className="glyphs">{address.gateAddress}</span>
+                  </h4>
+                  {currentPlanet.id === address.id && (
+                    <h4>
+                      Point of Origin:{" "}
+                      <span className="glyphs">{address.pooLetter}</span>
+                    </h4>
+                  )}
+                </li>
+              );
+            }
+            if (
+              address.gateAddress.includes(currentPlanet.pooLetter) &&
+              showUnreachable
+            ) {
+              return (
+                <li className="planet unreachable" key={address.id}>
+                  <h3>{address.planetName}</h3>
+                  <h4>
+                    Address:{" "}
+                    <span className="glyphs">{address.gateAddress}</span>
+                  </h4>
+                  {currentPlanet.id === address.id && (
+                    <h4>
+                      Point of Origin:{" "}
+                      <span className="glyphs">{address.pooLetter}</span>
+                    </h4>
+                  )}
+                </li>
+              );
+            }
             return (
-              <li className="planet oneway" key={address.id}>
+              <li className="planet" key={address.id}>
                 <h3>{address.planetName}</h3>
                 <h4>
                   Address: <span className="glyphs">{address.gateAddress}</span>
@@ -64,41 +104,7 @@ const AddressBook = ({ addressList }) => {
                 )}
               </li>
             );
-          }
-          if (
-            address.gateAddress.includes(currentPlanet.pooLetter) &&
-            showUnreachable
-          ) {
-            return (
-              <li className="planet unreachable" key={address.id}>
-                <h3>{address.planetName}</h3>
-                <h4>
-                  Address: <span className="glyphs">{address.gateAddress}</span>
-                </h4>
-                {currentPlanet.id === address.id && (
-                  <h4>
-                    Point of Origin:{" "}
-                    <span className="glyphs">{address.pooLetter}</span>
-                  </h4>
-                )}
-              </li>
-            );
-          }
-          return (
-            <li className="planet" key={address.id}>
-              <h3>{address.planetName}</h3>
-              <h4>
-                Address: <span className="glyphs">{address.gateAddress}</span>
-              </h4>
-              {currentPlanet.id === address.id && (
-                <h4>
-                  Point of Origin:{" "}
-                  <span className="glyphs">{address.pooLetter}</span>
-                </h4>
-              )}
-            </li>
-          );
-        })}
+          })}
       </ul>
     </div>
   );
