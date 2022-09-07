@@ -219,7 +219,7 @@
     &.open {
       bottom: 0;
       background: none;
-      backdrop-filter: blur(4px);
+      backdrop-filter: none;
     }
 
     .buttonList {
