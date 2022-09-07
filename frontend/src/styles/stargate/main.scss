@@ -65,6 +65,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  max-height: 40vh;
   background-color: rgba(61, 58, 58, 0);
   padding: 28px 20px 4px 20px;
   transition: 500ms;
@@ -90,7 +91,7 @@
 
   .showHide {
     position: absolute;
-    background-color: rgb(65, 63, 63);
+    background-color: rgba(61, 58, 58, 0.7);
     border: solid 2px rgb(61, 45, 37);
     color: rgb(119, 115, 113);
     padding: 2px 48px;
@@ -205,10 +206,20 @@
   }
 
   .dhd {
-    bottom: 0;
+    bottom: -273px;
     padding: 28px 0 0 0;
+
     .showHide {
-      display: none;
+      display: block;
+      &.hide {
+        border-radius: 50% 50% 0 0;
+      }
+    }
+
+    &.open {
+      bottom: 0;
+      background: none;
+      backdrop-filter: blur(4px);
     }
 
     .buttonList {
