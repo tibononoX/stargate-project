@@ -1,13 +1,13 @@
-const rollSpeed = 400;
+const rollSpeed = 40;
 
 export const updateInput = (inputAddress, letter) => {
   const updatedInput = inputAddress + letter;
   return updatedInput;
 };
 
-export const rollCalc = (symbol, ringPosition) => {
+export const rollCalc = (symbol, ringPosition, instant = false) => {
   const diff = Math.abs((ringPosition - symbol.position) / 9.23);
-  const timing = rollSpeed * diff;
+  const timing = instant ? 0 : rollSpeed * diff;
 
   return { timing, position: symbol.position };
 };

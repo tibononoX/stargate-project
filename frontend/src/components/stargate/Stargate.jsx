@@ -7,6 +7,7 @@ import "@styles/stargate/main.scss";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
 import UserContext from "@contexts/UserContext";
 import PlanetContext from "@contexts/PlanetContext";
+import symbols from "@services/gateSymbols";
 import { rollCalc, handleChev } from "@services/dial";
 import audioSelector from "@services/audio";
 import Dhd from "./Dhd";
@@ -26,9 +27,11 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const [resetting, setResetting] = useState(false);
 
   const [ringPosition, setRingPosition] = useState(0);
-  const [rollData, setRollData] = useState({});
+  const [rollData, setRollData] = useState({
+    timing: 0,
+    position: currentPlanet.poo.position,
+  });
   const [isRolling, setIsRolling] = useState(false);
-
   const [dhdActive, setDhdActive] = useState(false);
 
   const [ready, setReady] = useState(false);
@@ -46,23 +49,33 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const [offworld, setOffworld] = useState(false);
 
+  useEffect(() => {
+    setRingPosition(currentPlanet.poo.position);
+    setRollData({ ...rollData, position: currentPlanet.poo.position });
+  }, [currentPlanet]);
+
   const resetGate = async () => {
+    const currentDialMode = currentPlanet.dialMode;
     try {
-      const rollValues = rollCalc(
-        {
-          id: 1,
-          letter: "A",
-          label: "Earth",
-          position: 0,
-        },
-        ringPosition
-      );
-      setRingPosition(rollValues.position);
-      setRollData({ ...rollValues, reset: true });
-      await timeout(rollValues.timing);
-      audioSelector(audioVolume, "chevEnd");
-      await timeout(150);
-      handleChev(null, setChevrons);
+      if (currentDialMode === "EARTH") {
+        handleChev(null, setChevrons);
+      }
+      if (
+        rollData.position !== currentPlanet.poo.position &&
+        ringPosition !== currentPlanet.poo.position
+      ) {
+        const rollValues = rollCalc(currentPlanet.poo, ringPosition);
+        setRingPosition(rollValues.position);
+        setRollData({ ...rollValues, reset: true });
+        await timeout(rollValues.timing - 200);
+        audioSelector(audioVolume, "chevEnd");
+        await timeout(200);
+      }
+      if (currentDialMode !== "EARTH") {
+        handleChev(null, setChevrons);
+        audioSelector(audioVolume, "chevEnd");
+      }
+      setRollData({});
       setLocking(false);
       setDestLock(false);
       setPooActive(false);
@@ -99,6 +112,13 @@ export const Stargate = ({ addressList, windowWidth }) => {
       }
 
       setProcessingInput(true);
+      if (currentPlanet.dialMode !== "EARTH") {
+        audioSelector(
+          audioVolume,
+          "dhdInput",
+          inputAddress.length === 0 ? 1 : inputAddress.length + 1
+        );
+      }
       await timeout(300);
       audioSelector(
         audioVolume,
@@ -126,14 +146,19 @@ export const Stargate = ({ addressList, windowWidth }) => {
         const { gateAddress } = destination;
 
         if (gateAddress === destAddress) {
-          setDestinationInfo(destination);
+          const [poo] = symbols.filter(
+            (symbol) => symbol.letter === destination.pooLetter
+          );
+          const newPlanet = { ...destination, poo };
+          delete newPlanet.pooLetter;
+          setDestinationInfo(newPlanet);
           socket.emit("destinationInfo", {
             planetName: currentPlanet.planetName,
-            destination,
+            destination: newPlanet,
           });
           socket.emit("destLock", {
             planetName: currentPlanet.planetName,
-            destinationName: destination.planetName,
+            destination: newPlanet.planetName,
           });
           return true;
         }
@@ -151,8 +176,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
       await timeout(400);
       setDestLock(true);
       await timeout(600);
-      setReady(true);
-      return setLocking(false);
+      setLocking(false);
+      await timeout(200);
+      return setReady(true);
     }
     await timeout(800);
     audioSelector(audioVolume, "dhdLock");
@@ -174,7 +200,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return false;
   };
 
-  const handleRoll = async (poo) => {
+  const handleRollPoo = async (poo) => {
     const rollValues = rollCalc(poo, ringPosition);
     setRingPosition(rollValues.position);
     setRollData(rollValues);
@@ -184,16 +210,23 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const checkMatching = async (poo) => {
     try {
+      if (currentPlanet.dialMode !== "EARTH") {
+        audioSelector(
+          audioVolume,
+          "dhdInput",
+          inputAddress.length === 0 ? 1 : inputAddress.length + 1
+        );
+      }
       if (!currentPlanet) {
         return null;
       }
       setPooActive(poo);
       if (currentPlanet.dialMode === "EARTH") {
-        await handleRoll(poo);
+        await handleRollPoo(poo);
       }
       const match = await compareAddresses();
 
-      if (currentPlanet.pooLetter !== poo.letter) {
+      if (currentPlanet.poo.letter !== poo.letter) {
         await lockFail();
         return console.warn("Wrong poo");
       }
@@ -251,7 +284,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       audioSelector(audioVolume, "gateClose");
       await timeout(2400);
       setIsOpen(false);
-      await timeout(100);
+      await timeout(500);
       setClosing(false);
       return await resetGate();
     } catch (err) {
@@ -322,9 +355,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
       });
       socket.on("destinationInfo", (data) => {
         updateDestination(data);
-      });
-      socket.on("wrongAddress", async () => {
-        await wrongAddress();
       });
       socket.on("lockFail", async () => {
         await lockFail();
@@ -408,40 +438,31 @@ export const Stargate = ({ addressList, windowWidth }) => {
       audioSelector(audioVolume, "robloxDeath");
       return audioSelector(audioVolume, "travelWormhole");
     }
+
     audioSelector(audioVolume, "travelWormhole");
-    if (!userData) {
-      setPrevPlanet(currentPlanet.planetName);
-      console.warn("prev planet:", currentPlanet.planetName);
-      leavePlanet(currentPlanet.planetName);
-      setCurrentPlanet(destinationInfo);
-      console.warn("next planet:", destinationInfo.planetName);
-      setOffworld(true);
-      socket.emit("playerTravels", {
-        planetName: currentPlanet.planetName,
-        destinationName: destinationInfo.planetName,
-      });
-      await timeout(5000);
-      return closingSequence(
-        currentPlanet.planetName,
-        destinationInfo.planetName
+
+    if (userData) {
+      const changeLocation = await axios.put(
+        `/users/${userData.id}`,
+        {
+          currentLocationId: destinationInfo.id,
+        },
+        { withCredentials: true }
       );
+      if (!changeLocation) {
+        console.warn("User location not updated");
+      }
     }
-    const changeLocation = await axios.put(
-      `/users/${userData.id}`,
-      {
-        currentLocationId: destinationInfo.id,
-      },
-      { withCredentials: true }
-    );
-    if (!changeLocation) {
-      return console.warn("location not updated");
-    }
+
     setPrevPlanet(currentPlanet.planetName);
     console.warn("prev planet:", currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
     console.warn("next planet:", destinationInfo.planetName);
     setOffworld(true);
+    const rollValues = rollCalc(destinationInfo.poo, ringPosition, true);
+    setRingPosition(rollValues.position);
+    setRollData(rollValues);
     socket.emit("playerTravels", {
       planetName: currentPlanet.planetName,
       destinationName: destinationInfo.planetName,

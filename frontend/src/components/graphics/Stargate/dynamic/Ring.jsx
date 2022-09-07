@@ -7,20 +7,15 @@ const Ring = ({ rollData, setIsRolling }) => {
   const { audioVolume } = useContext(UserContext);
   const handleRoll = async () => {
     try {
-      if (rollData.reset) {
-        setIsRolling(true);
-
-        const rollSound = audioSelector(audioVolume, "ringRollFail");
-        rollSound.play();
-
-        return setTimeout(() => {
-          rollSound.pause();
-          rollSound.currentTime = 0;
-          setIsRolling(false);
-        }, rollData.timing);
+      if (rollData.instant) {
+        return null;
       }
+
       setIsRolling(true);
-      const rollSound = audioSelector(audioVolume, "ringRoll");
+      const rollSound = audioSelector(
+        audioVolume,
+        rollData.reset ? "ringRollFail" : "ringRoll"
+      );
       rollSound.play();
 
       return setTimeout(() => {
