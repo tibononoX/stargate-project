@@ -9,7 +9,7 @@
     color: rgb(214, 214, 214);
 
     list-style: none;
-    max-height: 35vh;
+    max-height: 40vh;
     overflow-y: auto;
 
     .filters {
@@ -67,7 +67,7 @@
 @media screen and (min-width: 650px) {
   .addressBook {
     .planetList {
-      max-height: 60vh;
+      max-height: 55vh;
       .planet {
         .glyphs {
           font-size: 2rem;
