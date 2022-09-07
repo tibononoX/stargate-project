@@ -19,7 +19,7 @@ const AddressBook = ({ addressList }) => {
               title="Tip: Those destinations point of origin is also in your current planet's address, you can travel to them, but can not come back."
               onClick={() => setShowOneWay(!showOneWay)}
             />
-            Show one-way addresses
+            Show <span className="oneWayText">one-way</span> addresses
           </label>
           <label htmlFor="unreachable">
             <input
@@ -29,7 +29,7 @@ const AddressBook = ({ addressList }) => {
               title="Tip: Those destinations are not reachable, you can not travel to them because your point of origin is also in those destinations addresses."
               onClick={() => setShowUnreachable(!showUnreachable)}
             />
-            Show unreachable addresses
+            Show <span className="unreachableText">unreachable</span> addresses
           </label>
         </div>
         <p>Number of addresses: {addressList.length}</p>
