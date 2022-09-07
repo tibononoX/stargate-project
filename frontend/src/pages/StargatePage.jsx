@@ -14,43 +14,45 @@ const StargatePage = ({ userList, addressList, windowWidth }) => {
     localStorage.setItem("volume", audioVolume);
   }, [audioVolume]);
 
-  return (
-    <div className="page">
-      {windowWidth >= 650 && (
-        <div className="volumeControl">
-          <label className="volumeRange">
-            {Math.floor(audioVolume * 100)}%
-            <input
-              type="range"
-              title="Volume slider"
-              min={0}
-              max={1}
-              step={0.02}
-              value={audioVolume}
-              onChange={(e) => {
-                setAudioVolume(e.target.valueAsNumber);
-              }}
-            />
-          </label>
-        </div>
-      )}
+  if (currentPlanet) {
+    return (
+      <div className="page">
+        {windowWidth >= 650 && (
+          <div className="volumeControl">
+            <label className="volumeRange">
+              {Math.floor(audioVolume * 100)}%
+              <input
+                type="range"
+                title="Volume slider"
+                min={0}
+                max={1}
+                step={0.02}
+                value={audioVolume}
+                onChange={(e) => {
+                  setAudioVolume(e.target.valueAsNumber);
+                }}
+              />
+            </label>
+          </div>
+        )}
 
-      {currentPlanet?.id !== 1 && <div className="background" />}
-      <Stargate addressList={addressList} windowWidth={windowWidth} />
-      {currentPlanet?.id !== 1 && <div className="frontground" />}
-      <button
-        type="button"
-        className="openAddressBook"
-        onClick={() => setAddressBookOpen(!addressBookOpen)}
-      >
-        Address Book
-      </button>
-      {addressBookOpen && addressList && (
-        <AddressBook addressList={addressList} />
-      )}
-      <UserList userList={userList} currentPlanet={currentPlanet} />
-    </div>
-  );
+        {currentPlanet?.id !== 1 && <div className="background" />}
+        <Stargate addressList={addressList} windowWidth={windowWidth} />
+        {currentPlanet?.id !== 1 && <div className="frontground" />}
+        <button
+          type="button"
+          className="openAddressBook"
+          onClick={() => setAddressBookOpen(!addressBookOpen)}
+        >
+          Address Book
+        </button>
+        {addressBookOpen && addressList && (
+          <AddressBook addressList={addressList} />
+        )}
+        <UserList userList={userList} currentPlanet={currentPlanet} />
+      </div>
+    );
+  }
 };
 
 export default StargatePage;

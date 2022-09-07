@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import socketIOClient from "socket.io-client  ";
 import PlanetContext from "@contexts/PlanetContext";
 import UserContext from "@contexts/UserContext";
+import symbols from "@services/gateSymbols";
 import axios from "@services/axios";
 import Menu from "@components/Menu";
 import StargatePage from "@pages/StargatePage";
@@ -26,14 +27,7 @@ function App() {
       ? 0.5
       : 0.8
   );
-  const [currentPlanet, setCurrentPlanet] = useState({
-    initial: true,
-    id: 1,
-    gateAddress: "bZEjKc",
-    dialMode: "EARTH",
-    pooLetter: "A",
-    planetName: "Earth",
-  });
+  const [currentPlanet, setCurrentPlanet] = useState();
   const [userRoom, setUserRoom] = useState("");
   const [userList, setUserList] = useState([]);
   const [addressList, setAddressList] = useState();
@@ -85,7 +79,14 @@ function App() {
       if (userData) {
         const userPlanet = await addressList
           .filter((planet) => planet.id === userData.current_location_id)
-          .map((planet) => planet);
+          .map((planet) => {
+            const [poo] = symbols.filter(
+              (symbol) => symbol.letter === planet.pooLetter
+            );
+            const newPlanet = { ...planet, poo };
+            delete newPlanet.pooLetter;
+            return newPlanet;
+          });
         if (!userPlanet) {
           console.warn(
             "Error updating current planet, setting default to Earth"
@@ -97,7 +98,12 @@ function App() {
             id: 1,
             gateAddress: "bZEjKc",
             dialMode: "EARTH",
-            pooLetter: "A",
+            poo: {
+              id: 1,
+              letter: "A",
+              label: "Earth",
+              position: 0,
+            },
             planetName: "Earth",
           });
         }
@@ -112,7 +118,12 @@ function App() {
         id: 1,
         gateAddress: "bZEjKc",
         dialMode: "EARTH",
-        pooLetter: "A",
+        poo: {
+          id: 1,
+          letter: "A",
+          label: "Earth",
+          position: 0,
+        },
         planetName: "Earth",
       });
     } catch (err) {

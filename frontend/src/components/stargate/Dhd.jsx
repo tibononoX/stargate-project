@@ -109,25 +109,11 @@ const Dhd = ({
       return null;
     }
     if (inputAddress.length === 6) {
-      if (currentPlanet.dialMode !== "EARTH") {
-        audioSelector(
-          audioVolume,
-          "dhdInput",
-          inputAddress.length === 0 ? 1 : inputAddress.length + 1
-        );
-      }
       socket.emit("lastChev", {
         planetName: currentPlanet.planetName,
         poo: dhdSymbol,
       });
       return setPooActive(dhdSymbol);
-    }
-    if (currentPlanet.dialMode !== "EARTH") {
-      audioSelector(
-        audioVolume,
-        "dhdInput",
-        inputAddress.length === 0 ? 1 : inputAddress.length + 1
-      );
     }
     socket.emit("newInput", {
       planetName: currentPlanet.planetName,
