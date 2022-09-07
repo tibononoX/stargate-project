@@ -438,37 +438,22 @@ export const Stargate = ({ addressList, windowWidth }) => {
       audioSelector(audioVolume, "robloxDeath");
       return audioSelector(audioVolume, "travelWormhole");
     }
+
     audioSelector(audioVolume, "travelWormhole");
-    if (!userData) {
-      setPrevPlanet(currentPlanet.planetName);
-      console.warn("prev planet:", currentPlanet.planetName);
-      leavePlanet(currentPlanet.planetName);
-      setCurrentPlanet(destinationInfo);
-      console.warn("next planet:", destinationInfo.planetName);
-      setOffworld(true);
-      const rollValues = rollCalc(destinationInfo.poo, ringPosition, true);
-      setRingPosition(rollValues.position);
-      setRollData(rollValues);
-      socket.emit("playerTravels", {
-        planetName: currentPlanet.planetName,
-        destinationName: destinationInfo.planetName,
-      });
-      await timeout(5000);
-      return closingSequence(
-        currentPlanet.planetName,
-        destinationInfo.planetName
+
+    if (userData) {
+      const changeLocation = await axios.put(
+        `/users/${userData.id}`,
+        {
+          currentLocationId: destinationInfo.id,
+        },
+        { withCredentials: true }
       );
+      if (!changeLocation) {
+        console.warn("User location not updated");
+      }
     }
-    const changeLocation = await axios.put(
-      `/users/${userData.id}`,
-      {
-        currentLocationId: destinationInfo.id,
-      },
-      { withCredentials: true }
-    );
-    if (!changeLocation) {
-      return console.warn("location not updated");
-    }
+
     setPrevPlanet(currentPlanet.planetName);
     console.warn("prev planet:", currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
