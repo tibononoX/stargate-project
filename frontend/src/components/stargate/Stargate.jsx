@@ -223,19 +223,16 @@ export const Stargate = ({ addressList, windowWidth }) => {
           inputAddress.length === 0 ? 1 : inputAddress.length + 1
         );
       }
-      if (!currentPlanet) {
-        return null;
-      }
       setPooActive(poo);
       if (currentPlanet.dialMode === "EARTH") {
         await handleRollPoo(poo);
       }
-      const match = await compareAddresses();
 
       if (currentPlanet.poo.letter !== poo.letter) {
         await lockFail();
         return console.warn("Wrong poo");
       }
+      const match = await compareAddresses();
 
       if (!match) {
         await lockFail();
@@ -415,10 +412,21 @@ export const Stargate = ({ addressList, windowWidth }) => {
         if (ready) {
           wrongAddress();
         }
-      }, 60000);
+      }, 15000);
       return () => clearTimeout(expires);
     }
   }, [destLock, isOpen, ready]);
+
+  useEffect(() => {
+    if (offworld && !isOpen) {
+      const expires = setTimeout(() => {
+        if (!isOpen) {
+          wrongAddress();
+        }
+      }, 15800);
+      return () => clearTimeout(expires);
+    }
+  }, [offworld, isOpen]);
 
   useEffect(() => {
     if (!destLock && !isOpen && inputAddress.length > 0) {
@@ -426,7 +434,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         if (inputAddress.length > 0) {
           wrongAddress();
         }
-      }, 60000);
+      }, 15000);
       return () => clearTimeout(expires);
     }
   }, [destLock, isOpen, inputAddress.length]);
