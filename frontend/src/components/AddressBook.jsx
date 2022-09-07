@@ -56,10 +56,12 @@ const AddressBook = ({ addressList }) => {
                 <h4>
                   Address: <span className="glyphs">{address.gateAddress}</span>
                 </h4>
-                <h4>
-                  Point of Origin:{" "}
-                  <span className="glyphs">{address.pooLetter}</span>
-                </h4>
+                {currentPlanet.id === address.id && (
+                  <h4>
+                    Point of Origin:{" "}
+                    <span className="glyphs">{address.pooLetter}</span>
+                  </h4>
+                )}
               </li>
             );
           }
@@ -73,10 +75,12 @@ const AddressBook = ({ addressList }) => {
                 <h4>
                   Address: <span className="glyphs">{address.gateAddress}</span>
                 </h4>
-                <h4>
-                  Point of Origin:{" "}
-                  <span className="glyphs">{address.pooLetter}</span>
-                </h4>
+                {currentPlanet.id === address.id && (
+                  <h4>
+                    Point of Origin:{" "}
+                    <span className="glyphs">{address.pooLetter}</span>
+                  </h4>
+                )}
               </li>
             );
           }
@@ -86,10 +90,12 @@ const AddressBook = ({ addressList }) => {
               <h4>
                 Address: <span className="glyphs">{address.gateAddress}</span>
               </h4>
-              <h4>
-                Point of Origin:{" "}
-                <span className="glyphs">{address.pooLetter}</span>
-              </h4>
+              {currentPlanet.id === address.id && (
+                <h4>
+                  Point of Origin:{" "}
+                  <span className="glyphs">{address.pooLetter}</span>
+                </h4>
+              )}
             </li>
           );
         })}
