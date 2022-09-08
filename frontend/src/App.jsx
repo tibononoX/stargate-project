@@ -139,6 +139,7 @@ function App() {
 
     if (socket) {
       socket.on("user connected", (clients) => setUserList(clients));
+      socket.on("user disconnected", (clients) => setUserList(clients));
       socket.on("disconnect", () => {
         leavePlanet();
       });

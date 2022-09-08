@@ -34,7 +34,14 @@ let users = [];
 const gateStates = [];
 
 io.on("connection", (socket) => {
-  socket.on("joinServer", ({ username, currentPlanet }, cb) => {
+  socket.on("disconnect", () => {
+    const [user] = users.filter((client) => client.id === socket.id);
+    console.log(user?.username, "left server");
+    users = users.filter((client) => client.id !== socket.id);
+    io.emit("user disconnected", users);
+  });
+
+  socket.on("joinServer", ({ username, currentPlanet }) => {
     const user = {
       username,
       id: socket.id,
@@ -86,12 +93,6 @@ io.on("connection", (socket) => {
   socket.on("playerTravels", ({ planetName, destinationName }) => {
     socket.to(planetName).emit("playerTravels");
     socket.to(destinationName).emit("playerTravels");
-  });
-
-  socket.on("disconnect", () => {
-    const [user] = users.filter((client) => client.id === socket.id);
-    console.log(user?.username, "left server");
-    users = users.filter((client) => client.id !== socket.id);
   });
 
   socket.on("newInput", ({ planetName, inputAddress }) => {
