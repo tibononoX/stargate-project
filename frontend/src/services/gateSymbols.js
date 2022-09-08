@@ -1,4 +1,5 @@
-const symbols = [
+/* eslint-disable import/no-mutable-exports */
+let symbols = [
   {
     id: 1,
     letter: "A",

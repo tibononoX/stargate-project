@@ -429,15 +429,15 @@ export const Stargate = ({ addressList, windowWidth }) => {
   }, [offworld, isOpen]);
 
   useEffect(() => {
-    if (!destLock && !isOpen && inputAddress.length > 0) {
+    if (!destLock && !isOpen && inputAddress.length > 0 && !isRolling) {
       const expires = setTimeout(() => {
         if (inputAddress.length > 0) {
           wrongAddress();
         }
-      }, 15000);
+      }, 30000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen, inputAddress.length]);
+  }, [destLock, isOpen, inputAddress.length, isRolling]);
 
   const leavePlanet = (planetName, destinationName) => {
     socket.emit("leave planet", planetName, destinationName);
