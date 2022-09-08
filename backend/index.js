@@ -1,13 +1,5 @@
 /* eslint-disable no-restricted-syntax */
 require("dotenv").config();
-const uniqid = require("uniqid");
-
-const message = {
-  id: uniqid(),
-  author: "server",
-  text: "Stargate React",
-};
-
 const app = require("./src/app");
 
 const port = parseInt(process.env.APP_PORT ?? "5000", 10);
@@ -34,7 +26,14 @@ let users = [];
 const gateStates = [];
 
 io.on("connection", (socket) => {
-  socket.on("joinServer", ({ username, currentPlanet }, cb) => {
+  socket.on("disconnect", () => {
+    const [user] = users.filter((client) => client.id === socket.id);
+    console.log(user?.username, "left server");
+    users = users.filter((client) => client.id !== socket.id);
+    io.emit("user disconnected", users);
+  });
+
+  socket.on("joinServer", ({ username, currentPlanet }) => {
     const user = {
       username,
       id: socket.id,
@@ -49,11 +48,31 @@ io.on("connection", (socket) => {
     io.emit("user connected", users);
   });
 
-  socket.on("join planet", (planetName) => {
+  socket.on("join planet", (planetName, cb) => {
     socket.join(planetName);
+    console.log(socket.id);
+
+    const isHostPresent = users
+      .filter((user) => user.currentPlanet === planetName)
+      .some((user) => user.hosting === planetName);
+
     const userIndex = users.findIndex((person) => person.id === socket.id);
     users[userIndex] = { ...users[userIndex], currentPlanet: planetName };
     const user = users.filter((client) => client.id === socket.id);
+
+    if (!isHostPresent) {
+      users[userIndex] = { ...users[userIndex], hosting: planetName };
+      cb(planetName);
+    }
+
+    if (isHostPresent) {
+      const [host] = users.filter(
+        (clientHost) => clientHost.hosting === planetName
+      );
+      console.log(host);
+      socket.to(host.id).emit("getGateState", socket.id);
+    }
+
     io.in(planetName).emit(
       "user join",
       {
@@ -68,6 +87,7 @@ io.on("connection", (socket) => {
     socket.leave(planetName);
     const userIndex = users.findIndex((person) => person.id === socket.id);
     users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
+    delete users[userIndex].hosting;
     const user = users.filter((client) => client.id === socket.id);
     io.in(planetName).emit(
       "user left",
@@ -88,37 +108,12 @@ io.on("connection", (socket) => {
     socket.to(destinationName).emit("playerTravels");
   });
 
-  socket.on("disconnect", () => {
-    const [user] = users.filter((client) => client.id === socket.id);
-    console.log(user?.username, "left server");
-    users = users.filter((client) => client.id !== socket.id);
+  socket.on("sendGateStatus", (clientId, gateState) => {
+    socket.to(clientId).emit("newGateState", gateState);
   });
 
   socket.on("newInput", ({ planetName, inputAddress }) => {
-    const gateListed = gateStates.filter(
-      (gate) => gate.planetName === planetName
-    ).length;
-    if (!gateListed) {
-      const gateStatus = {
-        planetName,
-        currentInputs: inputAddress,
-        isLocked: false,
-        offworld: false,
-        isOpen: false,
-      };
-      gateStates.push(gateStatus);
-
-      return socket.to(planetName).emit("newInput", inputAddress);
-    }
-    const inbound = gateStates.findIndex(
-      (gate) => gate.planetName === planetName
-    );
-
-    gateStates[inbound] = {
-      ...gateStates[inbound],
-      currentInputs: inputAddress,
-    };
-
+    console.log(gateStates.length);
     return socket.to(planetName).emit("newInput", inputAddress);
   });
 
@@ -150,11 +145,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("wrongAddress", ({ planetName }) => {
-    const inbound = gateStates.findIndex(
-      (gate) => gate.planetName === planetName
-    );
-    gateStates.splice(inbound);
-
     socket.to(planetName).emit("wrongAddress");
   });
 
@@ -166,16 +156,6 @@ io.on("connection", (socket) => {
     if (!planetName || !destinationName) {
       return null;
     }
-
-    const inbound = gateStates.findIndex(
-      (gate) => gate.planetName === planetName
-    );
-    const outbound = gateStates.findIndex(
-      (gate) => gate.planetName === destinationName
-    );
-
-    gateStates[inbound] = { ...gateStates[inbound], isOpen: true };
-    gateStates[outbound] = { ...gateStates[outbound], isOpen: true };
     socket.to(planetName).emit("openGate");
     return socket.to(destinationName).emit("openGate");
   });
@@ -185,16 +165,6 @@ io.on("connection", (socket) => {
     console.log(
       `${currentClient[0].username} triggers gate closing from ${planetName} to ${destinationName}`
     );
-
-    const inbound = gateStates.findIndex(
-      (gate) => gate.planetName === planetName
-    );
-    gateStates.splice(inbound);
-
-    const outbound = gateStates.findIndex(
-      (gate) => gate.planetName === destinationName
-    );
-    gateStates.splice(outbound);
 
     socket.to(planetName).emit("closeGate");
     socket.to(destinationName).emit("closeGate");
@@ -207,14 +177,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("destLock", ({ planetName, destinationName }) => {
-    const inbound = gateStates.findIndex(
-      (gate) => gate.planetName === planetName
-    );
-    const outbound = gateStates.findIndex(
-      (gate) => gate.planetName === destinationName
-    );
-    gateStates[inbound] = { ...gateStates[inbound], isLocked: true };
-    gateStates[outbound] = { ...gateStates[outbound], isLocked: true };
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
   });

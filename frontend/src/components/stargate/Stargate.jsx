@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useReducer } from "react";
 import axios from "@services/axios";
 import "@styles/stargate/main.scss";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
@@ -16,80 +16,129 @@ function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const chevInit = [false, false, false, false, false, false, false, false];
-
 export const Stargate = ({ addressList, windowWidth }) => {
   const { audioVolume, userData, socket } = useContext(UserContext);
-  const { currentPlanet, setCurrentPlanet } = useContext(PlanetContext);
-  const [inputAddress, setInputAddress] = useState([]);
-  const [processingInput, setProcessingInput] = useState(false);
-  const [pooActive, setPooActive] = useState(false);
-  const [resetting, setResetting] = useState(false);
+  const { currentPlanet, setCurrentPlanet, hosting } =
+    useContext(PlanetContext);
 
-  const [ringPosition, setRingPosition] = useState(0);
-  const [rollData, setRollData] = useState({
-    timing: 0,
-    position: currentPlanet.poo.position,
-  });
-  const [isRolling, setIsRolling] = useState(false);
-  const [dhdActive, setDhdActive] = useState(false);
+  const gateInitialState = {
+    inputAddress: [],
+    processingInput: false,
+    pooActive: false,
+    resetting: false,
+    ringPosition: 0,
+    rollData: {
+      timing: 0,
+      position: currentPlanet.poo.position,
+    },
+    isRolling: false,
+    dhdActive: false,
+    ready: false,
+    opening: false,
+    isOpen: false,
+    closing: false,
+    lockChev: false,
+    locking: false,
+    chevrons: [false, false, false, false, false, false, false, false],
+    destLock: false,
+    destinationInfo: {},
+    offworld: false,
+    prevPlanet: "",
+  };
 
-  const [ready, setReady] = useState(false);
-  const [opening, setOpening] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [closing, setClosing] = useState(false);
-
-  const [lockChev, setLockChev] = useState(false); // Lock chevron light
-  const [locking, setLocking] = useState(false); // Lock chevron animation
-  const [chevrons, setChevrons] = useState(chevInit);
-
-  const [destLock, setDestLock] = useState(false);
+  const updateGateState = (state, action) => {
+    switch (action.type) {
+      case "initial":
+        return action.payload;
+      case "resetGate":
+        return { ...gateInitialState };
+      case "inputAddress":
+        return { ...state, inputAddress: action.payload };
+      case "processingInput":
+        return { ...state, processingInput: action.payload };
+      case "pooActive":
+        return { ...state, pooActive: action.payload };
+      case "resetting":
+        return { ...state, resetting: action.payload };
+      case "ringPosition":
+        return { ...state, ringPosition: action.payload };
+      case "rollData":
+        return { ...state, rollData: action.payload };
+      case "isRolling":
+        return { ...state, isRolling: action.payload };
+      case "dhdActive":
+        return { ...state, dhdActive: action.payload };
+      case "ready":
+        return { ...state, ready: action.payload };
+      case "opening":
+        return { ...state, opening: action.payload };
+      case "isOpen":
+        return { ...state, isOpen: action.payload };
+      case "closing":
+        return { ...state, closing: action.payload };
+      case "lockChev":
+        return { ...state, lockChev: action.payload };
+      case "locking":
+        return { ...state, locking: action.payload };
+      case "chevrons":
+        return { ...state, chevrons: action.payload };
+      case "destLock":
+        return { ...state, destLock: action.payload };
+      case "destinationInfo":
+        return { ...state, destinationInfo: action.payload };
+      case "prevPlanet":
+        return { ...state, prevPlanet: action.payload };
+      case "offworld":
+        return { ...state, offworld: action.payload };
+      case "RESET_FORM":
+        return { ...gateInitialState };
+      default:
+        return state;
+    }
+  };
+  const [gateState, dispatch] = useReducer(updateGateState, gateInitialState);
   const [destinationInfo, setDestinationInfo] = useState({});
   const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
 
-  const [offworld, setOffworld] = useState(false);
-
   useEffect(() => {
-    setRingPosition(currentPlanet.poo.position);
-    setRollData({ ...rollData, position: currentPlanet.poo.position });
+    dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
+    dispatch({
+      type: "rollData",
+      payload: { ...gateState.rollData, position: currentPlanet.poo.position },
+    });
   }, [currentPlanet]);
 
   const resetGate = async () => {
     const currentDialMode = currentPlanet.dialMode;
     try {
       if (currentDialMode === "EARTH") {
-        handleChev(null, setChevrons);
+        handleChev(null, dispatch);
       }
       if (
-        rollData.position === currentPlanet.poo.position &&
-        ringPosition === currentPlanet.poo.position
+        gateState.rollData.position === currentPlanet.poo.position &&
+        gateState.ringPosition === currentPlanet.poo.position
       ) {
         audioSelector(audioVolume, "chevEnd");
       }
       if (
-        rollData.position !== currentPlanet.poo.position &&
-        ringPosition !== currentPlanet.poo.position
+        gateState.rollData.position !== currentPlanet.poo.position &&
+        gateState.ringPosition !== currentPlanet.poo.position
       ) {
-        const rollValues = rollCalc(currentPlanet.poo, ringPosition);
-        setRingPosition(rollValues.position);
-        setRollData({ ...rollValues, reset: true });
+        const rollValues = rollCalc(currentPlanet.poo, gateState.ringPosition);
+        dispatch({ type: "ringPosition", payload: rollValues.position });
+        dispatch({ type: "rollData", payload: { ...rollValues, reset: true } });
+
         await timeout(rollValues.timing - 200);
         audioSelector(audioVolume, "chevEnd");
         await timeout(200);
       }
       if (currentDialMode !== "EARTH") {
-        handleChev(null, setChevrons);
+        handleChev(null, dispatch);
         audioSelector(audioVolume, "chevEnd");
       }
-      setRollData({});
-      setLocking(false);
-      setDestLock(false);
-      setPooActive(false);
-      setDestinationInfo({});
-      setOffworld(false);
-      setInputAddress([]);
-      setReady(false);
-      return setResetting(false);
+      return dispatch({
+        type: "resetGate",
+      });
     } catch (err) {
       return console.warn(err);
     }
@@ -98,41 +147,76 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const handleInput = async () => {
     try {
       if (currentPlanet?.dialMode === "EARTH") {
-        setProcessingInput(true);
-        const symbolToProcess = inputAddress.map((address) => address).pop();
-        const rollValues = rollCalc(symbolToProcess, ringPosition);
-        setRingPosition(rollValues.position);
-        setRollData(rollValues);
-
+        dispatch({
+          type: "processingInput",
+          payload: true,
+        });
+        const symbolToProcess = gateState.inputAddress
+          .map((address) => address)
+          .pop();
+        const rollValues = rollCalc(symbolToProcess, gateState.ringPosition);
+        dispatch({
+          type: "ringPosition",
+          payload: rollValues.position,
+        });
+        dispatch({
+          type: "rollData",
+          payload: rollValues,
+        });
         await timeout(rollValues.timing - 200);
         audioSelector(audioVolume, "earthChev");
-        setLocking(true);
+        dispatch({
+          type: "locking",
+          payload: true,
+        });
         await timeout(700);
-        setLockChev(true);
-        handleChev(inputAddress.length, setChevrons);
+        dispatch({
+          type: "lockChev",
+          payload: true,
+        });
+        handleChev(gateState.inputAddress.length, dispatch);
         await timeout(350);
-        setLocking(false);
+        dispatch({
+          type: "locking",
+          payload: false,
+        });
         await timeout(700);
-        setLockChev(false);
-        return setProcessingInput(false);
+        dispatch({
+          type: "lockChev",
+          payload: false,
+        });
+        return dispatch({
+          type: "processingInput",
+          payload: false,
+        });
       }
 
-      setProcessingInput(true);
+      dispatch({
+        type: "processingInput",
+        payload: true,
+      });
       if (currentPlanet.dialMode !== "EARTH") {
         audioSelector(
           audioVolume,
           "dhdInput",
-          inputAddress.length === 0 ? 1 : inputAddress.length + 1
+          gateState.inputAddress.length === 0
+            ? 1
+            : gateState.inputAddress.length + 1
         );
       }
       await timeout(300);
       audioSelector(
         audioVolume,
         "dhdChev",
-        inputAddress.length === 0 ? 1 : inputAddress.length + 1
+        gateState.inputAddress.length === 0
+          ? 1
+          : gateState.inputAddress.length + 1
       );
-      handleChev(inputAddress.length, setChevrons);
-      return setProcessingInput(false);
+      handleChev(gateState.inputAddress.length, dispatch);
+      return dispatch({
+        type: "processingInput",
+        payload: false,
+      });
     } catch (err) {
       return console.warn(err);
     }
@@ -143,7 +227,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       const addressesToCompare = addressList.filter(
         (address) => address.id !== currentPlanet.id
       );
-      const destAddress = inputAddress
+      const destAddress = gateState.inputAddress
         .map((symbol) => symbol.letter)
         .toString()
         .replace(/,/g, "");
@@ -178,26 +262,26 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const lockDest = async () => {
     if (currentPlanet.dialMode === "EARTH") {
       audioSelector(audioVolume, "earthLock");
-      setLocking(true);
+      dispatch({ type: "locking", payload: true });
       await timeout(400);
-      setDestLock(true);
+      dispatch({ type: "destLock", payload: true });
       await timeout(600);
-      setLocking(false);
+      dispatch({ type: "locking", payload: false });
       await timeout(200);
-      return setReady(true);
+      return dispatch({ type: "ready", payload: true });
     }
     await timeout(800);
     audioSelector(audioVolume, "dhdLock");
-    setReady(true);
-    return setDestLock(true);
+    dispatch({ type: "ready", payload: true });
+    return dispatch({ type: "destLock", payload: true });
   };
   const lockFail = async () => {
     if (currentPlanet.dialMode === "EARTH") {
       console.warn("wrong Address");
       audioSelector(audioVolume, "earthLockFail");
-      setLocking(true);
+      dispatch({ type: "locking", payload: true });
       await timeout(400);
-      setDestLock(false);
+      dispatch({ type: "destLock", payload: false });
       await timeout(600);
       return false;
     }
@@ -207,10 +291,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const handleRollPoo = async (poo) => {
-    const rollValues = rollCalc(poo, ringPosition);
-    setRingPosition(rollValues.position);
-    setRollData(rollValues);
-
+    const rollValues = rollCalc(poo, gateState.ringPosition);
+    dispatch({ type: "ringPosition", payload: rollValues.position });
+    dispatch({ type: "rollData", payload: rollValues });
     await timeout(rollValues.timing);
   };
 
@@ -220,10 +303,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
         audioSelector(
           audioVolume,
           "dhdInput",
-          inputAddress.length === 0 ? 1 : inputAddress.length + 1
+          gateState.inputAddress.length === 0
+            ? 1
+            : gateState.inputAddress.length + 1
         );
       }
-      setPooActive(poo);
+      dispatch({ type: "pooActive", payload: poo });
       if (currentPlanet.dialMode === "EARTH") {
         await handleRollPoo(poo);
       }
@@ -255,9 +340,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
     try {
       audioSelector(audioVolume, "gateOpen");
       await timeout(1200);
-      setIsOpen(true);
+      dispatch({ type: "isOpen", payload: true });
       await timeout(1500);
-      return setOpening(false);
+      return dispatch({ type: "opening", payload: false });
     } catch (err) {
       return console.warn(err);
     }
@@ -269,11 +354,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
     console.warn("Opening link from", inbound, "to", outbound);
 
-    if (isOpen || !destLock) {
+    if (gateState.isOpen || !gateState.destLock) {
       return null;
     }
-
-    setOpening(true);
+    dispatch({ type: "opening", payload: true });
     socket.emit("openGate", {
       planetName: inbound,
       destinationName: outbound,
@@ -286,9 +370,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
     try {
       audioSelector(audioVolume, "gateClose");
       await timeout(2400);
-      setIsOpen(false);
+      dispatch({ type: "isOpen", payload: false });
       await timeout(500);
-      setClosing(false);
+      dispatch({ type: "closing", payload: false });
       return await resetGate();
     } catch (err) {
       return console.warn(err);
@@ -297,11 +381,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const closingSequence = (inbound, outbound) => {
     console.warn("Closing link from", inbound, "to", outbound);
-    if (!isOpen) {
+    if (!gateState.isOpen) {
       return null;
     }
-
-    setClosing(true);
+    dispatch({ type: "closing", payload: true });
     socket.emit("closeGate", {
       planetName: inbound,
       destinationName: outbound,
@@ -312,25 +395,25 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const offworldSequence = async () => {
     const volume = audioVolume;
     audioSelector(volume, "dhdChev", 1);
-    handleChev(1, setChevrons);
+    handleChev(1, dispatch);
     await timeout(250);
     audioSelector(volume, "dhdChev", 2);
-    handleChev(2, setChevrons);
+    handleChev(2, dispatch);
     await timeout(250);
     audioSelector(volume, "dhdChev", 3);
-    handleChev(3, setChevrons);
+    handleChev(3, dispatch);
     await timeout(250);
     audioSelector(volume, "dhdChev", 4);
-    handleChev(4, setChevrons);
+    handleChev(4, dispatch);
     await timeout(250);
     audioSelector(volume, "dhdChev", 5);
-    handleChev(5, setChevrons);
+    handleChev(5, dispatch);
     await timeout(250);
     audioSelector(volume, "dhdChev", 6);
-    handleChev(6, setChevrons);
+    handleChev(6, dispatch);
     await timeout(300);
     audioSelector(volume, "dhdChev", 7);
-    return setDestLock(true);
+    return dispatch({ type: "destLock", payload: true });
   };
 
   const wrongAddress = async () => {
@@ -338,23 +421,34 @@ export const Stargate = ({ addressList, windowWidth }) => {
     audioSelector(audioVolume, "dialFail");
     try {
       await timeout(1200);
-      setLocking(false);
-      return setResetting(true);
+      dispatch({ type: "locking", payload: false });
+      return dispatch({ type: "resetting", payload: true });
     } catch (err) {
       return console.warn(err);
     }
   };
 
   useEffect(() => {
-    if (resetting) {
+    if (gateState.resetting) {
       resetGate();
     }
-  }, [resetting]);
+  }, [gateState.resetting]);
+
+  const emitGateState = (clientId) => {
+    const stateToEmit = gateState;
+    socket.emit("sendGateStatus", clientId, stateToEmit);
+  };
 
   useEffect(() => {
     if (socket) {
+      socket.on("getGateState", (clientId) => {
+        emitGateState(clientId);
+      });
+      socket.on("newGateState", (gateStatus) => {
+        dispatch({ type: "initial", payload: gateStatus });
+      });
       socket.on("newInput", (data) => {
-        setInputAddress(data);
+        dispatch({ type: "inputAddress", payload: data });
       });
       socket.on("destinationInfo", (data) => {
         updateDestination(data);
@@ -363,7 +457,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         await lockFail();
       });
       socket.on("lastChev", (poo) => {
-        setPooActive(poo);
+        dispatch({ type: "pooActive", payload: poo });
       });
       socket.on("playerTravels", () => {
         audioSelector(audioVolume, "travelWormhole");
@@ -375,69 +469,83 @@ export const Stargate = ({ addressList, windowWidth }) => {
         closeGate();
       });
       socket.on("offworldLock", () => {
-        setOffworld(true);
+        dispatch({ type: "offworld", payload: true });
         offworldSequence();
       });
       socket.on("offworldClose", () => {
-        setOffworld(false);
+        dispatch({ type: "offworld", payload: false });
         closeGate();
       });
     }
-  }, [socket]);
+  }, [gateState]);
 
   useEffect(() => {
-    if (pooActive !== false) {
-      checkMatching(pooActive);
+    if (gateState.pooActive !== false) {
+      checkMatching(gateState.pooActive);
     }
-  }, [pooActive]);
+  }, [gateState.pooActive]);
 
   useEffect(() => {
-    if (inputAddress.length > 0 && !resetting && !isRolling) {
+    if (
+      gateState.inputAddress.length > 0 &&
+      !gateState.resetting &&
+      !gateState.isRolling
+    ) {
       handleInput();
     }
-  }, [inputAddress]);
+  }, [gateState.inputAddress]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (gateState.isOpen) {
       const autoClose = setTimeout(() => {
         closeGate();
       }, 2280000);
       return () => clearTimeout(autoClose);
     }
-  }, [isOpen]);
+  }, [gateState.isOpen]);
 
   useEffect(() => {
-    if (destLock && !isOpen && ready) {
+    if (gateState.destLock && !gateState.isOpen && gateState.ready) {
       const expires = setTimeout(() => {
-        if (ready) {
+        if (gateState.ready) {
           wrongAddress();
         }
       }, 15000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen, ready]);
+  }, [gateState.destLock, gateState.isOpen, gateState.ready]);
 
   useEffect(() => {
-    if (offworld && !isOpen) {
+    if (gateState.offworld && !gateState.isOpen) {
       const expires = setTimeout(() => {
-        if (!isOpen) {
+        if (!gateState.isOpen) {
           wrongAddress();
         }
       }, 15800);
       return () => clearTimeout(expires);
     }
-  }, [offworld, isOpen]);
+  }, [gateState.offworld, gateState.isOpen]);
 
   useEffect(() => {
-    if (!destLock && !isOpen && inputAddress.length > 0 && !isRolling) {
+    if (
+      !gateState.destLock &&
+      !gateState.isOpen &&
+      gateState.inputAddress.length > 0 &&
+      !gateState.isRolling
+    ) {
       const expires = setTimeout(() => {
-        if (inputAddress.length > 0) {
+        if (gateState.inputAddress.length > 0) {
           wrongAddress();
         }
       }, 30000);
       return () => clearTimeout(expires);
     }
-  }, [destLock, isOpen, inputAddress.length, isRolling]);
+  }, [
+    gateState.destLock,
+    gateState.isOpen,
+    gateState.inputAddress.length,
+    gateState.isRolling,
+  ]);
 
   const leavePlanet = (planetName, destinationName) => {
     socket.emit("leave planet", planetName, destinationName);
@@ -448,7 +556,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   }, [userData]);
 
   const travelGate = async () => {
-    if (offworld) {
+    if (gateState.offworld) {
       audioSelector(audioVolume, "robloxDeath");
       return audioSelector(audioVolume, "travelWormhole");
     }
@@ -473,10 +581,14 @@ export const Stargate = ({ addressList, windowWidth }) => {
     leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
     console.warn("next planet:", destinationInfo.planetName);
-    setOffworld(true);
-    const rollValues = rollCalc(destinationInfo.poo, ringPosition, true);
-    setRingPosition(rollValues.position);
-    setRollData(rollValues);
+    dispatch({ type: "offworld", payload: true });
+    const rollValues = rollCalc(
+      destinationInfo.poo,
+      gateState.ringPosition,
+      true
+    );
+    dispatch({ type: "ringPosition", payload: rollValues.position });
+    dispatch({ type: "rollData", payload: rollValues });
     socket.emit("playerTravels", {
       planetName: currentPlanet.planetName,
       destinationName: destinationInfo.planetName,
@@ -502,69 +614,51 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (sgcOffworldAlarmAudio !== null) {
       sgcOffworldAlarmAudio.volume = audioVolume;
     }
-  }, [isOpen, offworld]);
+  }, [gateState.isOpen, gateState.offworld]);
 
   return (
     <div className="gameContainer">
       <p className="currentPlanet">
-        {offworld ? (
+        {gateState.offworld ? (
           <span className="offworld">OFFWORLD ACTIVATION</span>
-        ) : !isOpen ? (
+        ) : !gateState.isOpen ? (
           `Current planet: ${currentPlanet?.planetName}`
         ) : (
           destinationInfo &&
-          isOpen &&
+          gateState.isOpen &&
           `Wormhole open to ${destinationInfo?.planetName}`
         )}
       </p>
       <div className="stargate">
-        {isOpen && (
+        {gateState.isOpen && (
           <audio loop autoPlay id="wormholeLoopAudio">
             <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
           </audio>
         )}
-        {isOpen && currentPlanet?.id === 1 && !offworld && (
+        {gateState.isOpen && currentPlanet?.id === 1 && !gateState.offworld && (
           <audio loop autoPlay id="sgcAlarmAudio">
             <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
           </audio>
         )}
-        {offworld && currentPlanet?.id === 1 && (
+        {gateState.offworld && currentPlanet?.id === 1 && (
           <audio loop autoPlay id="sgcOffworldAlarmAudio">
             <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
           </audio>
         )}
         <SG1Render
           windowWidth={windowWidth}
-          rollData={rollData}
-          setIsRolling={setIsRolling}
-          chevrons={chevrons}
-          lockChev={lockChev}
-          destLock={destLock}
-          locking={locking}
-          isOpen={isOpen}
+          gateState={gateState}
+          dispatch={dispatch}
           travelGate={travelGate}
         />
       </div>
       <Dhd
-        inputAddress={inputAddress}
-        setInputAddress={setInputAddress}
-        processingInput={processingInput}
-        pooActive={pooActive}
-        setPooActive={setPooActive}
-        isRolling={isRolling}
-        destLock={destLock}
+        gateState={gateState}
+        dispatch={dispatch}
         destinationInfo={destinationInfo}
-        ready={ready}
-        opening={opening}
-        isOpen={isOpen}
-        closing={closing}
         openSequence={openSequence}
         closingSequence={closingSequence}
         wrongAddress={wrongAddress}
-        checkMatching={checkMatching}
-        dhdActive={dhdActive}
-        setDhdActive={setDhdActive}
-        offworld={offworld}
       />
     </div>
   );

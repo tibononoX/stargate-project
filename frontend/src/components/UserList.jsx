@@ -50,7 +50,7 @@ const UserList = ({ userList, currentPlanet }) => {
               : user;
           })
           .map((user) => (
-            <li>
+            <li key={user.username}>
               <p>
                 <span
                   className={
@@ -63,6 +63,7 @@ const UserList = ({ userList, currentPlanet }) => {
                 >
                   {user.username}
                 </span>{" "}
+                {user.hosting === user.currentPlanet ? "Hosting " : ""}
                 {user.currentPlanet}
               </p>
             </li>
