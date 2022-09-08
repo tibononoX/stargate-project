@@ -7,9 +7,10 @@ export const updateInput = (inputAddress, letter) => {
 
 export const rollCalc = (symbol, ringPosition, instant = false) => {
   const diff = Math.abs((ringPosition - symbol.position) / 9.23);
+  const { position } = symbol;
   const timing = instant ? 0 : rollSpeed * diff;
 
-  return { timing, position: symbol.position };
+  return { timing, position };
 };
 
 export const rollRing = (rollValues) => {

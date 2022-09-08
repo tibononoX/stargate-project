@@ -434,7 +434,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         if (inputAddress.length > 0) {
           wrongAddress();
         }
-      }, 15000);
+      }, 30000);
       return () => clearTimeout(expires);
     }
   }, [destLock, isOpen, inputAddress.length, isRolling]);
