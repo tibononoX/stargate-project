@@ -3,7 +3,7 @@ import { useEffect, useContext } from "react";
 import audioSelector from "@services/audio";
 import UserContext from "@contexts/UserContext";
 
-const Ring = ({ rollData, setIsRolling }) => {
+const Ring = ({ rollData, dispatch }) => {
   const { audioVolume } = useContext(UserContext);
   const handleRoll = async () => {
     try {
@@ -11,7 +11,7 @@ const Ring = ({ rollData, setIsRolling }) => {
         return null;
       }
 
-      setIsRolling(true);
+      dispatch({ type: "isRolling", payload: true });
       const rollSound = audioSelector(
         audioVolume,
         rollData.reset ? "ringRollFail" : "ringRoll"
@@ -21,7 +21,7 @@ const Ring = ({ rollData, setIsRolling }) => {
       return setTimeout(() => {
         rollSound.pause();
         rollSound.currentTime = 0;
-        setIsRolling(false);
+        dispatch({ type: "isRolling", payload: false });
       }, rollData.timing);
     } catch (err) {
       return console.warn(err);

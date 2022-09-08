@@ -10,24 +10,12 @@ function timeout(ms) {
 }
 
 const Dhd = ({
-  inputAddress,
-  setInputAddress,
-  processingInput,
-  pooActive,
-  setPooActive,
-  isRolling,
-  destLock,
+  gateState,
+  dispatch,
   destinationInfo,
-  ready,
-  opening,
-  isOpen,
-  closing,
   openSequence,
   closingSequence,
   wrongAddress,
-  dhdActive,
-  setDhdActive,
-  offworld,
 }) => {
   const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
@@ -39,12 +27,12 @@ const Dhd = ({
         return "red";
       case "symbButton":
         if (
-          inputAddress.some((symbol) => symbol.id === id) ||
-          pooActive?.id === id
+          gateState.inputAddress.some((symbol) => symbol.id === id) ||
+          gateState.pooActive?.id === id
         ) {
           return "symbButton active";
         }
-        if (isOpen || destLock) {
+        if (gateState.isOpen || gateState.destLock) {
           return "symbButton noClick";
         }
         return "symbButton";
@@ -54,40 +42,52 @@ const Dhd = ({
   };
 
   const dhdFail = () => {
-    setPooActive(false);
+    dispatch({ type: "pooActive", payload: false });
     return wrongAddress();
   };
 
   const dhdOpenGate = () => {
     audioSelector(audioVolume, "dhdOpen");
-    setDhdActive(true);
+    dispatch({ type: "dhdActive", payload: true });
     return openSequence();
   };
 
   const dhdCloseGate = async () => {
-    setDhdActive(false);
     closingSequence(currentPlanet.planetName, destinationInfo.planetName);
     await timeout(2700);
-    return setPooActive(false);
+    dispatch({ type: "dhdActive", payload: false });
+    return dispatch({ type: "pooActive", payload: false });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (offworld || opening || closing || isRolling) {
+      if (
+        gateState.offworld ||
+        gateState.opening ||
+        gateState.closing ||
+        gateState.isRolling
+      ) {
         return null;
       }
-      if (isOpen) {
+      if (gateState.isOpen) {
         return dhdCloseGate();
       }
-      if (inputAddress.length === 0 || inputAddress.length === 7) {
+      if (
+        gateState.inputAddress.length === 0 ||
+        gateState.inputAddress.length === 7
+      ) {
         return null;
       }
-      if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
+      if (
+        (gateState.inputAddress.length < 6 &&
+          gateState.inputAddress.length !== 0) ||
+        !gateState.destLock
+      ) {
         socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
         return dhdFail();
       }
-      if (!ready) {
+      if (!gateState.ready) {
         return null;
       }
       return dhdOpenGate();
@@ -97,38 +97,44 @@ const Dhd = ({
   };
 
   const handleClick = async (dhdSymbol) => {
+    const newInputAddress = [...gateState.inputAddress, dhdSymbol];
     if (
-      inputAddress.length === 7 ||
-      inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
-      pooActive ||
-      isRolling ||
-      processingInput ||
-      destLock ||
-      isOpen
+      gateState.inputAddress.length === 7 ||
+      gateState.inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
+      gateState.pooActive ||
+      gateState.isRolling ||
+      gateState.processingInput ||
+      gateState.destLock ||
+      gateState.isOpen
     ) {
       return null;
     }
-    if (inputAddress.length === 6) {
+    if (gateState.inputAddress.length === 6) {
       socket.emit("lastChev", {
         planetName: currentPlanet.planetName,
         poo: dhdSymbol,
       });
-      return setPooActive(dhdSymbol);
+      return dispatch({ type: "pooActive", payload: dhdSymbol });
     }
     socket.emit("newInput", {
       planetName: currentPlanet.planetName,
-      inputAddress: [...inputAddress, dhdSymbol],
+      inputAddress: newInputAddress,
     });
-    return setInputAddress([...inputAddress, dhdSymbol]);
+    return dispatch({
+      type: "inputAddress",
+      payload: newInputAddress,
+    });
   };
 
   useEffect(() => {
-    if (socket) {
-      socket.on("wrongAddress", () => {
-        dhdFail();
-      });
-    }
-  }, [socket]);
+    socket.on("wrongAddress", () => {
+      dhdFail();
+    });
+
+    socket.on("dhdClick", async (symbol) => {
+      handleClick(symbol);
+    });
+  }, []);
 
   return (
     <div className={dhdOpen ? "dhd open" : "dhd"}>
@@ -154,7 +160,9 @@ const Dhd = ({
                   className={handleDhdClassName("symbButton", symbol.id)}
                   title={`${symbol.letter} - ${symbol.label}`}
                   type="button"
-                  onClick={() => handleClick(symbol)}
+                  onClick={() => {
+                    return handleClick(symbol);
+                  }}
                 >
                   {symbol.letter}
                 </button>
@@ -166,7 +174,7 @@ const Dhd = ({
           type="submit"
           title="Big red button woosh woosh"
           className={
-            (dhdActive && destLock) || destLock
+            (gateState.dhdActive && gateState.destLock) || gateState.destLock
               ? "dhdButton active"
               : "dhdButton"
           }

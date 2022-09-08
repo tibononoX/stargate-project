@@ -46,7 +46,6 @@ const Login = ({ initialPlanet }) => {
         return console.warn("An error occured");
       }
       setUserData(login);
-      initialPlanet();
       return navigate("/");
     } catch (err) {
       return console.warn(err);

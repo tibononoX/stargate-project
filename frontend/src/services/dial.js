@@ -1,9 +1,4 @@
-const rollSpeed = 400;
-
-export const updateInput = (inputAddress, letter) => {
-  const updatedInput = inputAddress + letter;
-  return updatedInput;
-};
+const rollSpeed = 40;
 
 export const rollCalc = (symbol, ringPosition, instant = false) => {
   const diff = Math.abs((ringPosition - symbol.position) / 9.23);
@@ -13,59 +8,55 @@ export const rollCalc = (symbol, ringPosition, instant = false) => {
   return { timing, position };
 };
 
-export const rollRing = (rollValues) => {
-  return rollValues;
-};
-
-export const handleChev = (chev, setChevrons) => {
+export const handleChev = (chev, dispatch) => {
   switch (chev) {
     case 1:
-      return setChevrons([
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-      ]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, false, false, false, false, false, false, false],
+      });
     case 2:
-      return setChevrons([
-        true,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-      ]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, false, false, false, false, false, false],
+      });
     case 3:
-      return setChevrons([true, true, true, false, false, false, false, false]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, true, false, false, false, false, false],
+      });
     case 4:
-      return setChevrons([true, true, true, true, false, false, false, false]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, true, true, false, false, false, false],
+      });
     case 5:
-      return setChevrons([true, true, true, true, true, false, false, false]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, true, true, true, false, false, false],
+      });
     case 6:
-      return setChevrons([true, true, true, true, true, true, false, false]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, true, true, true, true, false, false],
+      });
     case 7:
-      return setChevrons([true, true, true, true, true, true, true, false]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, true, true, true, true, true, false],
+      });
     case 8:
-      return setChevrons([true, true, true, true, true, true, true, true]);
+      return dispatch({
+        type: "chevrons",
+        payload: [true, true, true, true, true, true, true, true],
+      });
 
     default:
-      return setChevrons([
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-      ]);
+      return dispatch({
+        type: "chevrons",
+        payload: [false, false, false, false, false, false, false, false],
+      });
   }
 };
 
-export default { updateInput, rollCalc, handleChev };
+export default { rollCalc, handleChev };
