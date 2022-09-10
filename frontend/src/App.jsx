@@ -33,12 +33,19 @@ function App() {
 
   const checkConnection = async () => {
     try {
+      if (socket) {
+        socket.disconnect();
+      }
       const data = await axios
         .get("users/refreshToken", {
           withCredentials: true,
         })
         .then((result) => result.data);
-      return setUserData(data);
+      if (data) {
+        setUserData(data);
+      }
+      const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
+      return setSocket(socketServer);
     } catch (err) {
       return console.warn(err);
     }
@@ -69,12 +76,16 @@ function App() {
       );
   }, []);
 
-  useEffect(() => {
-    if (!socket) {
-      const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
-      setSocket(socketServer);
-    }
-  }, [socket]);
+  // useEffect(() => {
+  //   if (!userData) {
+  //     const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
+  //     setSocket(socketServer);
+  //   }
+  //   if (userData) {
+  //     const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
+  //     setSocket(socketServer);
+  //   }
+  // }, [userData]);
 
   return (
     <div className="App">
@@ -118,8 +129,14 @@ function App() {
               path="/signup"
               element={<Signup fetchAddressList={fetchAddressList} />}
             />
-            <Route path="/login" element={<Login />} />
-            <Route path="/logout" element={<Logout setSocket={setSocket} />} />
+            <Route
+              path="/login"
+              element={<Login socket={socket} setSocket={setSocket} />}
+            />
+            <Route
+              path="/logout"
+              element={<Logout socket={socket} setSocket={setSocket} />}
+            />
           </Routes>
         </Router>
       </UserContext.Provider>

@@ -28,8 +28,12 @@ const gateStates = [];
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     const [user] = users.filter((client) => client.id === socket.id);
+    socket.leave(user?.currentPlanet);
+
     console.log(user?.username, "left server");
-    users = users.filter((client) => client.id !== socket.id);
+    users = users
+      .filter((client) => client.id !== socket.id)
+      .map((newusers) => newusers);
 
     const otherUser = users.filter(
       (client) => client.currentPlanet === user?.currentPlanet
@@ -39,9 +43,9 @@ io.on("connection", (socket) => {
       users[0] = { ...users[0], hosting: users[0].currentPlanet };
     }
 
-    console.log("otherUser:", otherUser);
     console.log(user?.username, "left server");
 
+    console.table(users);
     io.emit("user disconnected", users, user);
   });
 
@@ -57,6 +61,8 @@ io.on("connection", (socket) => {
     }
     users.push(user);
     console.log(user.username, "joined server");
+    console.table(users);
+
     io.emit("user connected", users);
   });
 
@@ -95,13 +101,9 @@ io.on("connection", (socket) => {
 
   socket.on("leave planet", (planetName, destinationName) => {
     socket.leave(planetName);
-    console.log("test");
     const userIndex = users.findIndex((person) => person.id === socket.id);
     users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
     delete users[userIndex].hosting;
-
-    const otherUser = users.filter((user) => user.currentPlanet === planetName);
-    console.log(otherUser);
 
     const user = users.filter((client) => client.id === socket.id);
     io.in(planetName).emit(
@@ -128,7 +130,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("newInput", ({ planetName, inputAddress }) => {
-    console.log(gateStates.length);
     return socket.to(planetName).emit("newInput", inputAddress);
   });
 
@@ -165,8 +166,9 @@ io.on("connection", (socket) => {
 
   socket.on("openGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
+    console.log(currentClient);
     console.log(
-      `${currentClient[0].username} triggers gate opening from ${planetName} to ${destinationName}`
+      `${currentClient[0]?.username} triggers gate opening from ${planetName} to ${destinationName}`
     );
     if (!planetName || !destinationName) {
       return null;
@@ -178,7 +180,7 @@ io.on("connection", (socket) => {
   socket.on("closeGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
     console.log(
-      `${currentClient[0].username} triggers gate closing from ${planetName} to ${destinationName}`
+      `${currentClient[0]?.username} triggers gate closing from ${planetName} to ${destinationName}`
     );
 
     socket.to(planetName).emit("closeGate");
@@ -192,6 +194,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("destLock", ({ planetName, destinationName }) => {
+    console.log(planetName, destinationName);
+    console.log(gateStates);
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
   });

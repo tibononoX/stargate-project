@@ -196,6 +196,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         type: "processingInput",
         payload: true,
       });
+
       if (currentPlanet.dialMode !== "EARTH") {
         audioSelector(
           audioVolume,
@@ -300,6 +301,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const checkMatching = async (poo) => {
     try {
+      if (gateState.offworld || gateState.inputAddress.length < 6) {
+        return null;
+      }
       if (currentPlanet.dialMode !== "EARTH") {
         audioSelector(
           audioVolume,
@@ -359,6 +363,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return null;
     }
     dispatch({ type: "opening", payload: true });
+    console.log("test");
+
     socket.emit("openGate", {
       planetName: inbound,
       destinationName: outbound,
@@ -449,6 +455,11 @@ export const Stargate = ({ addressList, windowWidth }) => {
         dispatch({ type: "initial", payload: gateStatus });
         setInitialized(true);
       });
+    }
+  }, [gateState]);
+
+  useEffect(() => {
+    if (socket) {
       socket.on("newInput", (data) => {
         dispatch({ type: "inputAddress", payload: data });
       });
@@ -465,9 +476,11 @@ export const Stargate = ({ addressList, windowWidth }) => {
         audioSelector(audioVolume, "travelWormhole");
       });
       socket.on("openGate", () => {
+        console.log("open");
         openGate();
       });
       socket.on("closeGate", () => {
+        console.log("close");
         closeGate();
       });
       socket.on("offworldLock", () => {
@@ -479,7 +492,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         closeGate();
       });
     }
-  }, [gateState]);
+  }, []);
 
   useEffect(() => {
     if (gateState.pooActive !== false) {
@@ -591,6 +604,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
     );
     dispatch({ type: "ringPosition", payload: rollValues.position });
     dispatch({ type: "rollData", payload: rollValues });
+    dispatch({ type: "inputAddress", payload: [] });
+    dispatch({ type: "pooActive", payload: null });
     socket.emit("playerTravels", {
       planetName: currentPlanet.planetName,
       destinationName: destinationInfo.planetName,
@@ -601,6 +616,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       destinationInfo.planetName
     );
   };
+
   useEffect(() => {
     const openVortexAudio = document.getElementById("wormholeLoopAudio");
     if (openVortexAudio !== null) {

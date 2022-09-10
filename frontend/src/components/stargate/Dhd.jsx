@@ -105,7 +105,8 @@ const Dhd = ({
       gateState.isRolling ||
       gateState.processingInput ||
       gateState.destLock ||
-      gateState.isOpen
+      gateState.isOpen ||
+      gateState.offworld
     ) {
       return null;
     }
@@ -129,10 +130,6 @@ const Dhd = ({
   useEffect(() => {
     socket.on("wrongAddress", () => {
       dhdFail();
-    });
-
-    socket.on("dhdClick", async (symbol) => {
-      handleClick(symbol);
     });
   }, []);
 

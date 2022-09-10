@@ -33,18 +33,17 @@ const StargatePage = ({ addressList, windowWidth }) => {
   };
 
   const joinPlanet = (planetName) => {
-    setUserRoom(planetName);
     socket.emit("join planet", planetName, (host) => {
       setHosting(host);
     });
+    setUserRoom(planetName);
     socket.emit("getGateState", planetName);
   };
-
   const leavePlanet = () => {
-    setUserRoom("");
     socket.emit("leave planet", userRoom, (socketData) => {
       setUserList([]);
       setUserList(socketData);
+      setUserRoom("");
     });
   };
 
@@ -57,7 +56,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
             const [poo] = symbols.filter(
               (symbol) => symbol.letter === planet.pooLetter
             );
-            const newPlanet = { ...planet, poo };
+            const newPlanet = { ...planet, poo, initial: true };
             delete newPlanet.pooLetter;
             return newPlanet;
           });
@@ -82,7 +81,8 @@ const StargatePage = ({ addressList, windowWidth }) => {
           });
         }
         connect(userPlanet[0].planetName);
-        return setCurrentPlanet(userPlanet[0]);
+        setCurrentPlanet(userPlanet[0]);
+        return joinPlanet(userPlanet[0].planetName);
       }
       connect("Earth");
       joinPlanet("Earth");
@@ -114,6 +114,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
         }
       });
       socket.on("disconnect", () => {
+        console.log(`leaving ${userRoom}`);
         leavePlanet();
       });
       socket.on("user join", (client, clients) => {
@@ -138,7 +139,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
   useEffect(() => {
     initialPlanet();
     fetchUsers();
-  }, [userData]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("volume", audioVolume);
