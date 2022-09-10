@@ -1,4 +1,4 @@
-const rollSpeed = 40;
+const rollSpeed = import.meta.env.VITE_GATE_ROLL_SPEED;
 
 export const rollCalc = (symbol, ringPosition, instant = false) => {
   const diff = Math.abs((ringPosition - symbol.position) / 9.23);
