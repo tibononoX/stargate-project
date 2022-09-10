@@ -70,7 +70,9 @@ function userList() {
     console.log("No user connected");
     return setTimeout(userList, 120000);
   }
-  console.log(`${users.length} users connected :`);
+  console.log(
+    `${users.length} user${users.length === 1 ? "" : "s"} connected :`
+  );
   console.table(users);
   return setTimeout(userList, 120000);
 }
