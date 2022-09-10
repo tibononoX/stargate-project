@@ -38,6 +38,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     isOpen: false,
     closing: false,
     lockChev: false,
+    isLocking: false,
     locking: false,
     chevrons: [false, false, false, false, false, false, false, false],
     destLock: false,
@@ -78,6 +79,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
         return { ...state, closing: action.payload };
       case "lockChev":
         return { ...state, lockChev: action.payload };
+      case "isLocking":
+        return { ...state, isLocking: action.payload };
       case "locking":
         return { ...state, locking: action.payload };
       case "chevrons":
@@ -245,7 +248,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
           );
           const newPlanet = { ...destination, poo };
           delete newPlanet.pooLetter;
-          setDestinationInfo(newPlanet);
+          dispatch({ type: "destinationInfo", payload: newPlanet });
           socket.emit("destinationInfo", {
             planetName: currentPlanet.planetName,
             destination: newPlanet,
@@ -272,13 +275,16 @@ export const Stargate = ({ addressList, windowWidth }) => {
       await timeout(600);
       dispatch({ type: "locking", payload: false });
       await timeout(200);
+      dispatch({ type: "isLocking", payload: false });
       return dispatch({ type: "ready", payload: true });
     }
     await timeout(800);
     audioSelector(audioVolume, "dhdLock");
-    dispatch({ type: "ready", payload: true });
-    return dispatch({ type: "destLock", payload: true });
+    dispatch({ type: "destLock", payload: true });
+    dispatch({ type: "isLocking", payload: false });
+    return dispatch({ type: "ready", payload: true });
   };
+
   const lockFail = async () => {
     if (currentPlanet.dialMode === "EARTH") {
       console.warn("wrong Address");
@@ -287,6 +293,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       await timeout(400);
       dispatch({ type: "destLock", payload: false });
       await timeout(600);
+      dispatch({ type: "isLocking", payload: false });
       return false;
     }
 
@@ -315,7 +322,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
             : gateState.inputAddress.length + 1
         );
       }
-      dispatch({ type: "pooActive", payload: poo });
       if (currentPlanet.dialMode === "EARTH") {
         await handleRollPoo(poo);
       }
@@ -324,6 +330,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         await lockFail();
         return console.warn("Wrong poo");
       }
+
       const match = await compareAddresses();
 
       if (!match) {
@@ -340,7 +347,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const updateDestination = (newDestination) => {
-    return setDestinationInfo(newDestination);
+    return dispatch({ type: "destinationInfo", payload: newDestination });
   };
 
   const openGate = async () => {
@@ -357,7 +364,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const openSequence = () => {
     const inbound = currentPlanet.planetName;
-    const outbound = destinationInfo.planetName;
+    const outbound = gateState.destinationInfo.planetName;
 
     console.warn("Opening link from", inbound, "to", outbound);
 
@@ -581,7 +588,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       const changeLocation = await axios.put(
         `/users/${userData.id}`,
         {
-          currentLocationId: destinationInfo.id,
+          currentLocationId: gateState.destinationInfo.id,
         },
         { withCredentials: true }
       );
@@ -592,12 +599,12 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
     setPrevPlanet(currentPlanet.planetName);
     console.warn("prev planet:", currentPlanet.planetName);
-    leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
-    setCurrentPlanet(destinationInfo);
-    console.warn("new planet:", destinationInfo.planetName);
+    leavePlanet(currentPlanet.planetName, gateState.destinationInfo.planetName);
+    setCurrentPlanet(gateState.destinationInfo);
+    console.warn("new planet:", gateState.destinationInfo.planetName);
     dispatch({ type: "offworld", payload: true });
     const rollValues = rollCalc(
-      destinationInfo.poo,
+      gateState.destinationInfo.poo,
       gateState.ringPosition,
       true
     );
@@ -607,7 +614,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     dispatch({ type: "pooActive", payload: null });
     socket.emit("playerTravels", {
       planetName: currentPlanet.planetName,
-      destinationName: destinationInfo.planetName,
+      destinationName: gateState.destinationInfo.planetName,
     });
     return setTraveled(true);
   };
@@ -638,9 +645,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
           ) : !gateState.isOpen ? (
             `Current planet: ${currentPlanet?.planetName}`
           ) : (
-            destinationInfo &&
+            gateState.destinationInfo &&
             gateState.isOpen &&
-            `Wormhole open to ${destinationInfo?.planetName}`
+            `Wormhole open to ${gateState.destinationInfo?.planetName}`
           )}
         </p>
         <div className="stargate">
@@ -669,7 +676,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
         <Dhd
           gateState={gateState}
           dispatch={dispatch}
-          destinationInfo={destinationInfo}
           openSequence={openSequence}
           closingSequence={closingSequence}
           wrongAddress={wrongAddress}
