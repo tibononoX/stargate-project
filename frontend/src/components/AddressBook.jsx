@@ -32,7 +32,38 @@ const AddressBook = ({ addressList }) => {
             Show <span className="unreachableText">unreachable</span> addresses
           </label>
         </div>
-        <p>Number of addresses: {addressList.length}</p>
+        <p>
+          Number of addresses:{" "}
+          {
+            addressList.filter((address) => {
+              if (
+                address.gateAddress.includes(currentPlanet.poo.letter) &&
+                !showUnreachable
+              ) {
+                return null;
+              }
+              if (
+                currentPlanet.gateAddress.includes(address.pooLetter) &&
+                !showOneWay
+              ) {
+                return null;
+              }
+              if (
+                currentPlanet.gateAddress.includes(address.pooLetter) &&
+                showOneWay
+              ) {
+                return address;
+              }
+              if (
+                address.gateAddress.includes(currentPlanet.poo.letter) &&
+                showUnreachable
+              ) {
+                return address;
+              }
+              return address;
+            }).length
+          }
+        </p>
         {addressList
           .sort((a, b) =>
             a.planetName.toLowerCase().localeCompare(b.planetName.toLowerCase())
