@@ -100,7 +100,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   };
   const [gateState, dispatch] = useReducer(updateGateState, gateInitialState);
-  const [destinationInfo, setDestinationInfo] = useState({});
   const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
   const [traveled, setTraveled] = useState(false);
   const [initialized, setInitialized] = useState(false);
