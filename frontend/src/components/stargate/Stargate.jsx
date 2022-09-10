@@ -450,9 +450,20 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return closeGate();
   };
 
-  const offworldSequence = async () => {
+  const offworldSequence = async (instant, state) => {
+    console.log(state);
     dispatch({ type: "inputAddress", payload: [] });
     dispatch({ type: "pooActive", payload: false });
+    if (instant) {
+      handleChev(1, dispatch);
+      handleChev(2, dispatch);
+      handleChev(3, dispatch);
+      handleChev(4, dispatch);
+      handleChev(5, dispatch);
+      handleChev(6, dispatch);
+      dispatch({ type: "destLock", payload: true });
+      return dispatch({ type: "isOpen", payload: state });
+    }
     const volume = audioVolume;
     audioSelector(volume, "dhdChev", 1);
     handleChev(1, dispatch);
@@ -537,9 +548,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("closeGate", () => {
         closeGate();
       });
-      socket.on("offworldLock", () => {
+      socket.on("offworldLock", (instant = false, state) => {
         dispatch({ type: "offworld", payload: true });
-        offworldSequence();
+        offworldSequence(instant, state);
       });
       socket.on("offworldClose", () => {
         dispatch({ type: "offworld", payload: false });
