@@ -102,6 +102,15 @@ io.on("connection", (socket) => {
     const user = users.filter((client) => client.id === socket.id);
 
     if (!isHostPresent) {
+      const [gateOffworld] = busyGates
+        .filter((links) => links.inbound === planetName)
+        .map((link) => link);
+      console.log(gateOffworld);
+
+      if (gateOffworld) {
+        io.to(socket.id).emit("offworldLock", true, gateOffworld.state);
+      }
+
       users[userIndex] = { ...users[userIndex], hosting: planetName };
       cb(planetName);
     }
@@ -153,11 +162,15 @@ io.on("connection", (socket) => {
     socket.to(clientId).emit("newGateState", gateState);
   });
 
-  socket.on("isGateBusy", (destinationName, cb) => {
-    const gateBusy = busyGates.some(
-      (links) =>
+  socket.on("isGateBusy", (planetName, destinationName, cb) => {
+    const gateBusy = busyGates.some((links) => {
+      if (links.outbound === planetName && links.inbound === destinationName) {
+        return false;
+      }
+      return (
         links.outbound === destinationName || links.inbound === destinationName
-    );
+      );
+    });
 
     console.log(busyGates);
 
@@ -212,6 +225,12 @@ io.on("connection", (socket) => {
       return null;
     }
 
+    const gates = busyGates.findIndex(
+      (link) => link.outbound === planetName && link.inbound === destinationName
+    );
+
+    busyGates[gates] = { ...busyGates[gates], state: "open" };
+
     socket.to(planetName).emit("openGate");
     return socket.to(destinationName).emit("openGate");
   });
@@ -237,16 +256,11 @@ io.on("connection", (socket) => {
     return socket.to(destinationName).emit("closeGate");
   });
 
-  socket.on("dhdOpenGate", ({ planetName, destinationName }) => {
-    socket.to(planetName).emit("dhdOpenGate");
-    socket.to(planetName).emit("openGate");
-    socket.to(destinationName).emit("offworldOpen");
-  });
-
   socket.on("destLock", ({ planetName, destinationName }) => {
     busyGates.push({
       outbound: planetName,
       inbound: destinationName,
+      state: "closed",
     });
 
     console.table(busyGates);
