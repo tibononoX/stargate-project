@@ -108,7 +108,7 @@ io.on("connection", (socket) => {
       console.log(gateOffworld);
 
       if (gateOffworld) {
-        io.to(socket.id).emit("offworldLock", true, gateOffworld.state);
+        io.to(socket.id).emit("offworldLock", gateOffworld.state, true);
       }
 
       users[userIndex] = { ...users[userIndex], hosting: planetName };

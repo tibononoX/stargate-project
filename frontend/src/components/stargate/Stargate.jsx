@@ -450,8 +450,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return closeGate();
   };
 
-  const offworldSequence = async (instant, state) => {
-    console.log(state);
+  const offworldSequence = async (state, instant) => {
     dispatch({ type: "inputAddress", payload: [] });
     dispatch({ type: "pooActive", payload: false });
     if (instant) {
@@ -548,9 +547,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("closeGate", () => {
         closeGate();
       });
-      socket.on("offworldLock", (instant = false, state) => {
+      socket.on("offworldLock", (state, instant = false) => {
         dispatch({ type: "offworld", payload: true });
-        offworldSequence(instant, state);
+        offworldSequence(state, instant);
       });
       socket.on("offworldClose", () => {
         dispatch({ type: "offworld", payload: false });
