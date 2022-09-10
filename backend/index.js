@@ -68,13 +68,13 @@ function cleanBusyGates() {
 function userList() {
   if (users.length === 0) {
     console.log("No user connected");
-    return setTimeout(userList, 120000);
+    return setTimeout(userList, 60000);
   }
   console.log(
     `${users.length} user${users.length === 1 ? "" : "s"} connected :`
   );
   console.table(users);
-  return setTimeout(userList, 120000);
+  return setTimeout(userList, 60000);
 }
 userList();
 cleanBusyGates();
