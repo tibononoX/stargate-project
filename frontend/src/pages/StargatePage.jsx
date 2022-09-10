@@ -9,7 +9,19 @@ import UserContext from "@contexts/UserContext";
 const StargatePage = ({ addressList, windowWidth }) => {
   const { audioVolume, setAudioVolume, guestName, userData, socket } =
     useContext(UserContext);
-  const [currentPlanet, setCurrentPlanet] = useState(null);
+  const [currentPlanet, setCurrentPlanet] = useState({
+    initial: true,
+    id: null,
+    gateAddress: "",
+    dialMode: "",
+    poo: {
+      id: null,
+      letter: "",
+      label: "",
+      position: 0,
+    },
+    planetName: "",
+  });
 
   const [userRoom, setUserRoom] = useState("");
   const [hosting, setHosting] = useState("");
@@ -33,7 +45,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
   };
 
   const joinPlanet = (planetName) => {
-    socket.emit("join planet", planetName, (host) => {
+    socket.emit("join planet", planetName, currentPlanet?.initial, (host) => {
       setHosting(host);
     });
     setUserRoom(planetName);

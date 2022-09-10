@@ -87,9 +87,8 @@ io.on("connection", (socket) => {
     io.emit("user connected", users, user);
   });
 
-  socket.on("join planet", (planetName, cb) => {
+  socket.on("join planet", (planetName, initial, cb) => {
     socket.join(planetName);
-
     const isHostPresent = users
       .filter((user) => user.currentPlanet === planetName)
       .some((user) => user.hosting === planetName);
@@ -111,7 +110,8 @@ io.on("connection", (socket) => {
       cb(planetName);
     }
 
-    if (isHostPresent) {
+    if (isHostPresent && initial) {
+      console.log("initial load");
       const [host] = users.filter(
         (clientHost) => clientHost.hosting === planetName
       );
