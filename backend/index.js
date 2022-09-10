@@ -44,6 +44,7 @@ io.on("connection", (socket) => {
     }
 
     console.log(user?.username, "left server");
+    console.table(users);
 
     console.table(users);
     io.emit("user disconnected", users, user);
@@ -166,7 +167,6 @@ io.on("connection", (socket) => {
 
   socket.on("openGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
-    console.log(currentClient);
     console.log(
       `${currentClient[0]?.username} triggers gate opening from ${planetName} to ${destinationName}`
     );
@@ -194,8 +194,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("destLock", ({ planetName, destinationName }) => {
-    console.log(planetName, destinationName);
-    console.log(gateStates);
+    // console.log(planetName, destinationName);
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
   });

@@ -12,10 +12,11 @@ function timeout(ms) {
 const Dhd = ({
   gateState,
   dispatch,
-  destinationInfo,
   openSequence,
   closingSequence,
   wrongAddress,
+  prevPlanet,
+  traveled,
 }) => {
   const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
@@ -53,7 +54,7 @@ const Dhd = ({
   };
 
   const dhdCloseGate = async () => {
-    closingSequence(currentPlanet.planetName, destinationInfo.planetName);
+    closingSequence(prevPlanet, gateState.destinationInfo.planetName);
     await timeout(2700);
     dispatch({ type: "dhdActive", payload: false });
     return dispatch({ type: "pooActive", payload: false });
@@ -63,10 +64,18 @@ const Dhd = ({
     e.preventDefault();
     try {
       if (
+        traveled &&
+        gateState.isOpen &&
+        currentPlanet.planetName === gateState.destinationInfo.planetName
+      ) {
+        return dhdCloseGate();
+      }
+      if (
         gateState.offworld ||
         gateState.opening ||
         gateState.closing ||
-        gateState.isRolling
+        gateState.isRolling ||
+        gateState.isLocking
       ) {
         return null;
       }
@@ -87,6 +96,9 @@ const Dhd = ({
         socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
         return dhdFail();
       }
+      if (!gateState.destinationInfo) {
+        return null;
+      }
       if (!gateState.ready) {
         return null;
       }
@@ -104,6 +116,7 @@ const Dhd = ({
       gateState.pooActive ||
       gateState.isRolling ||
       gateState.processingInput ||
+      gateState.isLocking ||
       gateState.destLock ||
       gateState.isOpen ||
       gateState.offworld
@@ -115,6 +128,7 @@ const Dhd = ({
         planetName: currentPlanet.planetName,
         poo: dhdSymbol,
       });
+      dispatch({ type: "isLocking", payload: true });
       return dispatch({ type: "pooActive", payload: dhdSymbol });
     }
     socket.emit("newInput", {

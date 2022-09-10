@@ -114,7 +114,6 @@ const StargatePage = ({ addressList, windowWidth }) => {
         }
       });
       socket.on("disconnect", () => {
-        console.log(`leaving ${userRoom}`);
         leavePlanet();
       });
       socket.on("user join", (client, clients) => {
@@ -150,7 +149,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
       <PlanetContext.Provider
         value={{ currentPlanet, setCurrentPlanet, hosting }}
       >
-        <div className="page">
+        <div className={`page ${currentPlanet.id !== 1 ? "abydos" : ""}`}>
           {windowWidth >= 650 && (
             <div className="volumeControl">
               <label className="volumeRange">
