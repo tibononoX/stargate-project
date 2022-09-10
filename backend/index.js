@@ -165,6 +165,10 @@ io.on("connection", (socket) => {
     socket.to(planetName).emit("wrongAddress");
   });
 
+  socket.on("wrongAddressStraight", ({ planetName }) => {
+    socket.to(planetName).emit("wrongAddressStraight");
+  });
+
   socket.on("openGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
     console.log(
