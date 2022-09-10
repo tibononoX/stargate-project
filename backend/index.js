@@ -165,7 +165,6 @@ io.on("connection", (socket) => {
     }
 
     if (isHostPresent && initial) {
-      console.log("initial load");
       const [host] = users.filter(
         (clientHost) => clientHost.hosting === planetName
       );
