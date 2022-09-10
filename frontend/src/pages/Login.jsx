@@ -1,5 +1,6 @@
 import { useReducer, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import socketIOClient from "socket.io-client";
 import axios from "@services/axios";
 import "@styles/user/login.scss";
 import UserContext from "@contexts/UserContext";
@@ -22,7 +23,7 @@ const loginForm = (state, action) => {
   }
 };
 
-const Login = ({ initialPlanet }) => {
+const Login = ({ socket, setSocket }) => {
   const { setUserData } = useContext(UserContext);
   const [formData, dispatch] = useReducer(loginForm, formInitialState);
 
@@ -32,6 +33,7 @@ const Login = ({ initialPlanet }) => {
     e.preventDefault();
 
     try {
+      socket.disconnect();
       const userData = {
         email: formData.email,
         password: formData.password,
@@ -45,7 +47,11 @@ const Login = ({ initialPlanet }) => {
       if (!login) {
         return console.warn("An error occured");
       }
-      setUserData(login);
+      if (login) {
+        setUserData(login);
+      }
+      const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
+      setSocket(socketServer);
       return navigate("/");
     } catch (err) {
       return console.warn(err);
