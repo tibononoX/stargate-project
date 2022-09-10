@@ -43,7 +43,6 @@ const Dhd = ({
   };
 
   const dhdFail = () => {
-    dispatch({ type: "pooActive", payload: false });
     return wrongAddress();
   };
 
