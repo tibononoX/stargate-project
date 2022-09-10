@@ -39,7 +39,7 @@ const AddressBook = ({ addressList }) => {
           )
           .map((address) => {
             if (
-              address.gateAddress.includes(currentPlanet.pooLetter) &&
+              address.gateAddress.includes(currentPlanet.poo.letter) &&
               !showUnreachable
             ) {
               return null;
@@ -76,7 +76,7 @@ const AddressBook = ({ addressList }) => {
               );
             }
             if (
-              address.gateAddress.includes(currentPlanet.pooLetter) &&
+              address.gateAddress.includes(currentPlanet.poo.letter) &&
               showUnreachable
             ) {
               return (
