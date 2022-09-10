@@ -152,6 +152,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const handleInput = async () => {
     try {
+      if (gateState.destLock) {
+        return null;
+      }
       if (currentPlanet?.dialMode === "EARTH") {
         dispatch({
           type: "processingInput",
@@ -267,6 +270,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const lockDest = async () => {
+    if (gateState.destLock) {
+      return null;
+    }
     if (currentPlanet.dialMode === "EARTH") {
       audioSelector(audioVolume, "earthLock");
       dispatch({ type: "locking", payload: true });
@@ -480,6 +486,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("lastChev", (poo) => {
         dispatch({ type: "pooActive", payload: poo });
       });
+      socket.on("wrongAddressStraight", () => {
+        wrongAddress();
+      });
       socket.on("playerTravels", () => {
         audioSelector(audioVolume, "travelWormhole");
       });
@@ -519,7 +528,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   useEffect(() => {
     if (gateState.isOpen) {
       const autoClose = setTimeout(() => {
-        closeGate();
+        closingSequence();
       }, 2280000);
       return () => clearTimeout(autoClose);
     }
@@ -529,6 +538,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (gateState.destLock && !gateState.isOpen && gateState.ready) {
       const expires = setTimeout(() => {
         if (gateState.ready) {
+          socket.emit("wrongAddressStraight", {
+            planetName: currentPlanet.planetName,
+          });
           wrongAddress();
         }
       }, 15000);
@@ -540,6 +552,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (gateState.offworld && !gateState.isOpen) {
       const expires = setTimeout(() => {
         if (!gateState.isOpen) {
+          socket.emit("wrongAddressStraight", {
+            planetName: currentPlanet.planetName,
+          });
           wrongAddress();
         }
       }, 15800);
@@ -556,6 +571,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
     ) {
       const expires = setTimeout(() => {
         if (gateState.inputAddress.length > 0) {
+          socket.emit("wrongAddressStraight", {
+            planetName: currentPlanet.planetName,
+          });
           wrongAddress();
         }
       }, 30000);
