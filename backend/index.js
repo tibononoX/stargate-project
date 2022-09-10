@@ -23,7 +23,6 @@ const io = require("socket.io")(server, {
 });
 
 let users = [];
-const gateStates = [];
 let busyGates = [];
 
 function cleanBusyGates() {
@@ -255,21 +254,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("destinationInfo", ({ planetName, destination }) => {
-    const gateListed = gateStates.filter(
-      (gate) => gate.planetName === destination.planetName
-    ).length;
-    if (!gateListed) {
-      const gateStatus = {
-        planetName: destination.planetName,
-        currentInputs: null,
-        isLocked: false,
-        offworld: true,
-        isOpen: false,
-      };
-
-      return gateStates.push(gateStatus);
-    }
-
     return socket.to(planetName).emit("destinationInfo", destination);
   });
 
