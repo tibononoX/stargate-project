@@ -24,7 +24,58 @@ const io = require("socket.io")(server, {
 
 let users = [];
 const gateStates = [];
-const busyGates = [];
+let busyGates = [];
+
+function cleanBusyGates() {
+  console.log(
+    "1 minute since last clean check, starting busy gates cleaning..."
+  );
+
+  if (busyGates.length === 0) {
+    console.log("No gate links active, aborting");
+    return setTimeout(cleanBusyGates, 60000);
+  }
+
+  if (users.length === 0) {
+    console.log("No user connected, resetting busy gates states...");
+    busyGates = [];
+    return setTimeout(cleanBusyGates, 60000);
+  }
+
+  console.log("Cleaning busy gates...");
+  console.log("Current list: ");
+  console.table(busyGates);
+  const clearedList = [];
+  busyGates.forEach((links) => {
+    if (
+      users.some(
+        (user) => user.currentPlanet === links.outbound || links.inbound
+      )
+    ) {
+      console.log(`Keeping [${links.outbound} - ${links.inbound}]`);
+      return clearedList.push(links);
+    }
+    console.log(`Cleaning [${links.outbound} - ${links.inbound}]`);
+    return null;
+  });
+
+  busyGates = clearedList;
+  console.log("Cleaned list: ");
+  console.table(busyGates);
+  return setTimeout(cleanBusyGates, 10000);
+}
+
+function userList() {
+  if (users.length === 0) {
+    console.log("No user connected");
+    return setTimeout(userList, 120000);
+  }
+  console.log(`${users.length} users connected :`);
+  console.table(users);
+  return setTimeout(userList, 120000);
+}
+userList();
+cleanBusyGates();
 
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {
@@ -66,7 +117,6 @@ io.on("connection", (socket) => {
       users[0] = { ...users[0], hosting: users[0].currentPlanet };
     }
 
-    console.table(users);
     io.emit("user disconnected", users, user);
   });
 
@@ -82,7 +132,6 @@ io.on("connection", (socket) => {
     }
     users.push(user);
     console.log(user.username, "joined server");
-    console.table(users);
 
     io.emit("user connected", users, user);
   });
@@ -278,8 +327,6 @@ io.on("connection", (socket) => {
 
     busyGates.splice(gates);
 
-    console.table(busyGates);
-
     socket.to(planetName).emit("closeGate");
     return socket.to(destinationName).emit("closeGate");
   });
@@ -290,8 +337,6 @@ io.on("connection", (socket) => {
       inbound: destinationName,
       state: "closed",
     });
-
-    console.table(busyGates);
 
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
