@@ -587,8 +587,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
     if (gateState.destLock && !gateState.isOpen && gateState.ready) {
       const expires = setTimeout(() => {
         if (gateState.ready) {
-          socket.emit("wrongAddressStraight", {
+          socket.emit("gateAutoReset", {
             planetName: currentPlanet.planetName,
+            destinationName: gateState.destinationInfo.planetName,
           });
           wrongAddress();
         }

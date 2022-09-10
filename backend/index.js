@@ -240,6 +240,15 @@ io.on("connection", (socket) => {
     socket.to(planetName).emit("wrongAddressStraight");
   });
 
+  socket.on("gateAutoReset", ({ planetName, destinationName }) => {
+    const gates = busyGates.findIndex(
+      (link) => link.outbound === planetName && link.inbound === destinationName
+    );
+
+    busyGates.splice(gates);
+    socket.to(planetName).emit("wrongAddress");
+  });
+
   socket.on("openGate", ({ planetName, destinationName }) => {
     const currentClient = users.filter((client) => client.id === socket.id);
     console.log(
