@@ -24,6 +24,7 @@ const io = require("socket.io")(server, {
 
 let users = [];
 const gateStates = [];
+const busyGates = [];
 
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {
@@ -130,6 +131,17 @@ io.on("connection", (socket) => {
     socket.to(clientId).emit("newGateState", gateState);
   });
 
+  socket.on("isGateBusy", (destinationName, cb) => {
+    const gateBusy = busyGates.some(
+      (links) =>
+        links.outbound === destinationName || links.inbound === destinationName
+    );
+
+    console.log(gateBusy);
+
+    cb(gateBusy);
+  });
+
   socket.on("newInput", ({ planetName, inputAddress }) => {
     return socket.to(planetName).emit("newInput", inputAddress);
   });
@@ -177,6 +189,7 @@ io.on("connection", (socket) => {
     if (!planetName || !destinationName) {
       return null;
     }
+
     socket.to(planetName).emit("openGate");
     return socket.to(destinationName).emit("openGate");
   });
@@ -186,9 +199,20 @@ io.on("connection", (socket) => {
     console.log(
       `${currentClient[0]?.username} triggers gate closing from ${planetName} to ${destinationName}`
     );
+    if (!planetName || !destinationName) {
+      return null;
+    }
+
+    const gates = busyGates.findIndex(
+      (link) => link.outbound === planetName && link.inbound === destinationName
+    );
+
+    busyGates.splice(gates);
+
+    console.table(busyGates);
 
     socket.to(planetName).emit("closeGate");
-    socket.to(destinationName).emit("closeGate");
+    return socket.to(destinationName).emit("closeGate");
   });
 
   socket.on("dhdOpenGate", ({ planetName, destinationName }) => {
@@ -198,7 +222,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("destLock", ({ planetName, destinationName }) => {
-    // console.log(planetName, destinationName);
+    busyGates.push({
+      outbound: planetName,
+      inbound: destinationName,
+    });
+
+    console.table(busyGates);
+
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
   });

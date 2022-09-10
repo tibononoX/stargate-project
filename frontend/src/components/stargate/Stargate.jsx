@@ -232,6 +232,27 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   };
 
+  const checkBusy = async (planetName) => {
+    const promise = await new Promise((resolve, reject) => {
+      socket.emit("isGateBusy", planetName, (value) => {
+        if (value) {
+          resolve(true);
+        }
+        resolve(false);
+      });
+    }).then((result) => {
+      if (!result) {
+        return false;
+      }
+      return true;
+    });
+    console.log("promise:", promise);
+    if (!promise) {
+      return false;
+    }
+    return true;
+  };
+
   const compareAddresses = async () => {
     try {
       const addressesToCompare = addressList.filter(
@@ -242,28 +263,39 @@ export const Stargate = ({ addressList, windowWidth }) => {
         .toString()
         .replace(/,/g, "");
 
-      return await addressesToCompare.some((destination) => {
-        const { gateAddress } = destination;
+      const [match] = await addressesToCompare
+        .filter((destination) => {
+          const { gateAddress } = destination;
 
-        if (gateAddress === destAddress) {
+          return gateAddress === destAddress;
+        })
+        .map((destination) => {
           const [poo] = symbols.filter(
             (symbol) => symbol.letter === destination.pooLetter
           );
           const newPlanet = { ...destination, poo };
           delete newPlanet.pooLetter;
-          dispatch({ type: "destinationInfo", payload: newPlanet });
-          socket.emit("destinationInfo", {
-            planetName: currentPlanet.planetName,
-            destination: newPlanet,
-          });
-          socket.emit("destLock", {
-            planetName: currentPlanet.planetName,
-            destinationName: newPlanet.planetName,
-          });
-          return true;
-        }
+          return newPlanet;
+        });
+      if (!match) {
         return false;
+      }
+
+      const destBusy = await checkBusy(match.planetName);
+      if (destBusy === true) {
+        return false;
+      }
+
+      dispatch({ type: "destinationInfo", payload: match });
+      socket.emit("destinationInfo", {
+        planetName: currentPlanet.planetName,
+        destination: match,
       });
+      socket.emit("destLock", {
+        planetName: currentPlanet.planetName,
+        destinationName: match.planetName,
+      });
+      return true;
     } catch (err) {
       return console.warn(err);
     }
@@ -304,6 +336,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
 
     console.warn("Wrong address");
+    dispatch({ type: "isLocking", payload: false });
     return false;
   };
 
