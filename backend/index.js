@@ -138,6 +138,30 @@ io.on("connection", (socket) => {
     users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
     delete users[userIndex].hosting;
 
+    const otherUser = users.filter(
+      (client) => client.currentPlanet === planetName
+    );
+
+    if (otherUser.length === 0) {
+      const [isGateOpen] = busyGates
+        .filter(
+          (link) => link.outbound === planetName || link.inbound === planetName
+        )
+        .map((link) => link);
+
+      if (isGateOpen && isGateOpen.outbound === planetName) {
+        io.to(isGateOpen.outbound).emit("closeGate");
+
+        const gates = busyGates.findIndex(
+          (link) =>
+            link.outbound === isGateOpen.outbound &&
+            link.inbound === isGateOpen.inbound
+        );
+
+        busyGates.splice(gates);
+      }
+    }
+
     const user = users.filter((client) => client.id === socket.id);
     io.in(planetName).emit(
       "user left",
