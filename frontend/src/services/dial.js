@@ -1,4 +1,4 @@
-const rollSpeed = 40;
+const rollSpeed = 400;
 
 export const rollCalc = (symbol, ringPosition, instant = false) => {
   const diff = Math.abs((ringPosition - symbol.position) / 9.23);

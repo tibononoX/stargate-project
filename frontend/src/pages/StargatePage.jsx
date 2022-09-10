@@ -107,7 +107,12 @@ const StargatePage = ({ addressList, windowWidth }) => {
   useEffect(() => {
     if (socket) {
       socket.on("user connected", (clients) => setUserList(clients));
-      socket.on("user disconnected", (clients) => setUserList(clients));
+      socket.on("user disconnected", (clients, client) => {
+        if (client) {
+          console.warn(client.username, "disconnected");
+          setUserList(clients);
+        }
+      });
       socket.on("disconnect", () => {
         leavePlanet();
       });
