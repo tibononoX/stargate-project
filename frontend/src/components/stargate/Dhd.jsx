@@ -63,11 +63,7 @@ const Dhd = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (
-        traveled &&
-        gateState.isOpen &&
-        currentPlanet.planetName === gateState.destinationInfo.planetName
-      ) {
+      if (traveled && gateState.isOpen) {
         return dhdCloseGate();
       }
       if (
