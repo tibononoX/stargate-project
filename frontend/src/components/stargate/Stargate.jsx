@@ -141,6 +141,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         audioSelector(audioVolume, "chevEnd");
       }
       setTraveled(false);
+      setPrevPlanet(currentPlanet.planetName);
       return dispatch({
         type: "resetGate",
       });
@@ -233,12 +234,17 @@ export const Stargate = ({ addressList, windowWidth }) => {
 
   const checkBusy = async (planetName) => {
     const promise = await new Promise((resolve, reject) => {
-      socket.emit("isGateBusy", planetName, (value) => {
-        if (value) {
-          resolve(true);
+      socket.emit(
+        "isGateBusy",
+        currentPlanet.planetName,
+        planetName,
+        (value) => {
+          if (value) {
+            resolve(true);
+          }
+          resolve(false);
         }
-        resolve(false);
-      });
+      );
     }).then((result) => {
       if (!result) {
         return false;
@@ -445,6 +451,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const offworldSequence = async () => {
+    dispatch({ type: "inputAddress", payload: [] });
+    dispatch({ type: "pooActive", payload: false });
     const volume = audioVolume;
     audioSelector(volume, "dhdChev", 1);
     handleChev(1, dispatch);

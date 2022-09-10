@@ -153,11 +153,15 @@ io.on("connection", (socket) => {
     socket.to(clientId).emit("newGateState", gateState);
   });
 
-  socket.on("isGateBusy", (destinationName, cb) => {
-    const gateBusy = busyGates.some(
-      (links) =>
+  socket.on("isGateBusy", (planetName, destinationName, cb) => {
+    const gateBusy = busyGates.some((links) => {
+      if (links.outbound === planetName && links.inbound === destinationName) {
+        return false;
+      }
+      return (
         links.outbound === destinationName || links.inbound === destinationName
-    );
+      );
+    });
 
     console.log(busyGates);
 
