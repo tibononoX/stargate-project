@@ -114,7 +114,6 @@ const StargatePage = ({ addressList, windowWidth }) => {
         }
       });
       socket.on("disconnect", () => {
-        console.log(`leaving ${userRoom}`);
         leavePlanet();
       });
       socket.on("user join", (client, clients) => {

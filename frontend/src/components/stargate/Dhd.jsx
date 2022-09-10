@@ -16,6 +16,8 @@ const Dhd = ({
   openSequence,
   closingSequence,
   wrongAddress,
+  prevPlanet,
+  traveled,
 }) => {
   const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
@@ -53,7 +55,8 @@ const Dhd = ({
   };
 
   const dhdCloseGate = async () => {
-    closingSequence(currentPlanet.planetName, destinationInfo.planetName);
+    console.log(prevPlanet, destinationInfo.planetName);
+    closingSequence(prevPlanet, destinationInfo.planetName);
     await timeout(2700);
     dispatch({ type: "dhdActive", payload: false });
     return dispatch({ type: "pooActive", payload: false });
@@ -62,6 +65,13 @@ const Dhd = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (
+        traveled &&
+        gateState.isOpen &&
+        currentPlanet.planetName === destinationInfo.planetName
+      ) {
+        return dhdCloseGate();
+      }
       if (
         gateState.offworld ||
         gateState.opening ||

@@ -99,6 +99,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const [gateState, dispatch] = useReducer(updateGateState, gateInitialState);
   const [destinationInfo, setDestinationInfo] = useState({});
   const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
+  const [traveled, setTraveled] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -137,6 +138,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
         handleChev(null, dispatch);
         audioSelector(audioVolume, "chevEnd");
       }
+      setTraveled(false);
       return dispatch({
         type: "resetGate",
       });
@@ -363,7 +365,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
       return null;
     }
     dispatch({ type: "opening", payload: true });
-    console.log("test");
 
     socket.emit("openGate", {
       planetName: inbound,
@@ -476,11 +477,9 @@ export const Stargate = ({ addressList, windowWidth }) => {
         audioSelector(audioVolume, "travelWormhole");
       });
       socket.on("openGate", () => {
-        console.log("open");
         openGate();
       });
       socket.on("closeGate", () => {
-        console.log("close");
         closeGate();
       });
       socket.on("offworldLock", () => {
@@ -595,7 +594,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     console.warn("prev planet:", currentPlanet.planetName);
     leavePlanet(currentPlanet.planetName, destinationInfo.planetName);
     setCurrentPlanet(destinationInfo);
-    console.warn("next planet:", destinationInfo.planetName);
+    console.warn("new planet:", destinationInfo.planetName);
     dispatch({ type: "offworld", payload: true });
     const rollValues = rollCalc(
       destinationInfo.poo,
@@ -610,11 +609,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       planetName: currentPlanet.planetName,
       destinationName: destinationInfo.planetName,
     });
-    await timeout(5000);
-    return closingSequence(
-      currentPlanet.planetName,
-      destinationInfo.planetName
-    );
+    return setTraveled(true);
   };
 
   useEffect(() => {
@@ -678,6 +673,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
           openSequence={openSequence}
           closingSequence={closingSequence}
           wrongAddress={wrongAddress}
+          prevPlanet={prevPlanet}
+          traveled={traveled}
         />
       </div>
     );
