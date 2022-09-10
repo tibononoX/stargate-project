@@ -246,7 +246,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
       }
       return true;
     });
-    console.log("promise:", promise);
     if (!promise) {
       return false;
     }

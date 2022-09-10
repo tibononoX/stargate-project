@@ -29,6 +29,7 @@ const busyGates = [];
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     const [user] = users.filter((client) => client.id === socket.id);
+    const userPlanet = user?.currentPlanet;
     socket.leave(user?.currentPlanet);
 
     console.log(user?.username, "left server");
@@ -39,6 +40,27 @@ io.on("connection", (socket) => {
     const otherUser = users.filter(
       (client) => client.currentPlanet === user?.currentPlanet
     );
+
+    if (otherUser.length === 0) {
+      const [isGateOpen] = busyGates
+        .filter(
+          (link) => link.outbound === userPlanet || link.inbound === userPlanet
+        )
+        .map((link) => link);
+
+      if (isGateOpen && isGateOpen.outbound === userPlanet) {
+        io.to(isGateOpen.inbound).emit("closeGate");
+        io.to(isGateOpen.outbound).emit("closeGate");
+
+        const gates = busyGates.findIndex(
+          (link) =>
+            link.outbound === isGateOpen.outbound &&
+            link.inbound === isGateOpen.inbound
+        );
+
+        busyGates.splice(gates);
+      }
+    }
 
     if (otherUser.length >= 1) {
       users[0] = { ...users[0], hosting: users[0].currentPlanet };
@@ -137,7 +159,7 @@ io.on("connection", (socket) => {
         links.outbound === destinationName || links.inbound === destinationName
     );
 
-    console.log(gateBusy);
+    console.log(busyGates);
 
     cb(gateBusy);
   });
