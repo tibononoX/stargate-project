@@ -99,6 +99,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   const [gateState, dispatch] = useReducer(updateGateState, gateInitialState);
   const [destinationInfo, setDestinationInfo] = useState({});
   const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
@@ -446,6 +447,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
       });
       socket.on("newGateState", (gateStatus) => {
         dispatch({ type: "initial", payload: gateStatus });
+        setInitialized(true);
       });
       socket.on("newInput", (data) => {
         dispatch({ type: "inputAddress", payload: data });
@@ -616,52 +618,54 @@ export const Stargate = ({ addressList, windowWidth }) => {
     }
   }, [gateState.isOpen, gateState.offworld]);
 
-  return (
-    <div className="gameContainer">
-      <p className="currentPlanet">
-        {gateState.offworld ? (
-          <span className="offworld">OFFWORLD ACTIVATION</span>
-        ) : !gateState.isOpen ? (
-          `Current planet: ${currentPlanet?.planetName}`
-        ) : (
-          destinationInfo &&
-          gateState.isOpen &&
-          `Wormhole open to ${destinationInfo?.planetName}`
-        )}
-      </p>
-      <div className="stargate">
-        {gateState.isOpen && (
-          <audio loop autoPlay id="wormholeLoopAudio">
-            <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
-          </audio>
-        )}
-        {gateState.isOpen && currentPlanet?.id === 1 && !gateState.offworld && (
-          <audio loop autoPlay id="sgcAlarmAudio">
-            <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
-          </audio>
-        )}
-        {gateState.offworld && currentPlanet?.id === 1 && (
-          <audio loop autoPlay id="sgcOffworldAlarmAudio">
-            <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
-          </audio>
-        )}
-        <SG1Render
-          windowWidth={windowWidth}
+  if (initialized || hosting) {
+    return (
+      <div className="gameContainer">
+        <p className="currentPlanet">
+          {gateState.offworld ? (
+            <span className="offworld">OFFWORLD ACTIVATION</span>
+          ) : !gateState.isOpen ? (
+            `Current planet: ${currentPlanet?.planetName}`
+          ) : (
+            destinationInfo &&
+            gateState.isOpen &&
+            `Wormhole open to ${destinationInfo?.planetName}`
+          )}
+        </p>
+        <div className="stargate">
+          {gateState.isOpen && (
+            <audio loop autoPlay id="wormholeLoopAudio">
+              <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
+            </audio>
+          )}
+          {gateState.isOpen && currentPlanet?.id === 1 && !gateState.offworld && (
+            <audio loop autoPlay id="sgcAlarmAudio">
+              <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
+            </audio>
+          )}
+          {gateState.offworld && currentPlanet?.id === 1 && (
+            <audio loop autoPlay id="sgcOffworldAlarmAudio">
+              <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
+            </audio>
+          )}
+          <SG1Render
+            windowWidth={windowWidth}
+            gateState={gateState}
+            dispatch={dispatch}
+            travelGate={travelGate}
+          />
+        </div>
+        <Dhd
           gateState={gateState}
           dispatch={dispatch}
-          travelGate={travelGate}
+          destinationInfo={destinationInfo}
+          openSequence={openSequence}
+          closingSequence={closingSequence}
+          wrongAddress={wrongAddress}
         />
       </div>
-      <Dhd
-        gateState={gateState}
-        dispatch={dispatch}
-        destinationInfo={destinationInfo}
-        openSequence={openSequence}
-        closingSequence={closingSequence}
-        wrongAddress={wrongAddress}
-      />
-    </div>
-  );
+    );
+  }
 };
 
 export default { Stargate };

@@ -30,7 +30,19 @@ io.on("connection", (socket) => {
     const [user] = users.filter((client) => client.id === socket.id);
     console.log(user?.username, "left server");
     users = users.filter((client) => client.id !== socket.id);
-    io.emit("user disconnected", users);
+
+    const otherUser = users.filter(
+      (client) => client.currentPlanet === user?.currentPlanet
+    );
+
+    if (otherUser.length >= 1) {
+      users[0] = { ...users[0], hosting: users[0].currentPlanet };
+    }
+
+    console.log("otherUser:", otherUser);
+    console.log(user?.username, "left server");
+
+    io.emit("user disconnected", users, user);
   });
 
   socket.on("joinServer", ({ username, currentPlanet }) => {
@@ -50,7 +62,6 @@ io.on("connection", (socket) => {
 
   socket.on("join planet", (planetName, cb) => {
     socket.join(planetName);
-    console.log(socket.id);
 
     const isHostPresent = users
       .filter((user) => user.currentPlanet === planetName)
@@ -69,7 +80,6 @@ io.on("connection", (socket) => {
       const [host] = users.filter(
         (clientHost) => clientHost.hosting === planetName
       );
-      console.log(host);
       socket.to(host.id).emit("getGateState", socket.id);
     }
 
@@ -85,9 +95,14 @@ io.on("connection", (socket) => {
 
   socket.on("leave planet", (planetName, destinationName) => {
     socket.leave(planetName);
+    console.log("test");
     const userIndex = users.findIndex((person) => person.id === socket.id);
     users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
     delete users[userIndex].hosting;
+
+    const otherUser = users.filter((user) => user.currentPlanet === planetName);
+    console.log(otherUser);
+
     const user = users.filter((client) => client.id === socket.id);
     io.in(planetName).emit(
       "user left",
