@@ -26,6 +26,8 @@ let users = [];
 let busyGates = [];
 
 function cleanBusyGates() {
+  console.log("######################");
+
   console.log(
     "1 minute since last clean check, starting busy gates cleaning..."
   );
@@ -65,6 +67,8 @@ function cleanBusyGates() {
 }
 
 function userList() {
+  console.log("######################");
+
   if (users.length === 0) {
     console.log("No user connected");
     return setTimeout(userList, 60000);
