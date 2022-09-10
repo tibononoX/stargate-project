@@ -66,9 +66,6 @@ io.on("connection", (socket) => {
       users[0] = { ...users[0], hosting: users[0].currentPlanet };
     }
 
-    console.log(user?.username, "left server");
-    console.table(users);
-
     console.table(users);
     io.emit("user disconnected", users, user);
   });
@@ -87,7 +84,7 @@ io.on("connection", (socket) => {
     console.log(user.username, "joined server");
     console.table(users);
 
-    io.emit("user connected", users);
+    io.emit("user connected", users, user);
   });
 
   socket.on("join planet", (planetName, cb) => {
@@ -105,7 +102,6 @@ io.on("connection", (socket) => {
       const [gateOffworld] = busyGates
         .filter((links) => links.inbound === planetName)
         .map((link) => link);
-      console.log(gateOffworld);
 
       if (gateOffworld) {
         io.to(socket.id).emit("offworldLock", gateOffworld.state, true);
@@ -137,6 +133,30 @@ io.on("connection", (socket) => {
     const userIndex = users.findIndex((person) => person.id === socket.id);
     users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
     delete users[userIndex].hosting;
+
+    const otherUser = users.filter(
+      (client) => client.currentPlanet === planetName
+    );
+
+    if (otherUser.length === 0) {
+      const [isGateOpen] = busyGates
+        .filter(
+          (link) => link.outbound === planetName || link.inbound === planetName
+        )
+        .map((link) => link);
+
+      if (isGateOpen && isGateOpen.outbound === planetName) {
+        io.to(isGateOpen.outbound).emit("closeGate");
+
+        const gates = busyGates.findIndex(
+          (link) =>
+            link.outbound === isGateOpen.outbound &&
+            link.inbound === isGateOpen.inbound
+        );
+
+        busyGates.splice(gates);
+      }
+    }
 
     const user = users.filter((client) => client.id === socket.id);
     io.in(planetName).emit(
@@ -171,8 +191,6 @@ io.on("connection", (socket) => {
         links.outbound === destinationName || links.inbound === destinationName
       );
     });
-
-    console.log(busyGates);
 
     cb(gateBusy);
   });
@@ -214,6 +232,16 @@ io.on("connection", (socket) => {
 
   socket.on("wrongAddressStraight", ({ planetName }) => {
     socket.to(planetName).emit("wrongAddressStraight");
+  });
+
+  socket.on("gateAutoReset", ({ planetName, destinationName }) => {
+    const gates = busyGates.findIndex(
+      (link) => link.outbound === planetName && link.inbound === destinationName
+    );
+
+    busyGates.splice(gates);
+    socket.to(planetName).emit("wrongAddress");
+    socket.to(destinationName).emit("wrongAddress");
   });
 
   socket.on("openGate", ({ planetName, destinationName }) => {
