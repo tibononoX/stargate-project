@@ -461,7 +461,10 @@ export const Stargate = ({ addressList, windowWidth }) => {
       handleChev(5, dispatch);
       handleChev(6, dispatch);
       dispatch({ type: "destLock", payload: true });
-      return dispatch({ type: "isOpen", payload: state });
+      if (state === "open") {
+        return dispatch({ type: "isOpen", payload: true });
+      }
+      return dispatch({ type: "isOpen", payload: false });
     }
     const volume = audioVolume;
     audioSelector(volume, "dhdChev", 1);
