@@ -33,14 +33,12 @@ function cleanBusyGates() {
   );
 
   if (busyGates.length === 0) {
-    console.log("No gate links active, aborting");
-    return setTimeout(cleanBusyGates, 60000);
+    return console.log("No gate links active, aborting");
   }
 
   if (users.length === 0) {
-    console.log("No user connected, resetting busy gates states...");
     busyGates = [];
-    return setTimeout(cleanBusyGates, 60000);
+    return console.log("No user connected, resetting busy gates states...");
   }
 
   console.log("Cleaning busy gates...");
@@ -62,25 +60,29 @@ function cleanBusyGates() {
 
   busyGates = clearedList;
   console.log("Cleaned list: ");
-  console.table(busyGates);
-  return setTimeout(cleanBusyGates, 10000);
+  return console.table(busyGates);
 }
 
-function userList() {
+function userList(newUser, disconnect = false) {
   console.log("######################");
 
   if (users.length === 0) {
-    console.log("No user connected");
-    return setTimeout(userList, 60000);
+    return console.log("No user connected");
   }
+  if (newUser && disconnect) {
+    return console.log(newUser, "left server");
+  }
+  if (newUser && !disconnect) {
+    console.log(newUser, "joined server");
+  }
+
   console.log(
     `${users.length} user${users.length === 1 ? "" : "s"} connected :`
   );
-  console.table(users);
-  return setTimeout(userList, 60000);
+  return console.table(users);
 }
 userList();
-cleanBusyGates();
+// cleanBusyGates();
 
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {
@@ -88,7 +90,8 @@ io.on("connection", (socket) => {
     const userPlanet = user?.currentPlanet;
     socket.leave(user?.currentPlanet);
 
-    console.log(user?.username, "left server");
+    userList(user?.username, true);
+
     users = users
       .filter((client) => client.id !== socket.id)
       .map((newusers) => newusers);
@@ -98,23 +101,29 @@ io.on("connection", (socket) => {
     );
 
     if (otherUser.length === 0) {
-      const [isGateOpen] = busyGates
+      const [isGateActive] = busyGates
         .filter(
           (link) => link.outbound === userPlanet || link.inbound === userPlanet
         )
         .map((link) => link);
 
-      if (isGateOpen && isGateOpen.outbound === userPlanet) {
-        io.to(isGateOpen.inbound).emit("closeGate");
-        io.to(isGateOpen.outbound).emit("closeGate");
-
+      if (isGateActive && isGateActive.outbound === userPlanet) {
+        console.log("######################");
+        console.log(
+          "Gate link active but no user left on planet, closing gates"
+        );
+        io.to(isGateActive.inbound).emit("closeGate");
+        io.to(isGateActive.outbound).emit("closeGate");
         const gates = busyGates.findIndex(
           (link) =>
-            link.outbound === isGateOpen.outbound &&
-            link.inbound === isGateOpen.inbound
+            link.outbound === isGateActive.outbound &&
+            link.inbound === isGateActive.inbound
         );
 
-        busyGates.splice(gates);
+        busyGates.splice(gates, 1);
+        console.log("Gate link removed from busy gates : ");
+        console.log(`[${isGateActive.outbound} - ${isGateActive.inbound}]`);
+        console.table(busyGates);
       }
     }
 
@@ -136,8 +145,7 @@ io.on("connection", (socket) => {
       users.splice(indexOfUser);
     }
     users.push(user);
-    console.log(user.username, "joined server");
-
+    userList(user.username);
     io.emit("user connected", users, user);
   });
 
@@ -207,7 +215,11 @@ io.on("connection", (socket) => {
             link.inbound === isGateOpen.inbound
         );
 
-        busyGates.splice(gates);
+        busyGates.splice(gates, 1);
+        console.log("######################");
+        console.log("Gate link removed from busy gates : ");
+        console.log(`[${planetName} - ${destinationName}]`);
+        console.table(busyGates);
       }
     }
 
@@ -277,7 +289,11 @@ io.on("connection", (socket) => {
       (link) => link.outbound === planetName && link.inbound === destinationName
     );
 
-    busyGates.splice(gates);
+    busyGates.splice(gates, 1);
+    console.log("######################");
+    console.log("Gate link removed from busy gates : ");
+    console.log(`[${planetName} - ${destinationName}]`);
+    console.table(busyGates);
     socket.to(planetName).emit("wrongAddress");
     socket.to(destinationName).emit("wrongAddress");
   });
@@ -314,18 +330,36 @@ io.on("connection", (socket) => {
       (link) => link.outbound === planetName && link.inbound === destinationName
     );
 
-    busyGates.splice(gates);
+    busyGates.splice(gates, 1);
+    console.log("######################");
+    console.log("Gate link removed from busy gates : ");
+    console.log(`[${planetName} - ${destinationName}]`);
+    console.table(busyGates);
 
     socket.to(planetName).emit("closeGate");
     return socket.to(destinationName).emit("closeGate");
   });
 
   socket.on("destLock", ({ planetName, destinationName }) => {
-    busyGates.push({
-      outbound: planetName,
-      inbound: destinationName,
-      state: "closed",
-    });
+    if (
+      !busyGates.some(
+        (links) =>
+          links.outbound === planetName ||
+          links.outbound === destinationName ||
+          links.inbound === planetName ||
+          links.inbound === destinationName
+      )
+    ) {
+      busyGates.push({
+        outbound: planetName,
+        inbound: destinationName,
+        state: "locked",
+      });
+      console.log("######################");
+      console.log("New gate link added to busy gates : ");
+      console.log(`[${planetName} - ${destinationName}]`);
+      console.table(busyGates);
+    }
 
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");

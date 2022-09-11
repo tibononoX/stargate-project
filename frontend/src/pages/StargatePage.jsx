@@ -187,7 +187,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
           )}
 
           {currentPlanet?.id !== 1 && <div className="background" />}
-          {socket && (
+          {socket && currentPlanet.id !== null && (
             <Stargate addressList={addressList} windowWidth={windowWidth} />
           )}
           {currentPlanet?.id !== 1 && <div className="frontground" />}

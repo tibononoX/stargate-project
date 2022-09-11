@@ -26,7 +26,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     processingInput: false,
     pooActive: false,
     resetting: false,
-    ringPosition: 0,
+    ringPosition: currentPlanet.poo.position,
     rollData: {
       timing: 0,
       position: currentPlanet.poo.position,
@@ -44,7 +44,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     destLock: false,
     destinationInfo: {},
     offworld: false,
-    prevPlanet: "",
   };
 
   const updateGateState = (state, action) => {
@@ -89,8 +88,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
         return { ...state, destLock: action.payload };
       case "destinationInfo":
         return { ...state, destinationInfo: action.payload };
-      case "prevPlanet":
-        return { ...state, prevPlanet: action.payload };
       case "offworld":
         return { ...state, offworld: action.payload };
       case "RESET_FORM":
@@ -233,7 +230,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const checkBusy = async (planetName) => {
-    const promise = await new Promise((resolve, reject) => {
+    const promise = await new Promise((resolve) => {
       socket.emit(
         "isGateBusy",
         currentPlanet.planetName,
