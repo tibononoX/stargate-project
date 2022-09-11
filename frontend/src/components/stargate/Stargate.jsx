@@ -26,7 +26,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
     processingInput: false,
     pooActive: false,
     resetting: false,
-    ringPosition: 0,
+    ringPosition: currentPlanet.poo.position,
     rollData: {
       timing: 0,
       position: currentPlanet.poo.position,
@@ -44,7 +44,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     destLock: false,
     destinationInfo: {},
     offworld: false,
-    prevPlanet: "",
   };
 
   const updateGateState = (state, action) => {
@@ -89,8 +88,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
         return { ...state, destLock: action.payload };
       case "destinationInfo":
         return { ...state, destinationInfo: action.payload };
-      case "prevPlanet":
-        return { ...state, prevPlanet: action.payload };
       case "offworld":
         return { ...state, offworld: action.payload };
       case "RESET_FORM":
@@ -233,7 +230,7 @@ export const Stargate = ({ addressList, windowWidth }) => {
   };
 
   const checkBusy = async (planetName) => {
-    const promise = await new Promise((resolve, reject) => {
+    const promise = await new Promise((resolve) => {
       socket.emit(
         "isGateBusy",
         currentPlanet.planetName,
@@ -690,22 +687,27 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return setTraveled(true);
   };
 
+  const [loadHtmlSounds, setLoadHtmlSounds] = useState(false);
+
   useEffect(() => {
     const openVortexAudio = document.getElementById("wormholeLoopAudio");
     if (openVortexAudio !== null) {
       openVortexAudio.volume = audioVolume;
+      openVortexAudio.play();
     }
     const sgcAlarmAudio = document.getElementById("sgcAlarmAudio");
     if (sgcAlarmAudio !== null) {
       sgcAlarmAudio.volume = audioVolume;
+      sgcAlarmAudio.play();
     }
     const sgcOffworldAlarmAudio = document.getElementById(
       "sgcOffworldAlarmAudio"
     );
     if (sgcOffworldAlarmAudio !== null) {
       sgcOffworldAlarmAudio.volume = audioVolume;
+      sgcOffworldAlarmAudio.play();
     }
-  }, [gateState.isOpen, gateState.offworld]);
+  }, [gateState.isOpen, gateState.inputAddress, gateState.offworld]);
 
   if (initialized || hosting) {
     return (
@@ -723,17 +725,19 @@ export const Stargate = ({ addressList, windowWidth }) => {
         </p>
         <div className="stargate">
           {gateState.isOpen && (
-            <audio loop autoPlay id="wormholeLoopAudio">
+            <audio loop id="wormholeLoopAudio">
               <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
             </audio>
           )}
-          {gateState.isOpen && currentPlanet?.id === 1 && !gateState.offworld && (
-            <audio loop autoPlay id="sgcAlarmAudio">
-              <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
-            </audio>
-          )}
+          {gateState.inputAddress.length !== 0 &&
+            currentPlanet?.id === 1 &&
+            !gateState.offworld && (
+              <audio loop id="sgcAlarmAudio">
+                <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
+              </audio>
+            )}
           {gateState.offworld && currentPlanet?.id === 1 && (
-            <audio loop autoPlay id="sgcOffworldAlarmAudio">
+            <audio loop id="sgcOffworldAlarmAudio">
               <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
             </audio>
           )}

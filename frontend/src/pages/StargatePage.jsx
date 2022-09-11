@@ -179,6 +179,22 @@ const StargatePage = ({ addressList, windowWidth }) => {
                   step={0.02}
                   value={audioVolume}
                   onChange={(e) => {
+                    const openVortexAudio =
+                      document.getElementById("wormholeLoopAudio");
+                    if (openVortexAudio !== null) {
+                      openVortexAudio.volume = audioVolume;
+                    }
+                    const sgcAlarmAudio =
+                      document.getElementById("sgcAlarmAudio");
+                    if (sgcAlarmAudio !== null) {
+                      sgcAlarmAudio.volume = audioVolume;
+                    }
+                    const sgcOffworldAlarmAudio = document.getElementById(
+                      "sgcOffworldAlarmAudio"
+                    );
+                    if (sgcOffworldAlarmAudio !== null) {
+                      sgcOffworldAlarmAudio.volume = audioVolume;
+                    }
                     setAudioVolume(e.target.valueAsNumber);
                   }}
                 />
@@ -187,7 +203,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
           )}
 
           {currentPlanet?.id !== 1 && <div className="background" />}
-          {socket && (
+          {socket && currentPlanet.id !== null && (
             <Stargate addressList={addressList} windowWidth={windowWidth} />
           )}
           {currentPlanet?.id !== 1 && <div className="frontground" />}
