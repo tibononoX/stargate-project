@@ -81,6 +81,10 @@
         }
 
         .message {
+          font-size: 14px;
+          .emptyChat {
+            color: rgb(145, 143, 143);
+          }
           .colorAdmin {
             color: rgb(223, 0, 0);
           }
@@ -128,6 +132,12 @@
 
       .chatBox {
         height: 20vh;
+
+        .messages {
+          .message {
+            font-size: 16px;
+          }
+        }
       }
     }
   }
