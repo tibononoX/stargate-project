@@ -29,19 +29,17 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
   const [addressBookOpen, setAddressBookOpen] = useState(false);
 
+  const fetchUsers = () => {
+    socket.emit("fetchUsers", (userlist) => setUserList(userlist));
+  };
+
   const connect = (planetName) => {
     socket.emit("joinServer", {
       username: userData ? userData.username : guestName,
       currentPlanet: planetName,
     });
 
-    socket.emit("fetchUsers", (users) => {
-      setUserList(users);
-    });
-  };
-
-  const fetchUsers = async () => {
-    await socket.emit("getUserList", (userlist) => setUserList(userlist));
+    fetchUsers();
   };
 
   const joinPlanet = (planetName) => {
@@ -132,6 +130,9 @@ const StargatePage = ({ addressList, windowWidth }) => {
       });
       socket.on("disconnect", () => {
         leavePlanet();
+      });
+      socket.on("setUserList", (clients) => {
+        setUserList(clients);
       });
       socket.on("user join", (client, clients) => {
         setUserList(clients);

@@ -246,6 +246,7 @@ io.on("connection", (socket) => {
   socket.on("playerTravels", ({ planetName, destinationName }) => {
     socket.to(planetName).emit("playerTravels");
     socket.to(destinationName).emit("playerTravels");
+    io.emit("setUserList", users);
   });
 
   socket.on("sendGateStatus", (clientId, gateState) => {
