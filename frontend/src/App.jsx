@@ -66,6 +66,14 @@ function App() {
   };
 
   useEffect(() => {
+    if (socket) {
+      socket.on("fetchAddressList", () => {
+        fetchAddressList();
+      });
+    }
+  }, [socket]);
+
+  useEffect(() => {
     fetchAddressList();
     checkConnection();
     window.addEventListener("resize", () => setWindowWidth(window.innerWidth));

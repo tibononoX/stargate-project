@@ -149,6 +149,11 @@ io.on("connection", (socket) => {
     io.emit("user connected", users, user);
   });
 
+  socket.on("newPlanetRegistered", () => {
+    console.log("A new planet has been added to the database");
+    io.emit("fetchAddressList");
+  });
+
   socket.on("join planet", (planetName, initial, cb) => {
     socket.join(planetName);
     const isHostPresent = users
