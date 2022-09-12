@@ -79,6 +79,15 @@ const Chat = () => {
         </header>
         <div className="chatBox">
           <ul className="messages" id="chatList">
+            {messages.filter((message) => message.channel === chatRoom)
+              .length === 0 && (
+              <li className="message">
+                <span className="emptyChat">
+                  {currentPlanet.planetName} chatroom is quiet, you can change
+                  that!
+                </span>
+              </li>
+            )}
             {chatRoom === currentPlanet.planetName && currentPlanet.initial && (
               <>
                 <li className="message">
