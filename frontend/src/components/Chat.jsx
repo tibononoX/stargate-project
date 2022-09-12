@@ -76,11 +76,34 @@ const Chat = () => {
         <div className="chatBox">
           <ul className="messages" id="chatList">
             {chatRoom === currentPlanet.planetName && (
-              <li className="message">
-                <span className="colorAdmin">Server</span>: Welcome to Stargate
-                React, keep in mind that everything is work in progress, feel
-                free to ask any questions if you need!
-              </li>
+              <>
+                <li className="message">
+                  <span className="colorAdmin">Server</span>: Welcome to
+                  Stargate React!
+                </li>
+                <li className="message">
+                  <span className="colorAdmin">Server</span>: You are currently
+                  on {currentPlanet.planetName}, each planet have a dedicated
+                  chat room.
+                </li>
+                <li className="message">
+                  <span className="colorAdmin">Server</span>: Use the address
+                  book on the top left corner to see reachable planets.
+                </li>
+                <li className="message">
+                  <span className="colorAdmin">Server</span>: Open the DHD
+                  (button at the bottom of your screen), and enter the sequence
+                  corresponding to your destination.
+                </li>
+                <li className="message">
+                  <span className="colorAdmin">Server</span>: Everything is work
+                  in progress, use the global chat for questions.
+                </li>
+                <li className="message">
+                  <span className="colorAdmin">Server</span>: Have fun and
+                  tek'mate, brother!
+                </li>
+              </>
             )}
             {messages
               .filter((message) => message.channel === chatRoom)
