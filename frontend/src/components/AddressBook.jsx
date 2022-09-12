@@ -2,13 +2,13 @@ import { useState, useContext } from "react";
 import PlanetContext from "@contexts/PlanetContext";
 import "@styles/addressBook.scss";
 
-const AddressBook = ({ addressList }) => {
+const AddressBook = ({ addressBookOpen, addressList }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const [showOneWay, setShowOneWay] = useState(true);
   const [showUnreachable, setShowUnreachable] = useState(false);
 
   return (
-    <div className="addressBook">
+    <div className={addressBookOpen ? "addressBook open" : "addressBook"}>
       <ul className="planetList">
         <div className="filters">
           <label htmlFor="oneway">

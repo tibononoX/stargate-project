@@ -10,6 +10,8 @@ function timeout(ms) {
 }
 
 const Dhd = ({
+  dhdOpen,
+  setDhdOpen,
   gateState,
   dispatch,
   openSequence,
@@ -20,7 +22,6 @@ const Dhd = ({
 }) => {
   const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
-  const [dhdOpen, setDhdOpen] = useState(false);
 
   const handleDhdClassName = (type, id) => {
     switch (type) {

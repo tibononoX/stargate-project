@@ -109,7 +109,6 @@ function App() {
         }}
       >
         <Router>
-          <Menu />
           <Routes>
             {socket && (
               <>

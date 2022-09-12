@@ -3,16 +3,18 @@ import { useState, useContext } from "react";
 import PlanetContext from "@contexts/PlanetContext";
 import "@styles/userList.scss";
 
-const UserList = ({ userList, currentPlanet }) => {
+const UserList = ({
+  userListOpen,
+  setUserListOpen,
+  userList,
+  currentPlanet,
+}) => {
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(true);
 
   return (
-    <div className="userInfos">
-      <button className="toggleList" onClick={() => setOpen(!open)}>
-        {open ? "Close user list" : "Open user list"}
-      </button>
-      <ul className={open ? "userList" : "userList closed"}>
+    <div className={userListOpen ? "userInfos" : "userInfos closed"}>
+      <header className="userInfoHeader">
         <p>
           {
             userList?.filter((user) => {
@@ -43,6 +45,9 @@ const UserList = ({ userList, currentPlanet }) => {
           />
           Planet filter
         </label>
+      </header>
+
+      <ul className={userListOpen ? "userList" : "userList closed"}>
         {userList
           .filter((user) => {
             return showAll
@@ -50,7 +55,7 @@ const UserList = ({ userList, currentPlanet }) => {
               : user;
           })
           .map((user) => (
-            <li key={user.username}>
+            <li className="userLine" key={user.username}>
               <p>
                 <span
                   className={
