@@ -113,8 +113,7 @@ const Chat = () => {
               .length === 0 && (
               <li className="message">
                 <span className="emptyChat">
-                  {currentPlanet.planetName} chatroom is quiet, you can change
-                  that!
+                  {chatRoom} chatroom is quiet, you can change that!
                 </span>
               </li>
             )}
