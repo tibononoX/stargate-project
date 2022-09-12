@@ -15,10 +15,11 @@
     color: rgb(214, 214, 214);
 
     list-style: none;
-    max-height: 46vh;
+    max-height: 45vh;
     overflow-y: auto;
 
     .filters {
+      font-size: 0.9rem;
       padding: 4px;
       display: flex;
       flex-direction: column;
@@ -37,7 +38,7 @@
     }
 
     .planet {
-      font-size: 1rem;
+      font-size: 0.9rem;
       padding: 8px 12px;
       border-top: solid 1px rgb(116, 98, 83);
 
