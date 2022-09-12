@@ -5,6 +5,7 @@ import PlanetContext from "@contexts/PlanetContext";
 import symbols from "@services/gateSymbols";
 import UserList from "@components/UserList";
 import UserContext from "@contexts/UserContext";
+import Chat from "@components/Chat";
 
 const StargatePage = ({ addressList, windowWidth }) => {
   const { audioVolume, setAudioVolume, guestName, userData, socket } =
@@ -219,6 +220,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
             <AddressBook addressList={addressList} />
           )}
           <UserList userList={userList} currentPlanet={currentPlanet} />
+          {currentPlanet.id && <Chat />}
         </div>
       </PlanetContext.Provider>
     );

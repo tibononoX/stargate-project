@@ -24,6 +24,7 @@ const io = require("socket.io")(server, {
 
 let users = [];
 let busyGates = [];
+const messages = [];
 
 function cleanBusyGates() {
   console.log("######################");
@@ -369,5 +370,19 @@ io.on("connection", (socket) => {
 
     socket.to(planetName).emit("destLock");
     socket.to(destinationName).emit("offworldLock");
+  });
+
+  // CHAT SYSTEM
+
+  socket.on("getMessages", (cb) => {
+    cb(messages);
+  });
+
+  socket.on("newChatMessage", ({ channel, username, message }) => {
+    if (messages.length === 1500) {
+      messages.shift();
+    }
+    messages.push({ channel, username, message });
+    io.emit("updateChat", messages);
   });
 });
