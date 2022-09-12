@@ -63,7 +63,7 @@ const UserList = ({ userList, currentPlanet }) => {
                 >
                   {user.username}
                 </span>{" "}
-                {user.currentPlanet}
+                {!showAll && user.currentPlanet}
               </p>
             </li>
           ))}
