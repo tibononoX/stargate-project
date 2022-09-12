@@ -5,9 +5,9 @@ import UserContext from "@contexts/UserContext";
 import PlanetContext from "@contexts/PlanetContext";
 
 const Chat = () => {
-  const { audioVolume, setAudioVolume, guestName, userData, socket } =
-    useContext(UserContext);
+  const { audioVolume, guestName, userData, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
+  const [userPosted, setUserPosted] = useState(false);
   const [chatRoom, setChatRoom] = useState(currentPlanet.planetName);
   const [open, setOpen] = useState(true);
 
@@ -22,12 +22,16 @@ const Chat = () => {
       username: userData ? userData.username : guestName,
       message: newMessage,
     });
+    setUserPosted(true);
     setNewMessage("");
   };
 
   useEffect(() => {
     const chatList = document.getElementById("chatList");
-    chatList.scrollTop = chatList.scrollHeight;
+    chatList.scrollTop =
+      currentPlanet.initial && chatRoom !== "Global" && !userPosted
+        ? 0
+        : chatList.scrollHeight;
   }, [messages, chatRoom]);
 
   useEffect(() => {
