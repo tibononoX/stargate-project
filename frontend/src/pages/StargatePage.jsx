@@ -6,6 +6,7 @@ import symbols from "@services/gateSymbols";
 import UserList from "@components/UserList";
 import UserContext from "@contexts/UserContext";
 import Chat from "@components/Chat";
+import Menu from "@components/Menu";
 
 const StargatePage = ({ addressList, windowWidth }) => {
   const { audioVolume, setAudioVolume, guestName, userData, socket } =
@@ -26,9 +27,13 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
   const [userRoom, setUserRoom] = useState("");
   const [hosting, setHosting] = useState("");
+
   const [userList, setUserList] = useState([]);
 
+  const [chatOpen, setChatOpen] = useState(true);
+  const [userListOpen, setUserListOpen] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [dhdOpen, setDhdOpen] = useState(false);
 
   const fetchUsers = () => {
     socket.emit("fetchUsers", (userlist) => setUserList(userlist));
@@ -206,21 +211,39 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
           {currentPlanet?.id !== 1 && <div className="background" />}
           {socket && currentPlanet.id !== null && (
-            <Stargate addressList={addressList} windowWidth={windowWidth} />
+            <Stargate
+              addressList={addressList}
+              windowWidth={windowWidth}
+              dhdOpen={dhdOpen}
+              setDhdOpen={setDhdOpen}
+            />
           )}
           {currentPlanet?.id !== 1 && <div className="frontground" />}
-          <button
-            type="button"
-            className="openAddressBook"
-            onClick={() => setAddressBookOpen(!addressBookOpen)}
-          >
-            Address Book
-          </button>
-          {addressBookOpen && addressList && (
-            <AddressBook addressList={addressList} />
+          {addressList && (
+            <AddressBook
+              addressBookOpen={addressBookOpen}
+              addressList={addressList}
+            />
           )}
-          <UserList userList={userList} currentPlanet={currentPlanet} />
-          {currentPlanet.id && <Chat />}
+          <UserList
+            userListOpen={userListOpen}
+            setUserListOpen={setUserListOpen}
+            userList={userList}
+            currentPlanet={currentPlanet}
+          />
+          <Menu
+            dhdOpen={dhdOpen}
+            chatOpen={chatOpen}
+            setChatOpen={setChatOpen}
+            userListOpen={userListOpen}
+            setUserListOpen={setUserListOpen}
+            addressBookOpen={addressBookOpen}
+            setAddressBookOpen={setAddressBookOpen}
+            windowWidth={windowWidth}
+          />
+          {currentPlanet.id && (
+            <Chat chatOpen={chatOpen} setChatOpen={setChatOpen} />
+          )}
         </div>
       </PlanetContext.Provider>
     );

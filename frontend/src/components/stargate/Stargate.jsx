@@ -16,7 +16,7 @@ function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const Stargate = ({ addressList, windowWidth }) => {
+export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
   const { audioVolume, userData, socket } = useContext(UserContext);
   const { currentPlanet, setCurrentPlanet, hosting } =
     useContext(PlanetContext);
@@ -753,6 +753,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
           />
         </div>
         <Dhd
+          dhdOpen={dhdOpen}
+          setDhdOpen={setDhdOpen}
           gateState={gateState}
           dispatch={dispatch}
           openSequence={openSequence}

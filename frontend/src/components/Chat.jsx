@@ -4,12 +4,11 @@ import "@styles/chat.scss";
 import UserContext from "@contexts/UserContext";
 import PlanetContext from "@contexts/PlanetContext";
 
-const Chat = () => {
+const Chat = ({ chatOpen, setChatOpen }) => {
   const { audioVolume, guestName, userData, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [userPosted, setUserPosted] = useState(false);
   const [chatRoom, setChatRoom] = useState(currentPlanet.planetName);
-  const [open, setOpen] = useState(true);
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -53,7 +52,7 @@ const Chat = () => {
   }, [socket]);
 
   return (
-    <div className={open ? "chatWindow open" : "chatWindow"}>
+    <div className={chatOpen ? "chatWindow open" : "chatWindow"}>
       <section className="chat">
         <header className="chatRooms">
           <button
@@ -80,6 +79,13 @@ const Chat = () => {
           >
             {currentPlanet.planetName}
           </button>
+          <button
+            type="button"
+            className="closeChat"
+            onClick={() => setChatOpen(false)}
+          >
+            X
+          </button>
         </header>
         <div className="chatBox">
           <ul className="messages" id="chatList">
@@ -87,16 +93,13 @@ const Chat = () => {
               <>
                 <li className="message">
                   <span className="colorAdmin">Server</span>: Welcome to
-                  Stargate React!
-                </li>
-                <li className="message">
-                  <span className="colorAdmin">Server</span>: You are currently
-                  on {currentPlanet.planetName}, each planet have a dedicated
-                  chat room.
+                  Stargate React! You are currently on{" "}
+                  {currentPlanet.planetName}, each planet have a dedicated chat
+                  room.
                 </li>
                 <li className="message">
                   <span className="colorAdmin">Server</span>: Use the address
-                  book on the top left corner to see reachable planets.
+                  book on the left to see reachable planets.
                 </li>
                 <li className="message">
                   <span className="colorAdmin">Server</span>: Open the DHD

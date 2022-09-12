@@ -1,31 +1,37 @@
 .chatWindow {
   position: fixed;
-  display: none;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  bottom: 32px;
+  width: 80%;
+  // min-width: 314px;
+  bottom: 30px;
+  transform: translateY(120%);
+  transition: 200ms;
+  z-index: 30;
 
   &.open {
-    display: flex;
+    transform: translateX(0);
   }
 
   .chat {
-    width: 95%;
+    width: 100%;
+    z-index: 35;
     background-color: rgb(65, 63, 63);
     color: white;
     border-radius: 4px;
 
     .chatRooms {
+      position: relative;
       display: flex;
       width: 100%;
       border-bottom: solid 1px rgb(231, 89, 26);
-      padding: 2px 4px;
+      // padding: 2px 4px;
 
       .chatRoomsButton {
         width: auto;
-        padding: 2px 6px;
+        padding: 6px 6px;
         margin-right: 2px;
         border: none;
         background: none;
@@ -45,6 +51,16 @@
             color: rgb(238, 127, 79);
           }
         }
+      }
+
+      .closeChat {
+        position: absolute;
+        right: 6px;
+        background: none;
+        border: none;
+        font-weight: 800;
+        color: rgb(238, 127, 79);
+        height: 100%;
       }
     }
 
@@ -131,6 +147,9 @@
 @media screen and (min-width: 650px) {
   .chatWindow {
     bottom: 40px;
+    min-width: 50vw;
+    // transform: translateX(120%);
+
     .chat {
       width: 50%;
 

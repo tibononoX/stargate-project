@@ -1,7 +1,13 @@
 .addressBook {
   position: absolute;
-  top: 40px;
+  top: 0;
   left: 0;
+  transform: translateX(-100%);
+  transition: 150ms;
+
+  &.open {
+    transform: translateX(0);
+  }
 
   .planetList {
     background-color: rgba(78, 72, 69, 0.733);
@@ -9,7 +15,7 @@
     color: rgb(214, 214, 214);
 
     list-style: none;
-    max-height: 40vh;
+    max-height: 52vh;
     overflow-y: auto;
 
     .filters {
