@@ -31,6 +31,10 @@ const Chat = () => {
   }, [messages, chatRoom]);
 
   useEffect(() => {
+    setChatRoom(currentPlanet.planetName);
+  }, [currentPlanet]);
+
+  useEffect(() => {
     socket.emit("getMessages", (fetchedMessages) => {
       setMessages(fetchedMessages);
     });
@@ -75,7 +79,7 @@ const Chat = () => {
         </header>
         <div className="chatBox">
           <ul className="messages" id="chatList">
-            {chatRoom === currentPlanet.planetName && (
+            {chatRoom === currentPlanet.planetName && currentPlanet.initial && (
               <>
                 <li className="message">
                   <span className="colorAdmin">Server</span>: Welcome to
