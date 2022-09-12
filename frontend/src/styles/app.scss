@@ -45,10 +45,10 @@ html {
 
   .background {
     position: absolute;
-    bottom: 0;
+    top: 286px;
     left: 0;
     width: 100%;
-    height: 60%;
+    height: 100%;
     clip-path: polygon(
       38% 3%,
       78% 5%,
@@ -65,10 +65,10 @@ html {
 
   .frontground {
     position: absolute;
-    bottom: 0;
+    top: 340px;
     left: 0;
     width: 100%;
-    height: 54.5%;
+    height: 100%;
     background-color: rgb(192, 164, 70);
   }
 
@@ -108,11 +108,11 @@ html {
     }
 
     .background {
-      height: 50%;
+      top: 490px;
     }
 
     .frontground {
-      height: 42%;
+      top: 570px;
     }
 
     .openAddressBook {
