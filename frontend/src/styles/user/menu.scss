@@ -41,7 +41,7 @@
         }
 
         &.dhdOpened {
-          transform: translateY(-12vh);
+          transform: translateY(-90px);
           z-index: 80;
         }
       }
@@ -102,7 +102,7 @@
       &.left {
         .navButton {
           &.dhdOpened {
-            transform: translateY(-11vh);
+            transform: translateY(-105px);
           }
         }
       }
