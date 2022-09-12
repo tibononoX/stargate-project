@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  bottom: 40px;
+  bottom: 32px;
 
   &.open {
     display: flex;
@@ -51,7 +51,7 @@
     .chatBox {
       display: flex;
       flex-direction: column;
-      height: 25vh;
+      height: 29vh;
 
       .messages {
         height: 100%;
