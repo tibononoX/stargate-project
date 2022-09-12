@@ -2,6 +2,7 @@
   position: fixed;
   bottom: 30px;
   width: 100%;
+  height: 30vh;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -40,7 +41,7 @@
         }
 
         &.dhdOpened {
-          transform: translateY(-18vh);
+          transform: translateY(-12vh);
           z-index: 80;
         }
       }
@@ -101,7 +102,7 @@
       &.left {
         .navButton {
           &.dhdOpened {
-            transform: translateY(-22vh);
+            transform: translateY(-11vh);
           }
         }
       }
