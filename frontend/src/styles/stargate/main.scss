@@ -212,14 +212,14 @@
     .showHide {
       display: block;
       &.hide {
-        border-radius: 50% 50% 0 0;
+        // border-radius: 50% 50% 0 0;
       }
     }
 
     &.open {
       bottom: 0;
-      background: none;
-      backdrop-filter: none;
+      // background: none;
+      // backdrop-filter: none;
     }
 
     .buttonList {
