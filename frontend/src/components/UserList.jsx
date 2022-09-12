@@ -63,7 +63,6 @@ const UserList = ({ userList, currentPlanet }) => {
                 >
                   {user.username}
                 </span>{" "}
-                {user.hosting === user.currentPlanet ? "Hosting " : ""}
                 {user.currentPlanet}
               </p>
             </li>
