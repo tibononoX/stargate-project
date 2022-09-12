@@ -687,8 +687,6 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return setTraveled(true);
   };
 
-  const [loadHtmlSounds, setLoadHtmlSounds] = useState(false);
-
   useEffect(() => {
     const openVortexAudio = document.getElementById("wormholeLoopAudio");
     if (openVortexAudio !== null) {

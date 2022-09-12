@@ -30,7 +30,7 @@ const registerForm = (state, action) => {
 };
 
 const Signup = ({ initialPlanet, fetchAddressList }) => {
-  const { setUserData } = useContext(UserContext);
+  const { setUserData, socket } = useContext(UserContext);
   const [formData, dispatch] = useReducer(registerForm, formInitialState);
   const [gateAddress, setGateAddress] = useState("");
   const [poo, setPoo] = useState(null);
@@ -85,6 +85,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         return console.warn("An error occured: planet");
       }
 
+      socket.emit("newPlanetRegistered");
       await fetchAddressList();
 
       const loginData = {
@@ -101,7 +102,6 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         return console.warn("An error occured");
       }
       setUserData(login);
-      initialPlanet();
       return navigate("/");
     } catch (err) {
       return alert(err.response.data);
