@@ -421,8 +421,14 @@ export const Stargate = ({ addressList, windowWidth }) => {
     return openGate();
   };
 
-  const closeGate = async () => {
+  const closeGate = async (state = null) => {
     try {
+      console.log(state);
+      if (state === "locked") {
+        audioSelector(audioVolume, "dialFail");
+        await timeout(1200);
+        return await resetGate();
+      }
       audioSelector(audioVolume, "gateClose");
       await timeout(2400);
       dispatch({ type: "isOpen", payload: false });
@@ -544,8 +550,8 @@ export const Stargate = ({ addressList, windowWidth }) => {
       socket.on("openGate", () => {
         openGate();
       });
-      socket.on("closeGate", () => {
-        closeGate();
+      socket.on("closeGate", (state = null) => {
+        closeGate(state);
       });
       socket.on("offworldLock", (state, instant = false) => {
         dispatch({ type: "offworld", payload: true });

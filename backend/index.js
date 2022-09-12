@@ -112,8 +112,8 @@ io.on("connection", (socket) => {
         console.log(
           "Gate link active but no user left on planet, closing gates"
         );
-        io.to(isGateActive.inbound).emit("closeGate");
-        io.to(isGateActive.outbound).emit("closeGate");
+        io.to(isGateActive.inbound).emit("closeGate", isGateActive.state);
+        io.to(isGateActive.outbound).emit("closeGate", isGateActive.state);
         const gates = busyGates.findIndex(
           (link) =>
             link.outbound === isGateActive.outbound &&
