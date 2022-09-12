@@ -81,7 +81,7 @@ function userList(newUser, disconnect = false) {
   );
   return console.table(users);
 }
-userList();
+// userList();
 // cleanBusyGates();
 
 io.on("connection", (socket) => {
