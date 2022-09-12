@@ -109,33 +109,40 @@ const Chat = () => {
                 </li>
               </>
             )}
-            {messages.filter((message) => message.channel === chatRoom)
-              .length === 0 && (
+            {messages
+              .filter((message) => message.channel === chatRoom)
+              .map((message) => {
+                if (message.type === "info") {
+                  return <li className="message info">{message.message}</li>;
+                }
+                return (
+                  <li className="message">
+                    <span
+                      className={
+                        message.username === "Tibuntu"
+                          ? "colorAdmin"
+                          : message.username.includes("Guest")
+                          ? "colorGuest"
+                          : "colorUser"
+                      }
+                    >
+                      {message.username}
+                    </span>
+                    {": "}
+                    {message.message}
+                  </li>
+                );
+              })}
+            {messages.filter(
+              (message) =>
+                message.channel === chatRoom && message.type !== "info"
+            ).length === 0 && (
               <li className="message">
                 <span className="emptyChat">
                   {chatRoom} chatroom is quiet, you can change that!
                 </span>
               </li>
             )}
-            {messages
-              .filter((message) => message.channel === chatRoom)
-              .map((message) => (
-                <li className="message">
-                  <span
-                    className={
-                      message.username === "Tibuntu"
-                        ? "colorAdmin"
-                        : message.username.includes("Guest")
-                        ? "colorGuest"
-                        : "colorUser"
-                    }
-                  >
-                    {message.username}
-                  </span>
-                  {": "}
-                  {message.message}
-                </li>
-              ))}
           </ul>
           <form className="inputContainer" onSubmit={handleSubmit}>
             <input

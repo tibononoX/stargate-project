@@ -91,7 +91,23 @@ io.on("connection", (socket) => {
     const userPlanet = user?.currentPlanet;
     socket.leave(user?.currentPlanet);
 
+    messages.push({
+      type: "info",
+      channel: user?.currentPlanet,
+      username: "Server",
+      message: `${user?.username} left ${user?.currentPlanet}`,
+    });
+    io.emit("updateChat", messages);
+
     userList(user?.username, true);
+
+    messages.push({
+      type: "info",
+      channel: "Global",
+      username: "Server",
+      message: `${user?.username} disconnected`,
+    });
+    io.emit("updateChat", messages);
 
     users = users
       .filter((client) => client.id !== socket.id)
@@ -147,6 +163,14 @@ io.on("connection", (socket) => {
     }
     users.push(user);
     userList(user.username);
+
+    messages.push({
+      type: "info",
+      channel: "Global",
+      username: "Server",
+      message: `${user?.username} connected`,
+    });
+    io.emit("updateChat", messages);
     io.emit("user connected", users, user);
   });
 
@@ -185,6 +209,13 @@ io.on("connection", (socket) => {
       socket.to(host.id).emit("getGateState", socket.id);
     }
 
+    messages.push({
+      type: "info",
+      channel: planetName,
+      username: "Server",
+      message: `${user[0]?.username} joined ${planetName}`,
+    });
+    io.emit("updateChat", messages);
     io.in(planetName).emit(
       "user join",
       {
@@ -230,6 +261,13 @@ io.on("connection", (socket) => {
     }
 
     const user = users.filter((client) => client.id === socket.id);
+    messages.push({
+      type: "info",
+      channel: planetName,
+      username: "Server",
+      message: `${user[0]?.username} left ${planetName}`,
+    });
+    io.emit("updateChat", messages);
     io.in(planetName).emit(
       "user left",
       {
@@ -382,7 +420,7 @@ io.on("connection", (socket) => {
     if (messages.length === 1500) {
       messages.shift();
     }
-    messages.push({ channel, username, message });
+    messages.push({ type: "message", channel, username, message });
     io.emit("updateChat", messages);
   });
 });
