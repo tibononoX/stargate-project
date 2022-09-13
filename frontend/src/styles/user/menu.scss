@@ -116,12 +116,21 @@
 
 @media screen and (min-width: 650px) {
   .menuContainer {
+    padding-bottom: 0;
+    margin-bottom: 30px;
+
+    &.dhdOpen {
+      margin-bottom: 0px;
+    }
+
+    .menuMid {
+      display: flex;
+      justify-content: center;
+    }
+
     .navMenu {
       &.left {
         .navButton {
-          &.dhdOpened {
-            transform: translateY(-105px);
-          }
         }
       }
 

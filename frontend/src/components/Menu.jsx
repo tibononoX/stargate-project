@@ -55,15 +55,15 @@ const Menu = ({
             addressList={addressList}
           />
         )}
+        {currentPlanet.id && (
+          <Chat chatOpen={chatOpen} setChatOpen={setChatOpen} />
+        )}
         <UserList
           userListOpen={userListOpen}
           setUserListOpen={setUserListOpen}
           userList={userList}
           currentPlanet={currentPlanet}
         />
-        {currentPlanet.id && (
-          <Chat chatOpen={chatOpen} setChatOpen={setChatOpen} />
-        )}
       </div>
       <ul className="navMenu right">
         <li className={userListOpen ? "navButton active" : "navButton"}>

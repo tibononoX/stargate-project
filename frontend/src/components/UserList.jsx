@@ -72,21 +72,6 @@ const UserList = ({
               </p>
             </li>
           ))}
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
-        <li>TEST</li>
       </ul>
     </div>
   );

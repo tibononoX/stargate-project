@@ -11,9 +11,11 @@
   flex-direction: column;
   height: 200%;
   max-height: 48vh;
+  filter: opacity(0%);
 
   &.open {
     transform: translateX(0);
+    filter: opacity(100%);
   }
 
   .filters {
@@ -114,10 +116,9 @@
 
 @media screen and (min-width: 650px) {
   .addressBook {
-    top: 0;
     left: 0;
+    width: 25%;
     .planetList {
-      max-height: 55vh;
       .planet {
         .glyphs {
           font-size: 2rem;

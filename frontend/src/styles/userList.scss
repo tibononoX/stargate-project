@@ -9,11 +9,12 @@
   transition: 200ms;
   background-color: rgb(65, 63, 63);
   border-radius: 4px;
-  max-height: 100%;
+  min-height: 100%;
   color: white;
 
   &.closed {
     transform: translateX(120%);
+    filter: opacity(0%);
   }
 
   .userInfoHeader {
@@ -91,14 +92,10 @@
 
 @media screen and (min-width: 650px) {
   .userInfos {
-    position: fixed;
+    position: absolute;
     bottom: 30px;
-    right: 45px;
-    width: 250px;
-
-    &.closed {
-      // transform: translateX(100vw);
-    }
+    right: 0;
+    width: 25%;
 
     .toggleList {
       width: 50%;
