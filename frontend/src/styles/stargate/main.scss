@@ -86,7 +86,7 @@
 
   &.open {
     bottom: 0;
-    background-color: rgba(49, 47, 47, 0.7);
+    background-color: rgba(49, 47, 47, 0.5);
     backdrop-filter: blur(4px);
   }
 
@@ -220,7 +220,7 @@
     }
 
     &.open {
-      background-color: rgba(49, 47, 47, 0.8);
+      background-color: rgba(49, 47, 47, 1);
       bottom: 0;
       backdrop-filter: none;
     }
