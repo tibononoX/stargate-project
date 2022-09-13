@@ -1,22 +1,63 @@
 .addressBook {
   position: absolute;
-  top: 0;
-  left: 0;
-  transform: translateX(-100%);
+  bottom: 0;
+  background-color: rgb(65, 63, 63);
+  color: white;
+  border-radius: 4px;
+  transform: translateX(-120%);
   transition: 150ms;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  height: 200%;
+  max-height: 48vh;
 
   &.open {
     transform: translateX(0);
   }
 
+  .filters {
+    padding: 0 4px;
+    border-bottom: solid 1px rgb(231, 89, 26);
+
+    .filterContainer {
+      display: flex;
+      flex-direction: column;
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+  }
+
   .planetList {
-    background-color: rgba(78, 72, 69, 0.733);
     backdrop-filter: blur(1px);
     color: rgb(214, 214, 214);
 
     list-style: none;
-    max-height: 45vh;
+    max-height: 100%;
     overflow-y: auto;
+
+    /* width */
+    &::-webkit-scrollbar {
+      width: 8px;
+      border-radius: 0 0 4px 0;
+    }
+
+    /* Track */
+    &::-webkit-scrollbar-track {
+      background: rgb(83, 81, 81);
+      border-radius: 0 0 4px 0;
+    }
+
+    /* Handle */
+    &::-webkit-scrollbar-thumb {
+      background: rgb(61, 45, 37);
+      border-radius: 0 0 4px 0;
+    }
+
+    /* Handle on hover */
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgb(224, 115, 68);
+    }
 
     .filters {
       font-size: 0.9rem;
@@ -73,6 +114,8 @@
 
 @media screen and (min-width: 650px) {
   .addressBook {
+    top: 0;
+    left: 0;
     .planetList {
       max-height: 55vh;
       .planet {
