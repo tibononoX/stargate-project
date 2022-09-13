@@ -219,18 +219,6 @@ const StargatePage = ({ addressList, windowWidth }) => {
             />
           )}
           {currentPlanet?.id !== 1 && <div className="frontground" />}
-          {addressList && (
-            <AddressBook
-              addressBookOpen={addressBookOpen}
-              addressList={addressList}
-            />
-          )}
-          <UserList
-            userListOpen={userListOpen}
-            setUserListOpen={setUserListOpen}
-            userList={userList}
-            currentPlanet={currentPlanet}
-          />
           <Menu
             dhdOpen={dhdOpen}
             chatOpen={chatOpen}
@@ -240,10 +228,9 @@ const StargatePage = ({ addressList, windowWidth }) => {
             addressBookOpen={addressBookOpen}
             setAddressBookOpen={setAddressBookOpen}
             windowWidth={windowWidth}
+            addressList={addressList}
+            userList={userList}
           />
-          {currentPlanet.id && (
-            <Chat chatOpen={chatOpen} setChatOpen={setChatOpen} />
-          )}
         </div>
       </PlanetContext.Provider>
     );

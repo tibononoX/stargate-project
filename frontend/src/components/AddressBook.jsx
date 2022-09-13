@@ -9,8 +9,8 @@ const AddressBook = ({ addressBookOpen, addressList }) => {
 
   return (
     <div className={addressBookOpen ? "addressBook open" : "addressBook"}>
-      <ul className="planetList">
-        <div className="filters">
+      <header className="filters">
+        <div className="filterContainer">
           <label htmlFor="oneway">
             <input
               id="oneway"
@@ -64,6 +64,8 @@ const AddressBook = ({ addressBookOpen, addressList }) => {
             }).length
           }
         </p>
+      </header>
+      <ul className="planetList">
         {addressList
           .sort((a, b) =>
             a.planetName.toLowerCase().localeCompare(b.planetName.toLowerCase())
