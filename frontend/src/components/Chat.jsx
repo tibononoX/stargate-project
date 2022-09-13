@@ -6,11 +6,21 @@ import UserContext from "@contexts/UserContext";
 import PlanetContext from "@contexts/PlanetContext";
 
 const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
-  const { audioVolume, guestName, userData, socket } = useContext(UserContext);
+  const {
+    audioVolume,
+    notifAudio,
+    setNotifAudio,
+    guestName,
+    userData,
+    socket,
+  } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [userPosted, setUserPosted] = useState(false);
   const [chatRoom, setChatRoom] = useState(currentPlanet.planetName);
-  const [notifAudio, setNotifAudio] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem("chatAudio", notifAudio);
+  }, [notifAudio]);
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
