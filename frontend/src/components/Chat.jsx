@@ -36,12 +36,13 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
         : chatList.scrollHeight;
 
     chatList.addEventListener("scroll", () => {
-      if (chatList && chatList.scrollTop === chatList.scrollHeight) {
-        setUserActioned(true);
-      } else if (chatList && chatList.scrollTop < chatList.scrollHeight) {
-        setUserActioned(false);
-      }
+      setUserActioned(true);
     });
+
+    return () =>
+      chatList.removeEventListener("scroll", () => {
+        setUserActioned(true);
+      });
   }, [messages, chatRoom]);
 
   const globalCount = useMemo(
@@ -199,25 +200,34 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
             <>
               <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Welcome to
-                Stargate React! You are currently on {currentPlanet.planetName},
-                each planet have a dedicated chat room.
+                Stargate React! You are currently on {currentPlanet.planetName}
               </li>
+
               <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Use the address
-                book on the left to see reachable planets.
+                book on the left to see reachable planets
               </li>
               <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Open the DHD
                 (button at the bottom of your screen), and enter the sequence
-                corresponding to your destination.
+                corresponding to your destination
               </li>
               <li className="message">
-                <span className="colorAdmin">Tutorial</span>: Everything is work
-                in progress, use the global chat for questions.
+                <span className="colorAdmin">Tutorial</span>: Once the gate is
+                open, click on the event horizon to travel to your destination
+              </li>
+              <li className="message">
+                <span className="colorAdmin">Tutorial</span>: Each planet have
+                its own dedicated chat room, and you can use the global chat for
+                questions
+              </li>
+              <li className="message">
+                <span className="colorAdmin">Tutorial</span>: Everything is WORK
+                IN PROGRESS!
               </li>
               <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Have fun and
-                tek'mate, brother!
+                tek'mate o7
               </li>
             </>
           )}
