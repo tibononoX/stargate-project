@@ -12,7 +12,7 @@
   transition: 500ms;
 
   &.dhdOpened {
-    transform: translateY(-115%);
+    transform: translateY(-100%);
     padding-bottom: 10px;
 
     .connectedInfo {
@@ -55,11 +55,6 @@
         &.active {
           border: solid 2px rgb(231, 89, 26);
           border-left: none;
-        }
-
-        &.dhdOpened {
-          transform: translateY(-90px);
-          z-index: 80;
         }
       }
     }
