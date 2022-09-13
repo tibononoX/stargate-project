@@ -28,22 +28,12 @@
   }
 
   .navMenu {
-    position: relative;
     z-index: 500;
     top: 0;
     right: 0;
     list-style: none;
     display: flex;
     flex-direction: column;
-
-    .menuCounter {
-      font-size: 1rem;
-      position: absolute;
-      top: 4px;
-      right: 2px;
-      color: rgb(231, 89, 26);
-      font-weight: 800;
-    }
 
     &.right {
       .navButton {
@@ -75,6 +65,7 @@
     }
 
     .navButton {
+      position: relative;
       margin: 1px 0;
       background-color: rgba(61, 58, 58, 0.7);
       border: solid 2px rgb(61, 45, 37);
@@ -87,6 +78,15 @@
         .navButtonLink {
           color: rgb(238, 127, 79);
         }
+      }
+
+      .menuCounter {
+        font-size: 1rem;
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        color: rgb(170, 210, 243);
+        font-weight: 800;
       }
 
       .navButtonLink {

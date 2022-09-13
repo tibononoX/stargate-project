@@ -1,17 +1,50 @@
 /* eslint-disable no-nested-ternary */
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import "@styles/chat.scss";
+import audioSelector from "@services/audio";
 import UserContext from "@contexts/UserContext";
 import PlanetContext from "@contexts/PlanetContext";
 
-const Chat = ({ chatOpen, setChatOpen }) => {
+const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
   const { audioVolume, guestName, userData, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
   const [userPosted, setUserPosted] = useState(false);
   const [chatRoom, setChatRoom] = useState(currentPlanet.planetName);
+  const [notifAudio, setNotifAudio] = useState(true);
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+
+  const [globalNotif, setGlobalNotif] = useState(0);
+  const [localNotif, setLocalNotif] = useState(0);
+
+  const globalCount = useMemo(
+    () =>
+      messages
+        .filter(
+          (message) => message.channel === "Global" && message.type !== "info"
+        )
+        .map((message) => message).length,
+    [messages]
+  );
+
+  const localCount = useMemo(
+    () =>
+      messages
+        .filter(
+          (message) =>
+            message.channel === currentPlanet.planetName &&
+            message.type !== "info"
+        )
+        .map((message) => message).length,
+    [messages]
+  );
+
+  useEffect(() => {
+    if (notifAudio) {
+      audioSelector(audioVolume, "chatNotif");
+    }
+  }, [localNotif, globalNotif]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,6 +64,16 @@ const Chat = ({ chatOpen, setChatOpen }) => {
       currentPlanet.initial && chatRoom !== "Global" && !userPosted
         ? 0
         : chatList.scrollHeight;
+
+    if (chatRoom === currentPlanet.planetName && chatOpen) {
+      setChatNotif(globalNotif);
+      setLocalNotif(0);
+    }
+
+    if (chatRoom === "Global" && chatOpen) {
+      setChatNotif(localNotif);
+      setGlobalNotif(0);
+    }
   }, [messages, chatRoom]);
 
   useEffect(() => {
@@ -43,13 +86,36 @@ const Chat = ({ chatOpen, setChatOpen }) => {
     });
   }, []);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("updateChat", (updatedMessages) => {
-        setMessages(updatedMessages);
-      });
+  const handleNotif = (updatedMessages) => {
+    const newGlobalCount = updatedMessages.filter(
+      (newMessages) =>
+        newMessages.channel === "Global" && newMessages.type !== "info"
+    ).length;
+
+    const newLocalCount = updatedMessages
+      .filter(
+        (newMessages) =>
+          newMessages.channel === currentPlanet.planetName &&
+          newMessages.type !== "info"
+      )
+      .map((message) => message).length;
+
+    if (newGlobalCount > globalCount && chatRoom !== "Global") {
+      setGlobalNotif(globalNotif + 1);
+      setChatNotif(globalNotif + localNotif);
     }
-  }, [socket]);
+    if (newLocalCount > localCount && chatRoom !== currentPlanet.planetName) {
+      setLocalNotif(localNotif + 1);
+      setChatNotif(globalNotif + localNotif);
+    }
+    setMessages(updatedMessages);
+  };
+
+  useEffect(() => {
+    socket.on("updateChat", (updatedMessages) => {
+      handleNotif(updatedMessages);
+    });
+  }, [messages, chatRoom, globalNotif, localNotif, globalCount, localCount]);
 
   return (
     <section className={chatOpen ? "chat open" : "chat"}>
@@ -63,6 +129,7 @@ const Chat = ({ chatOpen, setChatOpen }) => {
           }
         >
           Global
+          <p className="chatNotif">{globalNotif !== 0 ? globalNotif : ""}</p>
         </button>
         <button
           disable={chatRoom === currentPlanet.planetName}
@@ -75,6 +142,20 @@ const Chat = ({ chatOpen, setChatOpen }) => {
           }
         >
           {currentPlanet.planetName}
+          <p className="chatNotif">{localNotif !== 0 ? localNotif : ""}</p>
+        </button>
+        <button
+          type="button"
+          className="notifSound"
+          onClick={() => setNotifAudio(!notifAudio)}
+        >
+          <img
+            src={`${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/icons/${
+              notifAudio ? "active/notifSound.png" : "notifSound.png"
+            }`}
+            className="bellIcon"
+            alt=""
+          />
         </button>
         <button
           type="button"

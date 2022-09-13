@@ -1,12 +1,12 @@
 /* eslint-disable no-nested-ternary */
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "@styles/user/menu.scss";
 import UserContext from "@contexts/UserContext";
+import PlanetContext from "@contexts/PlanetContext";
 import AddressBook from "./AddressBook";
 import UserList from "./UserList";
 import Chat from "./Chat";
-import PlanetContext from "@contexts/PlanetContext";
 
 const Menu = ({
   dhdOpen,
@@ -22,6 +22,8 @@ const Menu = ({
 }) => {
   const { userData, guestName } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
+  const [chatNotif, setChatNotif] = useState(0);
+
   return (
     <div className={dhdOpen ? "menuContainer dhdOpened" : "menuContainer"}>
       <ul className="navMenu left">
@@ -57,7 +59,11 @@ const Menu = ({
           />
         )}
         {currentPlanet.id && (
-          <Chat chatOpen={chatOpen} setChatOpen={setChatOpen} />
+          <Chat
+            chatOpen={chatOpen}
+            setChatOpen={setChatOpen}
+            setChatNotif={setChatNotif}
+          />
         )}
         <UserList
           userListOpen={userListOpen}
@@ -86,7 +92,9 @@ const Menu = ({
               className="menuIcon"
               alt=""
             />
-            <p className="menuCounter">{userList.length}</p>
+            <p className="menuCounter">
+              {userList.length > 1 ? userList.length : ""}
+            </p>
           </button>
         </li>
         <li className={chatOpen ? "navButton active" : "navButton"}>
@@ -108,6 +116,7 @@ const Menu = ({
               className="menuIcon"
               alt=""
             />
+            <p className="menuCounter">{chatNotif != 0 ? chatNotif : ""}</p>
           </button>
         </li>
         {!userData ? (

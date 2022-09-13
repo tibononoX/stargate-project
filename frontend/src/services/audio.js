@@ -2,6 +2,14 @@
 const audioSelector = (volume, type, chev = null) => {
   let audio;
   switch (type) {
+    // UI SOUNDS
+    case "chatNotif":
+      audio = new Audio(
+        `${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/sounds/ui/notif.mp3`
+      );
+      audio.volume = volume;
+      break;
+
     // COMMON SOUNDS
     case "dialFail":
       audio = new Audio(
