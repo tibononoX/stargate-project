@@ -1,11 +1,8 @@
 import { useContext, useState, useEffect } from "react";
-import AddressBook from "@components/AddressBook";
 import { Stargate } from "@components/stargate/Stargate";
 import PlanetContext from "@contexts/PlanetContext";
 import symbols from "@services/gateSymbols";
-import UserList from "@components/UserList";
 import UserContext from "@contexts/UserContext";
-import Chat from "@components/Chat";
 import Menu from "@components/Menu";
 
 const StargatePage = ({ addressList, windowWidth }) => {

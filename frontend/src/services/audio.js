@@ -17,6 +17,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/dhd/dhd_usual_fail.mp3`
       );
+      audio.volume = volume;
       break;
 
     case "wormholeSound":
@@ -37,6 +38,7 @@ const audioSelector = (volume, type, chev = null) => {
           Math.random() * (8 - 1) + 1
         )}.mp3`
       );
+      audio.volume = volume;
       break;
 
     case "chevEnd":
@@ -45,6 +47,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_usual_end.wav`
       );
+      audio.volume = volume;
       break;
 
     case "gateOpen":
@@ -53,6 +56,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/gateOpen.wav`
       );
+      audio.volume = volume;
       break;
 
     case "gateClose":
@@ -61,6 +65,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/gateClose.wav`
       );
+      audio.volume = volume;
       break;
 
     case "robloxDeath":
@@ -69,6 +74,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/roblox-death.mp3`
       );
+      audio.volume = volume;
       break;
 
     // DHD DIAL SOUNDS
@@ -78,6 +84,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/dhd/dhd_usual_${chev}.wav`
       );
+      audio.volume = volume;
       break;
 
     case "dhdOpen":
@@ -86,6 +93,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/dhd/dhd_usual_dial.wav`
       );
+      audio.volume = volume;
       break;
 
     case "dhdChev":
@@ -94,6 +102,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_usual_${chev}.wav`
       );
+      audio.volume = volume;
       break;
 
     case "dhdLock":
@@ -102,6 +111,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_usual_7.wav`
       );
+      audio.volume = volume;
       break;
 
     // EARTH DIAL SOUNDS
@@ -111,6 +121,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/ringRoll.wav`
       );
+      audio.volume = volume;
       audio.volume = volume;
       return audio;
 
@@ -129,6 +140,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_lock1.mp3`
       );
+      audio.volume = volume;
       break;
 
     case "earthLockFail":
@@ -137,6 +149,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_usual_lock_fail.wav`
       );
+      audio.volume = volume;
       break;
 
     case "earthEnd":
@@ -145,6 +158,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_usual_end.wav`
       );
+      audio.volume = volume;
       break;
 
     case "earthLock":
@@ -153,6 +167,7 @@ const audioSelector = (volume, type, chev = null) => {
           import.meta.env.VITE_FRONTEND_SRC_URL
         }/assets/sounds/stargate/chev_usual_lock2.wav`
       );
+      audio.volume = volume;
       break;
 
     default:

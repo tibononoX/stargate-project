@@ -423,7 +423,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
 
   const closeGate = async (state = null) => {
     try {
-      console.log(state);
       if (state === "locked") {
         audioSelector(audioVolume, "dialFail");
         await timeout(1200);
@@ -469,26 +468,25 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       }
       return dispatch({ type: "isOpen", payload: false });
     }
-    const volume = audioVolume;
-    audioSelector(volume, "dhdChev", 1);
+    audioSelector(audioVolume, "dhdChev", 1);
     handleChev(1, dispatch);
     await timeout(250);
-    audioSelector(volume, "dhdChev", 2);
+    audioSelector(audioVolume, "dhdChev", 2);
     handleChev(2, dispatch);
     await timeout(250);
-    audioSelector(volume, "dhdChev", 3);
+    audioSelector(audioVolume, "dhdChev", 3);
     handleChev(3, dispatch);
     await timeout(250);
-    audioSelector(volume, "dhdChev", 4);
+    audioSelector(audioVolume, "dhdChev", 4);
     handleChev(4, dispatch);
     await timeout(250);
-    audioSelector(volume, "dhdChev", 5);
+    audioSelector(audioVolume, "dhdChev", 5);
     handleChev(5, dispatch);
     await timeout(250);
-    audioSelector(volume, "dhdChev", 6);
+    audioSelector(audioVolume, "dhdChev", 6);
     handleChev(6, dispatch);
     await timeout(300);
-    audioSelector(volume, "dhdChev", 7);
+    audioSelector(audioVolume, "dhdChev", 7);
     return dispatch({ type: "destLock", payload: true });
   };
 
