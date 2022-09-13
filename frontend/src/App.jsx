@@ -1,10 +1,9 @@
 /* eslint-disable no-nested-ternary */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import socketIOClient from "socket.io-client  ";
 import UserContext from "@contexts/UserContext";
 import axios from "@services/axios";
-import Menu from "@components/Menu";
 import StargatePage from "@pages/StargatePage";
 import Login from "@pages/Login";
 import Logout from "@pages/Logout";

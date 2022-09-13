@@ -92,6 +92,7 @@ io.on("connection", (socket) => {
     socket.leave(user?.currentPlanet);
 
     messages.push({
+      date: new Date(),
       type: "info",
       channel: user?.currentPlanet,
       username: "Server",
@@ -102,6 +103,7 @@ io.on("connection", (socket) => {
     userList(user?.username, true);
 
     messages.push({
+      date: new Date(),
       type: "info",
       channel: "Global",
       username: "Server",
@@ -165,6 +167,7 @@ io.on("connection", (socket) => {
     userList(user.username);
 
     messages.push({
+      date: new Date(),
       type: "info",
       channel: "Global",
       username: "Server",
@@ -210,6 +213,7 @@ io.on("connection", (socket) => {
     }
 
     messages.push({
+      date: new Date(),
       type: "info",
       channel: planetName,
       username: "Server",
@@ -262,6 +266,7 @@ io.on("connection", (socket) => {
 
     const user = users.filter((client) => client.id === socket.id);
     messages.push({
+      date: new Date(),
       type: "info",
       channel: planetName,
       username: "Server",
@@ -359,6 +364,7 @@ io.on("connection", (socket) => {
     busyGates[gates] = { ...busyGates[gates], state: "open" };
 
     messages.push({
+      date: new Date(),
       type: "alert",
       channel: planetName,
       username: "Server",
@@ -390,12 +396,14 @@ io.on("connection", (socket) => {
     console.table(busyGates);
 
     messages.push({
+      date: new Date(),
       type: "alert",
       channel: planetName,
       username: "Server",
       message: `${currentClient[0]?.username} closed wormhole to ${destinationName}`,
     });
     messages.push({
+      date: new Date(),
       type: "alert",
       channel: destinationName,
       username: "Server",
@@ -428,6 +436,7 @@ io.on("connection", (socket) => {
       console.table(busyGates);
 
       messages.push({
+        date: new Date(),
         type: "alert",
         channel: destinationName,
         username: "Server",
@@ -450,7 +459,13 @@ io.on("connection", (socket) => {
     if (messages.length === 1500) {
       messages.shift();
     }
-    messages.push({ type: "message", channel, username, message });
+    messages.push({
+      date: new Date(),
+      type: "message",
+      channel,
+      username,
+      message,
+    });
     io.emit("updateChat", messages);
   });
 });
