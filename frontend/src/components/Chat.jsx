@@ -86,16 +86,16 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
   };
 
   useEffect(() => {
-    if (chatRoom === currentPlanet.planetName && chatOpen) {
-      setChatNotif(globalNotif);
+    if (chatRoom === currentPlanet.planetName) {
+      setChatNotif(globalNotif + localNotif);
       setLocalNotif(0);
     }
 
-    if (chatRoom === "Global" && chatOpen) {
-      setChatNotif(localNotif);
+    if (chatRoom === "Global") {
+      setChatNotif(globalNotif + localNotif);
       setGlobalNotif(0);
     }
-  }, [messages, chatRoom]);
+  }, [globalNotif, localNotif, chatRoom]);
 
   useEffect(() => {
     setChatRoom(currentPlanet.planetName);
@@ -108,35 +108,28 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
   }, []);
 
   const handleNotif = (updatedMessages) => {
-    const newGlobalCount = updatedMessages.filter(
-      (newMessages) =>
-        newMessages.channel === "Global" && newMessages.type !== "info"
-    ).length;
-
-    const newLocalCount = updatedMessages
-      .filter(
-        (newMessages) =>
-          newMessages.channel === currentPlanet.planetName &&
-          newMessages.type !== "info"
-      )
-      .map((message) => message).length;
-
-    if (newGlobalCount > globalCount && chatRoom !== "Global") {
+    if (updatedMessages[updatedMessages.length - 1].channel === "Global") {
       setGlobalNotif(globalNotif + 1);
-      setChatNotif(globalNotif + localNotif);
+      setMessages(updatedMessages);
+      return setChatNotif(globalNotif + localNotif);
     }
-    if (newLocalCount > localCount && chatRoom !== currentPlanet.planetName) {
+
+    if (
+      updatedMessages[updatedMessages.length - 1].channel ===
+      currentPlanet.planetName
+    ) {
       setLocalNotif(localNotif + 1);
-      setChatNotif(globalNotif + localNotif);
+      setMessages(updatedMessages);
+      return setChatNotif(globalNotif + localNotif);
     }
-    setMessages(updatedMessages);
+    return setMessages(updatedMessages);
   };
 
   useEffect(() => {
     socket.on("updateChat", (updatedMessages) => {
       handleNotif(updatedMessages);
     });
-  }, [messages, chatRoom, globalNotif, localNotif, globalCount, localCount]);
+  }, [chatRoom, globalNotif, localNotif]);
 
   return (
     <section className={chatOpen ? "chat open" : "chat"}>
@@ -298,7 +291,7 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
           type="text"
           className="inputBox"
           value={newMessage}
-          maxLength="250"
+          maxLength="1000"
           required
           placeholder="Enter your message here ..."
           onChange={(e) => setNewMessage(e.target.value)}
