@@ -72,7 +72,6 @@
     max-height: 100%;
     width: 100%;
     overflow: auto;
-    padding-top: 4px;
 
     /* width */
     &::-webkit-scrollbar {
@@ -95,9 +94,11 @@
     }
 
     .messages {
-      height: 100%;
+      height: auto;
       list-style: none;
       padding: 0 10px;
+      margin: 4px 0;
+
       word-wrap: break-word;
 
       .message {
@@ -153,9 +154,6 @@
   .chat {
     bottom: 40px;
     width: 45%;
-
-    &.open {
-    }
 
     .chatBox {
       height: 20vh;
