@@ -358,6 +358,14 @@ io.on("connection", (socket) => {
 
     busyGates[gates] = { ...busyGates[gates], state: "open" };
 
+    messages.push({
+      type: "alert",
+      channel: planetName,
+      username: "Server",
+      message: `${currentClient[0]?.username} opened wormhole to ${destinationName}`,
+    });
+    io.emit("updateChat", messages);
+
     socket.to(planetName).emit("openGate");
     return socket.to(destinationName).emit("openGate");
   });
@@ -380,6 +388,20 @@ io.on("connection", (socket) => {
     console.log("Gate link removed from busy gates : ");
     console.log(`[${planetName} - ${destinationName}]`);
     console.table(busyGates);
+
+    messages.push({
+      type: "alert",
+      channel: planetName,
+      username: "Server",
+      message: `${currentClient[0]?.username} closed wormhole to ${destinationName}`,
+    });
+    messages.push({
+      type: "alert",
+      channel: destinationName,
+      username: "Server",
+      message: "Offworld vortex closing",
+    });
+    io.emit("updateChat", messages);
 
     socket.to(planetName).emit("closeGate");
     return socket.to(destinationName).emit("closeGate");
@@ -404,6 +426,14 @@ io.on("connection", (socket) => {
       console.log("New gate link added to busy gates : ");
       console.log(`[${planetName} - ${destinationName}]`);
       console.table(busyGates);
+
+      messages.push({
+        type: "alert",
+        channel: destinationName,
+        username: "Server",
+        message: "Incoming offworld activation !",
+      });
+      io.emit("updateChat", messages);
     }
 
     socket.to(planetName).emit("destLock");

@@ -136,6 +136,10 @@
         &.info {
           color: rgb(185, 184, 184);
         }
+        &.alert {
+          color: rgb(241, 130, 79);
+          font-weight: 600;
+        }
         .emptyChat {
           color: rgb(145, 143, 143);
         }

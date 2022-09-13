@@ -15,7 +15,7 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
     socket,
   } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
-  const [userPosted, setUserPosted] = useState(false);
+  const [userActioned, setUserActioned] = useState(false);
   const [chatRoom, setChatRoom] = useState(currentPlanet.planetName);
 
   useEffect(() => {
@@ -64,14 +64,14 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
       username: userData ? userData.username : guestName,
       message: newMessage,
     });
-    setUserPosted(true);
+    setUserActioned(true);
     setNewMessage("");
   };
 
   useEffect(() => {
     const chatList = document.getElementById("chatList");
     chatList.scrollTop =
-      currentPlanet.initial && chatRoom !== "Global" && !userPosted
+      currentPlanet.initial && chatRoom !== "Global" && !userActioned
         ? 0
         : chatList.scrollHeight;
 
@@ -133,7 +133,12 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
         <button
           disable={chatRoom === "Global"}
           type="button"
-          onClick={() => setChatRoom("Global")}
+          onClick={() => {
+            if (!userActioned) {
+              setUserActioned(true);
+            }
+            setChatRoom("Global");
+          }}
           className={
             chatRoom === "Global" ? "chatRoomsButton active" : "chatRoomsButton"
           }
@@ -144,7 +149,12 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
         <button
           disable={chatRoom === currentPlanet.planetName}
           type="button"
-          onClick={() => setChatRoom(currentPlanet.planetName)}
+          onClick={() => {
+            if (!userActioned) {
+              setUserActioned(true);
+            }
+            setChatRoom(currentPlanet.planetName);
+          }}
           className={
             chatRoom === currentPlanet.planetName
               ? "chatRoomsButton active"
@@ -209,6 +219,9 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
               if (message.type === "info") {
                 return <li className="message info">{message.message}</li>;
               }
+              if (message.type === "alert") {
+                return <li className="message alert">{message.message}</li>;
+              }
               return (
                 <li className="message">
                   <span
@@ -228,7 +241,10 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
               );
             })}
           {messages.filter(
-            (message) => message.channel === chatRoom && message.type !== "info"
+            (message) =>
+              message.channel === chatRoom &&
+              message.type !== "info" &&
+              message.type !== "alert"
           ).length === 0 && (
             <li className="message">
               <span className="emptyChat">
