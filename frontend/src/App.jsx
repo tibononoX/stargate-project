@@ -25,10 +25,16 @@ function App() {
 
   const [audioVolume, setAudioVolume] = useState(
     localStorage.getItem("volume")
-      ? localStorage.getItem("volume")
+      ? parseFloat(localStorage.getItem("volume"))
       : windowWidth >= 650
       ? 0.5
       : 0.8
+  );
+
+  const [notifAudio, setNotifAudio] = useState(
+    localStorage.getItem("chatAudio")
+      ? localStorage.getItem("chatAudio") === "true"
+      : true
   );
 
   const checkConnection = async () => {
@@ -84,17 +90,6 @@ function App() {
       );
   }, []);
 
-  // useEffect(() => {
-  //   if (!userData) {
-  //     const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
-  //     setSocket(socketServer);
-  //   }
-  //   if (userData) {
-  //     const socketServer = socketIOClient(`${import.meta.env.VITE_BACKEND}`);
-  //     setSocket(socketServer);
-  //   }
-  // }, [userData]);
-
   return (
     <div className="App">
       {/* eslint-disable-next-line react/jsx-no-constructed-context-values */}
@@ -102,6 +97,8 @@ function App() {
         value={{
           audioVolume,
           setAudioVolume,
+          notifAudio,
+          setNotifAudio,
           guestName,
           userData,
           setUserData,

@@ -6,10 +6,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
   transition: 200ms;
   z-index: 30;
   width: 100%;
+  max-height: 100%;
   z-index: 35;
   background-color: rgb(65, 63, 63);
   color: white;
@@ -26,9 +26,9 @@
     display: flex;
     width: 100%;
     border-bottom: solid 1px rgb(231, 89, 26);
-    // padding: 2px 4px;
 
     .chatRoomsButton {
+      position: relative;
       width: auto;
       padding: 6px 6px;
       margin-right: 2px;
@@ -50,6 +50,15 @@
           color: rgb(238, 127, 79);
         }
       }
+
+      .chatNotif {
+        position: absolute;
+        top: 0;
+        right: -4px;
+        font-weight: 300;
+        font-size: 0.7rem;
+        color: rgb(170, 210, 243);
+      }
     }
 
     .closeChat {
@@ -65,39 +74,61 @@
         cursor: pointer;
       }
     }
+
+    .notifSound {
+      position: absolute;
+      right: 36px;
+      background: none;
+      border: none;
+      font-weight: 800;
+      color: rgb(238, 127, 79);
+      height: 100%;
+
+      .bellIcon {
+        width: 24px;
+        height: 24px;
+      }
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
   }
 
   .chatBox {
     display: flex;
     flex-direction: column;
-    height: 29vh;
+    max-height: 100%;
+    width: 100%;
+    overflow: auto;
+
+    /* width */
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    /* Track */
+    &::-webkit-scrollbar-track {
+      background: rgb(83, 81, 81);
+    }
+
+    /* Handle */
+    &::-webkit-scrollbar-thumb {
+      background: rgb(61, 45, 37);
+    }
+
+    /* Handle on hover */
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgb(224, 115, 68);
+    }
 
     .messages {
-      height: 100%;
+      height: auto;
       list-style: none;
       padding: 0 10px;
+      margin: 4px 0;
+
       word-wrap: break-word;
-      overflow: auto;
-
-      /* width */
-      &::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      /* Track */
-      &::-webkit-scrollbar-track {
-        background: rgb(83, 81, 81);
-      }
-
-      /* Handle */
-      &::-webkit-scrollbar-thumb {
-        background: rgb(61, 45, 37);
-      }
-
-      /* Handle on hover */
-      &::-webkit-scrollbar-thumb:hover {
-        background: rgb(224, 115, 68);
-      }
 
       .message {
         font-size: 14px;
@@ -119,28 +150,30 @@
         }
       }
     }
+  }
+  .inputContainer {
+    width: 100%;
+    display: flex;
+    border-radius: 0 0 4px 4px;
 
-    .inputContainer {
-      display: flex;
-      .inputBox {
-        width: 100%;
-        height: 100%;
-        border-radius: 0 0 4px 4px;
-        color: white;
-        padding: 4px 8px;
-        resize: none;
-        border: none;
-        border: solid 1px rgb(83, 81, 81);
-        background-color: rgb(83, 81, 81);
+    .inputBox {
+      width: 100%;
+      height: 100%;
+      border-radius: 0 0 4px 4px;
+      color: white;
+      padding: 4px 8px;
+      resize: none;
+      border: none;
+      border: solid 1px rgb(83, 81, 81);
+      background-color: rgb(83, 81, 81);
 
-        &::placeholder {
-          color: rgb(163, 163, 163);
-        }
+      &::placeholder {
+        color: rgb(163, 163, 163);
+      }
 
-        &:focus {
-          outline: none;
-          border: solid 1px rgb(231, 89, 26);
-        }
+      &:focus {
+        outline: none;
+        border: solid 1px rgb(231, 89, 26);
       }
     }
   }
@@ -150,9 +183,6 @@
   .chat {
     bottom: 40px;
     width: 45%;
-
-    &.open {
-    }
 
     .chatBox {
       height: 20vh;

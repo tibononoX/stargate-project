@@ -25,14 +25,30 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: solid 1px rgb(231, 89, 26);
+    font-size: 0.8rem;
 
     label {
+      margin-right: 20px;
       height: 100%;
       display: flex;
       align-items: center;
 
       input {
         margin-right: 4px;
+      }
+    }
+
+    .closeChat {
+      position: absolute;
+      right: 6px;
+      background: none;
+      border: none;
+      font-weight: 800;
+      color: rgb(238, 127, 79);
+      height: 100%;
+
+      &:hover {
+        cursor: pointer;
       }
     }
   }
@@ -96,6 +112,10 @@
     bottom: 30px;
     right: 0;
     width: 25%;
+
+    .userInfoHeader {
+      font-size: 1rem;
+    }
 
     .toggleList {
       width: 50%;
