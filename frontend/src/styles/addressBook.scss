@@ -1,11 +1,11 @@
 .addressBook {
   position: absolute;
-  bottom: 0;
+  bottom: 30px;
   background-color: rgb(65, 63, 63);
   color: white;
   border-radius: 4px;
   transform: translateX(-120%);
-  transition: 150ms;
+  transition: 200ms;
   display: flex;
   width: 100%;
   flex-direction: column;
