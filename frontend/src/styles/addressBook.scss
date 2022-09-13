@@ -12,6 +12,7 @@
   height: 200%;
   max-height: 48vh;
   filter: opacity(0%);
+  pointer-events: auto;
 
   &.open {
     transform: translateX(0);
