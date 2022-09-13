@@ -15,7 +15,7 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
     socket,
   } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
-  const [userPosted, setUserPosted] = useState(false);
+  const [userActioned, setUserActioned] = useState(false);
   const [chatRoom, setChatRoom] = useState(currentPlanet.planetName);
 
   useEffect(() => {
@@ -27,6 +27,23 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
 
   const [globalNotif, setGlobalNotif] = useState(0);
   const [localNotif, setLocalNotif] = useState(0);
+
+  useEffect(() => {
+    const chatList = document.getElementById("chatList");
+    chatList.scrollTop =
+      currentPlanet.initial && chatRoom !== "Global" && !userActioned
+        ? 0
+        : chatList.scrollHeight;
+
+    chatList.addEventListener("scroll", () => {
+      setUserActioned(true);
+    });
+
+    return () =>
+      chatList.removeEventListener("scroll", () => {
+        setUserActioned(true);
+      });
+  }, [messages, chatRoom]);
 
   const globalCount = useMemo(
     () =>
@@ -64,17 +81,11 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
       username: userData ? userData.username : guestName,
       message: newMessage,
     });
-    setUserPosted(true);
+    setUserActioned(true);
     setNewMessage("");
   };
 
   useEffect(() => {
-    const chatList = document.getElementById("chatList");
-    chatList.scrollTop =
-      currentPlanet.initial && chatRoom !== "Global" && !userPosted
-        ? 0
-        : chatList.scrollHeight;
-
     if (chatRoom === currentPlanet.planetName && chatOpen) {
       setChatNotif(globalNotif);
       setLocalNotif(0);
@@ -131,9 +142,13 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
     <section className={chatOpen ? "chat open" : "chat"}>
       <header className="chatRooms">
         <button
-          disable={chatRoom === "Global"}
           type="button"
-          onClick={() => setChatRoom("Global")}
+          onClick={() => {
+            if (!userActioned) {
+              setUserActioned(true);
+            }
+            setChatRoom("Global");
+          }}
           className={
             chatRoom === "Global" ? "chatRoomsButton active" : "chatRoomsButton"
           }
@@ -142,9 +157,13 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
           <p className="chatNotif">{globalNotif !== 0 ? globalNotif : ""}</p>
         </button>
         <button
-          disable={chatRoom === currentPlanet.planetName}
           type="button"
-          onClick={() => setChatRoom(currentPlanet.planetName)}
+          onClick={() => {
+            if (!userActioned) {
+              setUserActioned(true);
+            }
+            setChatRoom(currentPlanet.planetName);
+          }}
           className={
             chatRoom === currentPlanet.planetName
               ? "chatRoomsButton active"
@@ -180,26 +199,35 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
           {chatRoom === currentPlanet.planetName && currentPlanet.initial && (
             <>
               <li className="message">
-                <span className="colorAdmin">Server</span>: Welcome to Stargate
-                React! You are currently on {currentPlanet.planetName}, each
-                planet have a dedicated chat room.
+                <span className="colorAdmin">Tutorial</span>: Welcome to
+                Stargate React! You are currently on {currentPlanet.planetName}
+              </li>
+
+              <li className="message">
+                <span className="colorAdmin">Tutorial</span>: Use the address
+                book on the left to see reachable planets
               </li>
               <li className="message">
-                <span className="colorAdmin">Server</span>: Use the address book
-                on the left to see reachable planets.
+                <span className="colorAdmin">Tutorial</span>: Open the DHD
+                (button at the bottom of your screen), and enter the sequence
+                corresponding to your destination
               </li>
               <li className="message">
-                <span className="colorAdmin">Server</span>: Open the DHD (button
-                at the bottom of your screen), and enter the sequence
-                corresponding to your destination.
+                <span className="colorAdmin">Tutorial</span>: Once the gate is
+                open, click on the event horizon to travel to your destination
               </li>
               <li className="message">
-                <span className="colorAdmin">Server</span>: Everything is work
-                in progress, use the global chat for questions.
+                <span className="colorAdmin">Tutorial</span>: Each planet have
+                its own dedicated chat room, and you can use the global chat for
+                questions
               </li>
               <li className="message">
-                <span className="colorAdmin">Server</span>: Have fun and
-                tek'mate, brother!
+                <span className="colorAdmin">Tutorial</span>: Everything is WORK
+                IN PROGRESS!
+              </li>
+              <li className="message">
+                <span className="colorAdmin">Tutorial</span>: Have fun and
+                tek'mate o7
               </li>
             </>
           )}
@@ -207,10 +235,34 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
             .filter((message) => message.channel === chatRoom)
             .map((message) => {
               if (message.type === "info") {
-                return <li className="message info">{message.message}</li>;
+                return (
+                  <li className="message info">
+                    <span className="date">
+                      {`${new Date(message.date).toLocaleTimeString(
+                        "en-US"
+                      )}: `}
+                    </span>
+                    {message.message}
+                  </li>
+                );
+              }
+              if (message.type === "alert") {
+                return (
+                  <li className="message alert">
+                    <span className="date">
+                      {`${new Date(message.date).toLocaleTimeString(
+                        "en-US"
+                      )}: `}
+                    </span>
+                    {message.message}
+                  </li>
+                );
               }
               return (
                 <li className="message">
+                  <span className="date">
+                    {`${new Date(message.date).toLocaleTimeString("en-US")}: `}
+                  </span>
                   <span
                     className={
                       message.username === "Tibuntu"
@@ -228,7 +280,10 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
               );
             })}
           {messages.filter(
-            (message) => message.channel === chatRoom && message.type !== "info"
+            (message) =>
+              message.channel === chatRoom &&
+              message.type !== "info" &&
+              message.type !== "alert"
           ).length === 0 && (
             <li className="message">
               <span className="emptyChat">
