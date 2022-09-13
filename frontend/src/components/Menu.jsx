@@ -36,9 +36,9 @@ const Menu = ({
             onClick={() => setAddressBookOpen(!addressBookOpen)}
           >
             <img
-              src={`${
-                import.meta.env.VITE_FRONTEND_SRC_URL
-              }/assets/icons/addressbook.png`}
+              src={`${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/icons/${
+                addressBookOpen ? "active/addressbook.png" : "addressbook.png"
+              }`}
               className="menuIcon"
               alt=""
             />
@@ -58,9 +58,9 @@ const Menu = ({
             }}
           >
             <img
-              src={`${
-                import.meta.env.VITE_FRONTEND_SRC_URL
-              }/assets/icons/users.png`}
+              src={`${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/icons/${
+                userListOpen ? "active/users.png" : "users.png"
+              }`}
               className="menuIcon"
               alt=""
             />
@@ -78,9 +78,9 @@ const Menu = ({
             }}
           >
             <img
-              src={`${
-                import.meta.env.VITE_FRONTEND_SRC_URL
-              }/assets/icons/chat.png`}
+              src={`${import.meta.env.VITE_FRONTEND_SRC_URL}/assets/icons/${
+                chatOpen ? "active/chat.png" : "chat.png"
+              }`}
               className="menuIcon"
               alt=""
             />
