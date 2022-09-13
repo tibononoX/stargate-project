@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import PlanetContext from "@contexts/PlanetContext";
 import "@styles/addressBook.scss";
 
-const AddressBook = ({ addressBookOpen, addressList }) => {
+const AddressBook = ({ addressBookOpen, setAddressBookOpen, addressList }) => {
   const { currentPlanet } = useContext(PlanetContext);
   const [showOneWay, setShowOneWay] = useState(true);
   const [showUnreachable, setShowUnreachable] = useState(false);
@@ -31,6 +31,13 @@ const AddressBook = ({ addressBookOpen, addressList }) => {
             />
             Show <span className="unreachableText">unreachable</span> addresses
           </label>
+          <button
+            type="button"
+            className="closeChat"
+            onClick={() => setAddressBookOpen(false)}
+          >
+            X
+          </button>
         </div>
         <p>
           Number of addresses:{" "}

@@ -45,6 +45,13 @@ const UserList = ({
           />
           Planet filter
         </label>
+        <button
+          type="button"
+          className="closeChat"
+          onClick={() => setUserListOpen(false)}
+        >
+          X
+        </button>
       </header>
 
       <ul className={userListOpen ? "userList" : "userList closed"}>

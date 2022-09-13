@@ -84,8 +84,8 @@ const Chat = ({ chatOpen, setChatOpen }) => {
           X
         </button>
       </header>
-      <div className="chatBox">
-        <ul className="messages" id="chatList">
+      <div className="chatBox" id="chatList">
+        <ul className="messages">
           {chatRoom === currentPlanet.planetName && currentPlanet.initial && (
             <>
               <li className="message">
@@ -146,18 +146,18 @@ const Chat = ({ chatOpen, setChatOpen }) => {
             </li>
           )}
         </ul>
-        <form className="inputContainer" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            className="inputBox"
-            value={newMessage}
-            maxLength="250"
-            required
-            placeholder="Enter your message here ..."
-            onChange={(e) => setNewMessage(e.target.value)}
-          />
-        </form>
       </div>
+      <form className="inputContainer" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          className="inputBox"
+          value={newMessage}
+          maxLength="250"
+          required
+          placeholder="Enter your message here ..."
+          onChange={(e) => setNewMessage(e.target.value)}
+        />
+      </form>
     </section>
   );
 };

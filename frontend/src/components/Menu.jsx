@@ -52,6 +52,7 @@ const Menu = ({
         {addressList && (
           <AddressBook
             addressBookOpen={addressBookOpen}
+            setAddressBookOpen={setAddressBookOpen}
             addressList={addressList}
           />
         )}
@@ -85,6 +86,7 @@ const Menu = ({
               className="menuIcon"
               alt=""
             />
+            <p className="menuCounter">{userList.length}</p>
           </button>
         </li>
         <li className={chatOpen ? "navButton active" : "navButton"}>
