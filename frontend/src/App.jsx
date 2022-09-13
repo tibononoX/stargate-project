@@ -32,7 +32,9 @@ function App() {
   );
 
   const [notifAudio, setNotifAudio] = useState(
-    localStorage.getItem("chatAudio") === "true"
+    localStorage.getItem("chatAudio")
+      ? localStorage.getItem("chatAudio") === "true"
+      : true
   );
 
   const checkConnection = async () => {
