@@ -72,10 +72,9 @@
   transition: 500ms;
 
   &.signup {
-    position: relative;
     flex-direction: column;
     align-items: center;
-    bottom: 0;
+    bottom: 12%;
     left: 0;
 
     p {

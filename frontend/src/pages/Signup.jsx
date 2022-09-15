@@ -29,7 +29,7 @@ const registerForm = (state, action) => {
   }
 };
 
-const Signup = ({ initialPlanet, fetchAddressList }) => {
+const Signup = ({ fetchAddressList }) => {
   const { setUserData, socket } = useContext(UserContext);
   const [formData, dispatch] = useReducer(registerForm, formInitialState);
   const [gateAddress, setGateAddress] = useState("");
