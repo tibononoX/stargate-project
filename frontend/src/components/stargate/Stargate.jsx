@@ -502,7 +502,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       if (chevDiff > 1) {
         for (let i = 0; i < chevDiff; i++) {
           handleChev(i, dispatch, audioVolume);
-          await timeout(300);
+          await timeout(200);
         }
       }
 
@@ -515,6 +515,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       dispatch({ type: "pooActive", payload: false });
       handleChev(6, dispatch);
       dispatch({ type: "destLock", payload: true });
+      audioSelector(audioVolume, "dhdLock");
       dispatch({ type: "offworld", payload: true });
       return dispatch({ type: "isOpen", payload: false });
     }
