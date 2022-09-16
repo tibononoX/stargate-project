@@ -448,6 +448,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
 
       const destBusy = await checkBusy(gateState.destinationInfo.planetName);
       if (!gateState.destinationInfo?.id || destBusy === true) {
+        dispatch({ type: "destinationInfoReset" });
         await lockFail();
         return socket.emit("lockFail", {
           planetName: currentPlanet.planetName,
