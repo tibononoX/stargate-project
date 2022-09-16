@@ -1,36 +1,27 @@
 /* eslint-disable no-case-declarations */
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
+import audioSelector from "@services/audio";
+import UserContext from "@contexts/UserContext";
 
-const Ring = ({ rollData, setIsRolling }) => {
+const Ring = ({ rollData, dispatch }) => {
+  const { audioVolume } = useContext(UserContext);
   const handleRoll = async () => {
     try {
-      if (rollData.reset) {
-        setIsRolling(true);
-        const rollSound = new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/stargate/ringRollFail.wav`
-        );
-        rollSound.play();
-
-        return setTimeout(() => {
-          rollSound.pause();
-          rollSound.currentTime = 0;
-          setIsRolling(false);
-        }, rollData.timing);
+      if (rollData.instant) {
+        return null;
       }
-      setIsRolling(true);
-      const rollSound = new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/stargate/ringRoll.wav`
+
+      dispatch({ type: "isRolling", payload: true });
+      const rollSound = audioSelector(
+        audioVolume,
+        rollData.reset ? "ringRollFail" : "ringRoll"
       );
       rollSound.play();
 
       return setTimeout(() => {
         rollSound.pause();
         rollSound.currentTime = 0;
-        setIsRolling(false);
+        dispatch({ type: "isRolling", payload: false });
       }, rollData.timing);
     } catch (err) {
       return console.warn(err);

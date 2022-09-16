@@ -13,6 +13,13 @@
   top: 0;
   font-size: 2rem;
   padding: 8px;
+  margin-top: 8px;
+
+  .offworld {
+    background-color: rgba(7, 7, 7, 0.5);
+    font-weight: 600;
+    color: red;
+  }
 }
 
 .stargate {
@@ -20,7 +27,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  top: 60px;
+  top: 6%;
   p {
     color: cyan;
     text-align: center;
@@ -59,15 +66,15 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  max-height: 40vh;
   background-color: rgba(61, 58, 58, 0);
   padding: 28px 20px 4px 20px;
   transition: 500ms;
 
   &.signup {
-    position: relative;
     flex-direction: column;
     align-items: center;
-    bottom: 0;
+    bottom: 12%;
     left: 0;
 
     p {
@@ -78,13 +85,13 @@
 
   &.open {
     bottom: 0;
-    background-color: rgba(61, 58, 58, 0.7);
+    background-color: rgba(49, 47, 47, 0.5);
     backdrop-filter: blur(4px);
   }
 
   .showHide {
     position: absolute;
-    background-color: rgb(65, 63, 63);
+    background-color: rgba(61, 58, 58, 0.7);
     border: solid 2px rgb(61, 45, 37);
     color: rgb(119, 115, 113);
     padding: 2px 48px;
@@ -94,11 +101,11 @@
 
     &.hide {
       border-radius: 0 0 50% 50%;
+      border: solid 2px rgb(231, 89, 26);
+      color: rgb(238, 127, 79);
     }
 
     &:hover {
-      border: solid 2px rgb(231, 89, 26);
-      color: rgb(238, 127, 79);
       cursor: pointer;
     }
   }
@@ -185,18 +192,36 @@
 
 @media screen and (max-width: 650px) {
   .stargate {
-    top: 100px;
+    top: 5%;
   }
 
   .currentPlanet {
-    margin-top: 10%;
+    margin-top: 0;
+    font-size: 1.5rem;
+
+    .offworld {
+      background-color: rgba(7, 7, 7, 0.5);
+      font-weight: 600;
+      font-size: 1.3rem;
+      color: red;
+    }
   }
 
   .dhd {
-    bottom: 0;
+    bottom: -273px;
     padding: 28px 0 0 0;
+
     .showHide {
-      display: none;
+      display: block;
+      &.hide {
+        // border-radius: 50% 50% 0 0;
+      }
+    }
+
+    &.open {
+      background-color: rgba(49, 47, 47, 1);
+      bottom: 0;
+      backdrop-filter: none;
     }
 
     .buttonList {

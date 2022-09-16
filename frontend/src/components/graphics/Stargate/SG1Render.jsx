@@ -16,18 +16,7 @@ import GateBg from "./GateBg";
 import GateFrame from "./GateFrame";
 import SvgDef from "./SvgDef";
 
-function SG1Render({
-  windowWidth,
-  rollData,
-  setIsRolling,
-  chevrons,
-  lockChev,
-  destLock,
-  locking,
-  isOpen,
-  travelGate,
-}) {
-  useEffect(() => {}, [chevrons]);
+function SG1Render({ windowWidth, gateState, dispatch, travelGate }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -38,19 +27,25 @@ function SG1Render({
       viewBox="0 0 800 800"
     >
       <SvgDef />
-      {isOpen && <Wormhole travelGate={travelGate} />}
+      {gateState.isOpen && <Wormhole travelGate={travelGate} />}
       <GateBg />
-      <Ring rollData={rollData} setIsRolling={setIsRolling} />
-      <GateFrame locking={locking} lockChev={lockChev} destLock={destLock} />
-      {chevrons[0] && <ChevOne />}
-      {chevrons[1] && <ChevTwo />}
-      {chevrons[2] && <ChevThree />}
-      {chevrons[3] && <ChevFour />}
-      {chevrons[4] && <ChevFive />}
-      {chevrons[5] && <ChevSix />}
-      {chevrons[6] && <ChevSeven />}
-      {chevrons[7] && <ChevEight />}
-      {(lockChev || destLock) && <ChevNine locking={locking} />}
+      <Ring rollData={gateState.rollData} dispatch={dispatch} />
+      <GateFrame
+        locking={gateState.locking}
+        lockChev={gateState.lockChev}
+        destLock={gateState.destLock}
+      />
+      {gateState.chevrons[0] && <ChevOne />}
+      {gateState.chevrons[1] && <ChevTwo />}
+      {gateState.chevrons[2] && <ChevThree />}
+      {gateState.chevrons[3] && <ChevFour />}
+      {gateState.chevrons[4] && <ChevFive />}
+      {gateState.chevrons[5] && <ChevSix />}
+      {gateState.chevrons[6] && <ChevSeven />}
+      {gateState.chevrons[7] && <ChevEight />}
+      {(gateState.lockChev || gateState.destLock) && (
+        <ChevNine locking={gateState.locking} />
+      )}
     </svg>
   );
 }

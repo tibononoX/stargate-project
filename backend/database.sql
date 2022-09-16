@@ -11,17 +11,19 @@ CREATE TABLE
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    current_location_id INT NOT NULL DEFAULT 1,
     role ENUM("Admin", "User") DEFAULT "User" NOT NULL
   );
 
 INSERT INTO
-  user (username, email, password, role)
+  user (username, email, password, role, current_location_id)
 VALUES
   (
     "Tibuntu",
     "thibault-carre@hotmail.fr",
     "$argon2id$v=19$m=4096,t=3,p=1$CdHsErVVfXbTrGdNvL+kGg$O1yRMyGLmMPq2t+khIiaqfdSyzrG5fg4t8XKv7cFbz0",
-    "Admin"
+    "Admin",
+    "2"
   );
 
 CREATE TABLE

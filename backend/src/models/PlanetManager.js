@@ -16,6 +16,20 @@ class PlanetManager extends AbstractManager {
     );
   }
 
+  findByAddress(gateAddress) {
+    return this.connection.query(
+      `SELECT * FROM ${PlanetManager.table} WHERE gateAddress = ?`,
+      gateAddress
+    );
+  }
+
+  findByName(planetName) {
+    return this.connection.query(
+      `SELECT * FROM ${PlanetManager.table} WHERE planetName = ?`,
+      planetName
+    );
+  }
+
   insert(planet) {
     return this.connection.query(`INSERT INTO ${PlanetManager.table} SET ?`, [
       planet,

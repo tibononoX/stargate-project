@@ -16,7 +16,8 @@
     "react-dom": "^18.0.0",
     "react-h5-audio-player": "^3.8.4",
     "react-router-dom": "^6.3.0",
-    "sass": "^1.54.1"
+    "sass": "^1.54.1",
+    "socket.io-client": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^1.0.7",

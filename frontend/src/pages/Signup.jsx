@@ -29,8 +29,8 @@ const registerForm = (state, action) => {
   }
 };
 
-const Signup = ({ initialPlanet, fetchAddressList }) => {
-  const { setUserData } = useContext(UserContext);
+const Signup = ({ fetchAddressList }) => {
+  const { setUserData, socket } = useContext(UserContext);
   const [formData, dispatch] = useReducer(registerForm, formInitialState);
   const [gateAddress, setGateAddress] = useState("");
   const [poo, setPoo] = useState(null);
@@ -47,10 +47,16 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         return alert("Password do not match");
       }
 
+      if (gateAddress.length > 6 || !poo) {
+        return alert("You must enter a gate address");
+      }
+
       const newUserData = {
         username: formData.username,
         email: formData.email,
         password: formData.password,
+        gateAddress,
+        planetName,
       };
 
       const newCreatedUserData = await axios
@@ -79,6 +85,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         return console.warn("An error occured: planet");
       }
 
+      socket.emit("newPlanetRegistered");
       await fetchAddressList();
 
       const loginData = {
@@ -95,10 +102,9 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
         return console.warn("An error occured");
       }
       setUserData(login);
-      initialPlanet();
       return navigate("/");
     } catch (err) {
-      return console.warn(err);
+      return alert(err.response.data);
     }
   };
 
@@ -132,6 +138,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
             Username:
             <input
               id="username"
+              name="username"
               type="text"
               placeholder="Username"
               required
@@ -183,7 +190,6 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
               }
             />
           </label>
-          <button type="submit">SIGN UP</button>
         </div>
 
         <div className="dhd signup">
@@ -193,6 +199,7 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
               <input
                 id="planetName"
                 type="text"
+                required
                 value={planetName}
                 placeholder="Planet name"
                 onChange={(e) => setPlanetName(e.target.value)}
@@ -252,6 +259,9 @@ const Signup = ({ initialPlanet, fetchAddressList }) => {
             })}
           </ul>
         </div>
+        <button className="submitButton" type="submit">
+          SIGN UP
+        </button>
       </form>
     </div>
   );

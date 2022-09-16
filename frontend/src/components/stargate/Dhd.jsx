@@ -1,29 +1,27 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
+import audioSelector from "@services/audio";
 import PlanetContext from "@contexts/PlanetContext";
+import UserContext from "@contexts/UserContext";
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const Dhd = ({
-  inputAddress,
-  setInputAddress,
-  processingInput,
-  pooActive,
-  setPooActive,
-  isRolling,
-  destLock,
-  isOpen,
-  openGate,
-  closeGate,
+  dhdOpen,
+  setDhdOpen,
+  gateState,
+  dispatch,
+  openSequence,
+  closingSequence,
   wrongAddress,
-  checkMatching,
+  prevPlanet,
+  traveled,
 }) => {
+  const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
-  const [dhdActive, setDhdActive] = useState(false);
-  const [dhdOpen, setDhdOpen] = useState(false);
 
   const handleDhdClassName = (type, id) => {
     switch (type) {
@@ -31,12 +29,12 @@ const Dhd = ({
         return "red";
       case "symbButton":
         if (
-          inputAddress.some((symbol) => symbol.id === id) ||
-          pooActive?.id === id
+          gateState.inputAddress.some((symbol) => symbol.id === id) ||
+          gateState.pooActive?.id === id
         ) {
           return "symbButton active";
         }
-        if (isOpen || destLock) {
+        if (gateState.isOpen || gateState.destLock) {
           return "symbButton noClick";
         }
         return "symbButton";
@@ -45,57 +43,109 @@ const Dhd = ({
     }
   };
 
+  const dhdFail = () => {
+    return wrongAddress();
+  };
+
+  const dhdOpenGate = () => {
+    audioSelector(audioVolume, "dhdOpen");
+    dispatch({ type: "dhdActive", payload: true });
+    return openSequence();
+  };
+
+  const dhdCloseGate = async () => {
+    closingSequence(prevPlanet, gateState.destinationInfo.planetName);
+    await timeout(2700);
+    dispatch({ type: "dhdActive", payload: false });
+    return dispatch({ type: "pooActive", payload: false });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isOpen) {
-        setDhdActive(false);
-        closeGate();
-        await timeout(2700);
-        return setPooActive(false);
+      if (traveled && gateState.isOpen) {
+        return dhdCloseGate();
       }
-      if (inputAddress.length === 0 || inputAddress.length === 7) {
+      if (
+        gateState.offworld ||
+        gateState.opening ||
+        gateState.closing ||
+        gateState.isRolling ||
+        gateState.isLocking
+      ) {
         return null;
       }
-      if ((inputAddress.length < 6 && inputAddress.length !== 0) || !destLock) {
-        new Audio(
-          `${
-            import.meta.env.VITE_FRONTEND_SRC_URL
-          }/assets/sounds/dhd/dhd_usual_fail.mp3`
-        ).play();
-        setPooActive(false);
-        return wrongAddress();
+      if (gateState.isOpen) {
+        return dhdCloseGate();
       }
-
-      new Audio(
-        `${
-          import.meta.env.VITE_FRONTEND_SRC_URL
-        }/assets/sounds/dhd/dhd_usual_dial.wav`
-      ).play();
-      setDhdActive(true);
-      return openGate();
+      if (
+        gateState.inputAddress.length === 0 ||
+        gateState.inputAddress.length === 7
+      ) {
+        return null;
+      }
+      if (
+        (gateState.inputAddress.length < 6 &&
+          gateState.inputAddress.length !== 0) ||
+        !gateState.destLock
+      ) {
+        socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
+        return dhdFail();
+      }
+      if (!gateState.destinationInfo) {
+        return null;
+      }
+      if (!gateState.ready) {
+        return null;
+      }
+      return dhdOpenGate();
     } catch (err) {
       return console.warn(err);
     }
   };
 
-  const handleClick = (dhdSymbol) => {
+  const handleClick = async (dhdSymbol) => {
+    const newInputAddress = [...gateState.inputAddress, dhdSymbol];
     if (
-      inputAddress.length === 7 ||
-      inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
-      isRolling ||
-      processingInput ||
-      destLock ||
-      isOpen
+      gateState.inputAddress.length === 7 ||
+      gateState.inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
+      gateState.pooActive ||
+      gateState.isRolling ||
+      gateState.processingInput ||
+      gateState.isLocking ||
+      gateState.destLock ||
+      gateState.isOpen ||
+      gateState.offworld
     ) {
       return null;
     }
-    if (inputAddress.length === 6) {
-      setPooActive(dhdSymbol);
-      return checkMatching(dhdSymbol);
+    if (gateState.inputAddress.length === 6) {
+      socket.emit("lastChev", {
+        planetName: currentPlanet.planetName,
+        poo: dhdSymbol,
+      });
+      dispatch({ type: "isLocking", payload: true });
+      return dispatch({ type: "pooActive", payload: dhdSymbol });
     }
-    return setInputAddress([...inputAddress, dhdSymbol]);
+    socket.emit("newInput", {
+      planetName: currentPlanet.planetName,
+      inputAddress: newInputAddress,
+    });
+    return dispatch({
+      type: "inputAddress",
+      payload: newInputAddress,
+    });
   };
+
+  useEffect(() => {
+    socket.on("wrongAddress", () => {
+      dhdFail();
+    });
+
+    return () => {
+      socket.off("wrongAddress");
+    };
+  }, []);
 
   return (
     <div className={dhdOpen ? "dhd open" : "dhd"}>
@@ -121,7 +171,9 @@ const Dhd = ({
                   className={handleDhdClassName("symbButton", symbol.id)}
                   title={`${symbol.letter} - ${symbol.label}`}
                   type="button"
-                  onClick={() => handleClick(symbol)}
+                  onClick={() => {
+                    return handleClick(symbol);
+                  }}
                 >
                   {symbol.letter}
                 </button>
@@ -133,7 +185,7 @@ const Dhd = ({
           type="submit"
           title="Big red button woosh woosh"
           className={
-            (dhdActive && destLock) || destLock
+            (gateState.dhdActive && gateState.destLock) || gateState.destLock
               ? "dhdButton active"
               : "dhdButton"
           }
