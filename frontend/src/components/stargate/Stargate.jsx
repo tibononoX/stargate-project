@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
@@ -123,7 +125,11 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       if (currentDialMode === "EARTH") {
         handleChev(null, dispatch);
         if (gateState.destinationInfo?.id) {
-          socket.emit("offworldFail", gateState.destinationInfo.planetName);
+          socket.emit(
+            "offworldFail",
+            currentPlanet.planetName,
+            gateState.destinationInfo.planetName
+          );
         }
       }
       if (
@@ -148,7 +154,11 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
         handleChev(null, dispatch);
         audioSelector(audioVolume, "chevEnd");
         if (gateState.destinationInfo?.id) {
-          socket.emit("offworldFail", gateState.destinationInfo.planetName);
+          socket.emit(
+            "offworldFail",
+            currentPlanet.planetName,
+            gateState.destinationInfo.planetName
+          );
         }
       }
       setTraveled(false);
@@ -192,7 +202,11 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       }
 
       if (match.length === 0 && gateState.destinationInfo.id) {
-        socket.emit("offworldFail", gateState.destinationInfo.planetName);
+        socket.emit(
+          "offworldFail",
+          currentPlanet.planetName,
+          gateState.destinationInfo.planetName
+        );
         dispatch({ type: "destinationInfoReset" });
       }
 
@@ -312,54 +326,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       return false;
     }
     return true;
-  };
-
-  const compareAddresses = async () => {
-    try {
-      const addressesToCompare = addressList.filter(
-        (address) => address.id !== currentPlanet.id
-      );
-      const destAddress = gateState.inputAddress
-        .map((symbol) => symbol.letter)
-        .toString()
-        .replace(/,/g, "");
-
-      const [match] = await addressesToCompare
-        .filter((destination) => {
-          const { gateAddress } = destination;
-
-          return gateAddress === destAddress;
-        })
-        .map((destination) => {
-          const [poo] = symbols.filter(
-            (symbol) => symbol.letter === destination.pooLetter
-          );
-          const newPlanet = { ...destination, poo };
-          delete newPlanet.pooLetter;
-          return newPlanet;
-        });
-      if (!match) {
-        return false;
-      }
-
-      const destBusy = await checkBusy(match.planetName);
-      if (destBusy === true) {
-        return false;
-      }
-
-      dispatch({ type: "destinationInfo", payload: match });
-      socket.emit("destinationInfo", {
-        planetName: currentPlanet.planetName,
-        destination: match,
-      });
-      socket.emit("destLock", {
-        planetName: currentPlanet.planetName,
-        destinationName: match.planetName,
-      });
-      return true;
-    } catch (err) {
-      return console.warn(err);
-    }
   };
 
   const lockDest = async () => {
@@ -530,9 +496,17 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
 
   const offworldSequence = async (state, chevLocked) => {
     if (state === "dialing") {
-      if (gateState.inputAddress.length === 0) {
-        handleChev(chevLocked, dispatch, audioVolume);
+      const chevDiff =
+        chevLocked - gateState.chevrons.filter((chev) => chev === true).length;
+
+      if (chevDiff > 1) {
+        for (let i = 0; i < chevDiff; i++) {
+          handleChev(i, dispatch, audioVolume);
+          await timeout(300);
+        }
       }
+
+      handleChev(chevLocked, dispatch, audioVolume);
       return dispatch({ type: "offworldIncoming", payload: true });
     }
 
@@ -556,6 +530,17 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
 
     return null;
   };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("offworldSequence", (state, chevLocked, instant = false) => {
+        offworldSequence(state, chevLocked, instant);
+      });
+    }
+    return () => {
+      socket.off("offworldSequence");
+    };
+  }, [gateState.chevrons]);
 
   const wrongAddress = async (offworld) => {
     if (offworld) {
@@ -628,9 +613,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       socket.on("closeGate", (state = null) => {
         closeGate(state);
       });
-      socket.on("offworldSequence", (state, chevLocked, instant = false) => {
-        offworldSequence(state, chevLocked, instant);
-      });
+
       socket.on("offworldLock", (state, chevLocked, instant = false) => {
         offworldSequence(state, chevLocked, instant);
       });
@@ -649,7 +632,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       socket.off("playerTravels");
       socket.off("openGate");
       socket.off("closeGate");
-      socket.off("offworldSequence");
       socket.off("offworldLock");
       socket.off("offworldClose");
     };
@@ -684,21 +666,35 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     if (gateState.destLock && !gateState.isOpen && gateState.ready) {
       const expires = setTimeout(() => {
         if (gateState.ready) {
+          console.log("Resetting gate due to inactivity after 15 seconds");
           socket.emit("gateAutoReset", {
             planetName: currentPlanet.planetName,
             destinationName: gateState.destinationInfo.planetName,
           });
+          if (gateState.destinationInfo?.id) {
+            socket.emit(
+              "offworldFail",
+              currentPlanet.planetName,
+              gateState.destinationInfo.planetName
+            );
+          }
           wrongAddress();
         }
       }, 15000);
       return () => clearTimeout(expires);
     }
-  }, [gateState.destLock, gateState.isOpen, gateState.ready]);
+  }, [
+    gateState.destLock,
+    gateState.isOpen,
+    gateState.ready,
+    gateState.destinationInfo,
+  ]);
 
   useEffect(() => {
     if (gateState.offworld && !gateState.isOpen) {
       const expires = setTimeout(() => {
         if (!gateState.isOpen) {
+          console.log("Resetting gate due to inactivity after 16 seconds");
           socket.emit("wrongAddressStraight", {
             planetName: currentPlanet.planetName,
           });
@@ -718,9 +714,17 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     ) {
       const expires = setTimeout(() => {
         if (gateState.inputAddress.length > 0) {
+          console.log(gateState.destinationInfo.planetName);
           socket.emit("wrongAddressStraight", {
             planetName: currentPlanet.planetName,
           });
+          if (gateState.destinationInfo?.id) {
+            socket.emit(
+              "offworldFail",
+              currentPlanet.planetName,
+              gateState.destinationInfo.planetName
+            );
+          }
           wrongAddress();
         }
       }, 30000);
@@ -731,6 +735,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     gateState.isOpen,
     gateState.inputAddress.length,
     gateState.isRolling,
+    gateState.destinationInfo,
   ]);
 
   const leavePlanet = (planetName, destinationName) => {

@@ -303,7 +303,6 @@ io.on("connection", (socket) => {
 
   socket.on("isGateBusy", (planetName, destinationName, cb) => {
     const gateBusy = busyGates.some((links) => {
-      console.table(busyGates);
       if (
         (links.outbound === planetName && links.inbound === destinationName) ||
         ((links.outbound === destinationName ||
@@ -344,12 +343,14 @@ io.on("connection", (socket) => {
     socket.to(planetName).emit("wrongAddressStraight");
   });
 
-  socket.on("offworldFail", (destinationName) => {
+  socket.on("offworldFail", (planetName, destinationName) => {
     if (
       busyGates.some(
         (links) =>
           (links.outbound === destinationName && links.state !== "dialing") ||
-          (links.inbound === destinationName && links.state !== "dialing")
+          (links.inbound === destinationName &&
+            links.outbound !== planetName &&
+            links.state !== "dialing")
       )
     ) {
       console.log(`${destinationName} is busy, stopping offworld fail event`);
@@ -360,15 +361,12 @@ io.on("connection", (socket) => {
       (link) => link.inbound === destinationName
     );
     busyGates.splice(gates, 1);
-    console.table(busyGates);
 
-    socket.to(destinationName).emit("wrongAddressStraight", true);
+    return socket.to(destinationName).emit("wrongAddressStraight", true);
   });
 
   socket.on("gateAutoReset", ({ planetName, destinationName }) => {
-    const gates = busyGates.findIndex(
-      (link) => link.outbound === planetName && link.inbound === destinationName
-    );
+    const gates = busyGates.findIndex((link) => link.outbound === planetName);
     if (!gates) {
       return socket.to(destinationName).emit("wrongAddress");
     }
@@ -453,8 +451,8 @@ io.on("connection", (socket) => {
     if (
       busyGates.some(
         (links) =>
-          (links.outbound === destinationName && links.state !== "dialing") ||
-          (links.inbound === destinationName && links.state !== "dialing")
+          links.outbound === destinationName ||
+          (links.inbound === destinationName && links.outbound !== planetName)
       )
     ) {
       console.log(
@@ -492,11 +490,35 @@ io.on("connection", (socket) => {
   });
 
   socket.on("destLock", ({ planetName, destinationName }) => {
+    if (
+      busyGates.some(
+        (links) =>
+          (links.outbound === destinationName && links.state === "dialing") ||
+          (links.inbound === destinationName && links.state === "dialing")
+      )
+    ) {
+      const gates = busyGates.filter(
+        (link) =>
+          (link.outbound === destinationName && link.state === "dialing") ||
+          (link.inbound === destinationName &&
+            link.outbound !== planetName &&
+            link.state === "dialing")
+      );
+
+      gates.forEach((link) => {
+        const gatesIndex = busyGates.findIndex(
+          (busyLink) =>
+            busyLink.outbound === link.outbound &&
+            busyLink.inbound === link.inbound
+        );
+        busyGates.splice(gatesIndex, 1);
+      });
+    }
+
     const gates = busyGates.findIndex(
       (link) => link.outbound === planetName && link.inbound === destinationName
     );
     busyGates[gates] = { ...busyGates[gates], chevLocked: 7, state: "locked" };
-    console.table(busyGates);
 
     messages.push({
       date: new Date(),
