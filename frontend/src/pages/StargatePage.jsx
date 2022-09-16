@@ -146,6 +146,15 @@ const StargatePage = ({ addressList, windowWidth }) => {
         console.warn(`${client.user} left ${client.planet}`);
       });
     }
+
+    return () => {
+      socket.off("user connected");
+      socket.off("user disconnected");
+      socket.off("disconnect");
+      socket.off("setUserList");
+      socket.off("user join");
+      socket.off("user left");
+    };
   }, []);
 
   useEffect(() => {

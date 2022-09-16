@@ -198,7 +198,11 @@ io.on("connection", (socket) => {
         .map((link) => link);
 
       if (gateOffworld) {
-        io.to(socket.id).emit("offworldLock", gateOffworld.state, true);
+        io.to(socket.id).emit(
+          "offworldSequence",
+          gateOffworld.state,
+          gateOffworld.chevLocked
+        );
       }
 
       users[userIndex] = { ...users[userIndex], hosting: planetName };
@@ -334,10 +338,23 @@ io.on("connection", (socket) => {
     socket.to(planetName).emit("wrongAddressStraight");
   });
 
+  socket.on("offworldFail", (destinationName) => {
+    const gates = busyGates.findIndex(
+      (link) => link.inbound === destinationName
+    );
+    busyGates.splice(gates, 1);
+    console.table(busyGates);
+
+    socket.to(destinationName).emit("wrongAddressStraight", true);
+  });
+
   socket.on("gateAutoReset", ({ planetName, destinationName }) => {
     const gates = busyGates.findIndex(
       (link) => link.outbound === planetName && link.inbound === destinationName
     );
+    if (!gates) {
+      return socket.to(destinationName).emit("wrongAddress");
+    }
 
     busyGates.splice(gates, 1);
     console.log("######################");
@@ -345,7 +362,7 @@ io.on("connection", (socket) => {
     console.log(`[${planetName} - ${destinationName}]`);
     console.table(busyGates);
     socket.to(planetName).emit("wrongAddress");
-    socket.to(destinationName).emit("wrongAddress");
+    return socket.to(destinationName).emit("wrongAddress");
   });
 
   socket.on("openGate", ({ planetName, destinationName }) => {
@@ -415,7 +432,8 @@ io.on("connection", (socket) => {
     return socket.to(destinationName).emit("closeGate");
   });
 
-  socket.on("destLock", ({ planetName, destinationName }) => {
+  socket.on("offworldChev", ({ planetName, destinationName, chevLocked }) => {
+    console.log(destinationName, chevLocked);
     if (
       !busyGates.some(
         (links) =>
@@ -428,7 +446,8 @@ io.on("connection", (socket) => {
       busyGates.push({
         outbound: planetName,
         inbound: destinationName,
-        state: "locked",
+        chevLocked,
+        state: "dialing",
       });
       console.log("######################");
       console.log("New gate link added to busy gates : ");
@@ -445,8 +464,27 @@ io.on("connection", (socket) => {
       io.emit("updateChat", messages);
     }
 
+    const gates = busyGates.findIndex(
+      (link) => link.outbound === planetName && link.inbound === destinationName
+    );
+    busyGates[gates] = { ...busyGates[gates], chevLocked };
+
+    socket
+      .to(busyGates[gates].inbound)
+      .emit("offworldSequence", busyGates[gates].state, chevLocked);
+  });
+
+  socket.on("destLock", ({ planetName, destinationName }) => {
+    const gates = busyGates.findIndex(
+      (link) => link.outbound === planetName && link.inbound === destinationName
+    );
+    busyGates[gates] = { ...busyGates[gates], chevLocked: 7, state: "locked" };
+    console.table(busyGates);
+
     socket.to(planetName).emit("destLock");
-    socket.to(destinationName).emit("offworldLock");
+    socket
+      .to(destinationName)
+      .emit("offworldSequence", busyGates[gates].state, 6);
   });
 
   // CHAT SYSTEM
