@@ -42,7 +42,9 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     locking: false,
     chevrons: [false, false, false, false, false, false, false, false],
     destLock: false,
+    dialingTo: {},
     destinationInfo: {},
+    offworldIncoming: false,
     offworld: false,
   };
 
@@ -86,8 +88,14 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
         return { ...state, chevrons: action.payload };
       case "destLock":
         return { ...state, destLock: action.payload };
+      case "dialingTo":
+        return { ...state, dialingTo: action.payload };
+      case "destinationInfoReset":
+        return { ...state, destinationInfo: gateInitialState.destinationInfo };
       case "destinationInfo":
         return { ...state, destinationInfo: action.payload };
+      case "offworldIncoming":
+        return { ...state, offworldIncoming: action.payload };
       case "offworld":
         return { ...state, offworld: action.payload };
       case "RESET_FORM":
@@ -114,6 +122,9 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     try {
       if (currentDialMode === "EARTH") {
         handleChev(null, dispatch);
+        if (gateState.destinationInfo?.id) {
+          socket.emit("offworldFail", gateState.destinationInfo.planetName);
+        }
       }
       if (
         gateState.rollData.position === currentPlanet.poo.position &&
@@ -136,11 +147,64 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       if (currentDialMode !== "EARTH") {
         handleChev(null, dispatch);
         audioSelector(audioVolume, "chevEnd");
+        if (gateState.destinationInfo?.id) {
+          socket.emit("offworldFail", gateState.destinationInfo.planetName);
+        }
       }
       setTraveled(false);
       setPrevPlanet(currentPlanet.planetName);
+
       return dispatch({
         type: "resetGate",
+      });
+    } catch (err) {
+      return console.warn(err);
+    }
+  };
+
+  const handleDestOffworld = async () => {
+    try {
+      const addressesToCompare = addressList.filter(
+        (address) => address.id !== currentPlanet.id
+      );
+      const destAddress = gateState.inputAddress
+        .map((symbol) => symbol.letter)
+        .toString()
+        .replace(/,/g, "");
+
+      const match = await addressesToCompare
+        .filter((destination) => {
+          const { gateAddress } = destination;
+
+          return gateAddress.includes(destAddress);
+        })
+        .map((destination) => {
+          const [poo] = symbols.filter(
+            (symbol) => symbol.letter === destination.pooLetter
+          );
+          const newPlanet = { ...destination, poo };
+          delete newPlanet.pooLetter;
+          return newPlanet;
+        });
+
+      if (match.length > 1) {
+        return null;
+      }
+
+      if (match.length === 0 && gateState.destinationInfo.id) {
+        socket.emit("offworldFail", gateState.destinationInfo.planetName);
+        dispatch({ type: "destinationInfoReset" });
+      }
+
+      if (match.length === 0) {
+        return null;
+      }
+
+      dispatch({ type: "destinationInfo", payload: match[0] });
+      return socket.emit("offworldChev", {
+        planetName: currentPlanet.planetName,
+        destinationName: match[0].planetName,
+        chevLocked: gateState.inputAddress.length,
       });
     } catch (err) {
       return console.warn(err);
@@ -181,6 +245,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
           payload: true,
         });
         handleChev(gateState.inputAddress.length, dispatch);
+        await handleDestOffworld();
         await timeout(350);
         dispatch({
           type: "locking",
@@ -211,15 +276,10 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
             : gateState.inputAddress.length + 1
         );
       }
+
       await timeout(300);
-      audioSelector(
-        audioVolume,
-        "dhdChev",
-        gateState.inputAddress.length === 0
-          ? 1
-          : gateState.inputAddress.length + 1
-      );
-      handleChev(gateState.inputAddress.length, dispatch);
+      handleChev(gateState.inputAddress.length, dispatch, audioVolume);
+      await handleDestOffworld();
       return dispatch({
         type: "processingInput",
         payload: false,
@@ -311,6 +371,10 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       dispatch({ type: "locking", payload: true });
       await timeout(400);
       dispatch({ type: "destLock", payload: true });
+      socket.emit("destLock", {
+        planetName: currentPlanet.planetName,
+        destinationName: gateState.destinationInfo.planetName,
+      });
       await timeout(600);
       dispatch({ type: "locking", payload: false });
       await timeout(200);
@@ -320,6 +384,10 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     await timeout(800);
     audioSelector(audioVolume, "dhdLock");
     dispatch({ type: "destLock", payload: true });
+    socket.emit("destLock", {
+      planetName: currentPlanet.planetName,
+      destinationName: gateState.destinationInfo.planetName,
+    });
     dispatch({ type: "isLocking", payload: false });
     return dispatch({ type: "ready", payload: true });
   };
@@ -348,6 +416,13 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     await timeout(rollValues.timing);
   };
 
+  const checkPoo = (poo) => {
+    if (currentPlanet.poo.letter !== poo.letter) {
+      return false;
+    }
+    return true;
+  };
+
   const checkMatching = async (poo) => {
     try {
       if (gateState.offworld || gateState.inputAddress.length < 6) {
@@ -366,20 +441,20 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
         await handleRollPoo(poo);
       }
 
-      if (currentPlanet.poo.letter !== poo.letter) {
-        await lockFail();
-        return console.warn("Wrong poo");
+      const validPoo = checkPoo(poo);
+      if (!validPoo) {
+        return lockFail();
       }
 
-      const match = await compareAddresses();
-
-      if (!match) {
+      const destBusy = await checkBusy(gateState.destinationInfo.planetName);
+      if (!gateState.destinationInfo?.id || destBusy === true) {
         await lockFail();
         return socket.emit("lockFail", {
           planetName: currentPlanet.planetName,
           poo,
         });
       }
+
       return lockDest();
     } catch (err) {
       return console.warn(err);
@@ -452,45 +527,42 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     return closeGate();
   };
 
-  const offworldSequence = async (state, instant) => {
-    dispatch({ type: "inputAddress", payload: [] });
-    dispatch({ type: "pooActive", payload: false });
-    if (instant) {
-      handleChev(1, dispatch);
-      handleChev(2, dispatch);
-      handleChev(3, dispatch);
-      handleChev(4, dispatch);
-      handleChev(5, dispatch);
+  const offworldSequence = async (state, chevLocked) => {
+    if (state === "dialing") {
+      if (gateState.inputAddress.length === 0) {
+        handleChev(chevLocked, dispatch, audioVolume);
+      }
+      return dispatch({ type: "offworldIncoming", payload: true });
+    }
+
+    if (state === "locked") {
+      dispatch({ type: "inputAddress", payload: [] });
+      dispatch({ type: "pooActive", payload: false });
       handleChev(6, dispatch);
       dispatch({ type: "destLock", payload: true });
-      if (state === "open") {
-        return dispatch({ type: "isOpen", payload: true });
-      }
+      dispatch({ type: "offworld", payload: true });
       return dispatch({ type: "isOpen", payload: false });
     }
-    audioSelector(audioVolume, "dhdChev", 1);
-    handleChev(1, dispatch);
-    await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 2);
-    handleChev(2, dispatch);
-    await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 3);
-    handleChev(3, dispatch);
-    await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 4);
-    handleChev(4, dispatch);
-    await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 5);
-    handleChev(5, dispatch);
-    await timeout(250);
-    audioSelector(audioVolume, "dhdChev", 6);
-    handleChev(6, dispatch);
-    await timeout(300);
-    audioSelector(audioVolume, "dhdChev", 7);
-    return dispatch({ type: "destLock", payload: true });
+
+    if (state === "open") {
+      dispatch({ type: "inputAddress", payload: [] });
+      dispatch({ type: "pooActive", payload: false });
+      handleChev(6, dispatch);
+      dispatch({ type: "destLock", payload: true });
+      dispatch({ type: "offworld", payload: true });
+      return dispatch({ type: "isOpen", payload: true });
+    }
+
+    return null;
   };
 
-  const wrongAddress = async () => {
+  const wrongAddress = async (offworld) => {
+    if (offworld) {
+      console.warn("Inbound activation canceled");
+      dispatch({ type: "locking", payload: false });
+      return dispatch({ type: "resetting", payload: true });
+    }
+
     console.warn("Dialing failed");
     audioSelector(audioVolume, "dialFail");
     try {
@@ -523,6 +595,10 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
         setInitialized(true);
       });
     }
+    return () => {
+      socket.off("getGateState");
+      socket.off("newGateState");
+    };
   }, [gateState]);
 
   useEffect(() => {
@@ -539,8 +615,8 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       socket.on("lastChev", (poo) => {
         dispatch({ type: "pooActive", payload: poo });
       });
-      socket.on("wrongAddressStraight", () => {
-        wrongAddress();
+      socket.on("wrongAddressStraight", (offworld = false) => {
+        wrongAddress(offworld);
       });
       socket.on("playerTravels", () => {
         audioSelector(audioVolume, "travelWormhole");
@@ -551,15 +627,31 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       socket.on("closeGate", (state = null) => {
         closeGate(state);
       });
-      socket.on("offworldLock", (state, instant = false) => {
-        dispatch({ type: "offworld", payload: true });
-        offworldSequence(state, instant);
+      socket.on("offworldSequence", (state, chevLocked, instant = false) => {
+        offworldSequence(state, chevLocked, instant);
+      });
+      socket.on("offworldLock", (state, chevLocked, instant = false) => {
+        offworldSequence(state, chevLocked, instant);
       });
       socket.on("offworldClose", () => {
         dispatch({ type: "offworld", payload: false });
         closeGate();
       });
     }
+
+    return () => {
+      socket.off("newInput");
+      socket.off("destinationInfo");
+      socket.off("lockFail");
+      socket.off("lastChev");
+      socket.off("wrongAddressStraight");
+      socket.off("playerTravels");
+      socket.off("openGate");
+      socket.off("closeGate");
+      socket.off("offworldSequence");
+      socket.off("offworldLock");
+      socket.off("offworldClose");
+    };
   }, []);
 
   useEffect(() => {
@@ -709,13 +801,19 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       sgcOffworldAlarmAudio.volume = audioVolume;
       sgcOffworldAlarmAudio.play();
     }
-  }, [gateState.isOpen, gateState.inputAddress, gateState.offworld]);
+  }, [
+    userData,
+    gateState.isOpen,
+    gateState.inputAddress,
+    gateState.offworld,
+    gateState.offworldIncoming,
+  ]);
 
   if (initialized || hosting) {
     return (
       <div className="gameContainer">
         <p className="currentPlanet">
-          {gateState.offworld ? (
+          {gateState.offworld || gateState.offworldIncoming ? (
             <span className="offworld">OFFWORLD ACTIVATION</span>
           ) : !gateState.isOpen ? (
             `Current planet: ${currentPlanet?.planetName}`
@@ -733,16 +831,18 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
           )}
           {gateState.inputAddress.length !== 0 &&
             currentPlanet?.id === 1 &&
-            !gateState.offworld && (
+            !gateState.offworld &&
+            !gateState.offworldIncoming && (
               <audio loop id="sgcAlarmAudio">
                 <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
               </audio>
             )}
-          {gateState.offworld && currentPlanet?.id === 1 && (
-            <audio loop id="sgcOffworldAlarmAudio">
-              <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
-            </audio>
-          )}
+          {(gateState.offworld || gateState.offworldIncoming) &&
+            currentPlanet?.id === 1 && (
+              <audio loop id="sgcOffworldAlarmAudio">
+                <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
+              </audio>
+            )}
           <SG1Render
             windowWidth={windowWidth}
             gateState={gateState}

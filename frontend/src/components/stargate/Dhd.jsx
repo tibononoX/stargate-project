@@ -141,6 +141,10 @@ const Dhd = ({
     socket.on("wrongAddress", () => {
       dhdFail();
     });
+
+    return () => {
+      socket.off("wrongAddress");
+    };
   }, []);
 
   return (

@@ -1,3 +1,5 @@
+import audioSelector from "./audio";
+
 const rollSpeed = import.meta.env.VITE_GATE_ROLL_SPEED;
 
 export const rollCalc = (symbol, ringPosition, instant = false) => {
@@ -8,7 +10,10 @@ export const rollCalc = (symbol, ringPosition, instant = false) => {
   return { timing, position };
 };
 
-export const handleChev = (chev, dispatch) => {
+export const handleChev = (chev, dispatch, volume = 0.0) => {
+  if (chev) {
+    audioSelector(volume, "dhdChev", chev);
+  }
   switch (chev) {
     case 1:
       return dispatch({

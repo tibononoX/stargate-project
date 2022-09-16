@@ -45,28 +45,6 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
       });
   }, [messages, chatRoom]);
 
-  const globalCount = useMemo(
-    () =>
-      messages
-        .filter(
-          (message) => message.channel === "Global" && message.type !== "info"
-        )
-        .map((message) => message).length,
-    [messages]
-  );
-
-  const localCount = useMemo(
-    () =>
-      messages
-        .filter(
-          (message) =>
-            message.channel === currentPlanet.planetName &&
-            message.type !== "info"
-        )
-        .map((message) => message).length,
-    [messages]
-  );
-
   useEffect(() => {
     if (notifAudio) {
       audioSelector(audioVolume, "chatNotif");
