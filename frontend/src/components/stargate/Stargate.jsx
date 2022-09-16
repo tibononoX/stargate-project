@@ -1,3 +1,6 @@
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable consistent-return */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
@@ -667,7 +670,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     if (gateState.destLock && !gateState.isOpen && gateState.ready) {
       const expires = setTimeout(() => {
         if (gateState.ready) {
-          console.log("Resetting gate due to inactivity after 15 seconds");
           socket.emit("gateAutoReset", {
             planetName: currentPlanet.planetName,
             destinationName: gateState.destinationInfo.planetName,
@@ -695,7 +697,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     if (gateState.offworld && !gateState.isOpen) {
       const expires = setTimeout(() => {
         if (!gateState.isOpen) {
-          console.log("Resetting gate due to inactivity after 16 seconds");
           socket.emit("wrongAddressStraight", {
             planetName: currentPlanet.planetName,
           });
@@ -715,7 +716,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     ) {
       const expires = setTimeout(() => {
         if (gateState.inputAddress.length > 0) {
-          console.log(gateState.destinationInfo.planetName);
           socket.emit("wrongAddressStraight", {
             planetName: currentPlanet.planetName,
           });
