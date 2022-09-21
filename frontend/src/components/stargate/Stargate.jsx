@@ -504,7 +504,10 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       const chevDiff =
         chevLocked - gateState.chevrons.filter((chev) => chev === true).length;
 
-      if (chevDiff > 1) {
+      if (
+        chevDiff > 1 &&
+        gateState.chevrons.filter((chev) => chev === true).length === 0
+      ) {
         for (let i = 0; i < chevDiff; i++) {
           handleChev(i, dispatch, audioVolume);
           await timeout(200);
@@ -838,14 +841,14 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
               <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
             </audio>
           )}
-          {/* {gateState.inputAddress.length !== 0 &&
+          {gateState.inputAddress.length !== 0 &&
             currentPlanet?.id === 1 &&
             !gateState.offworld &&
             !gateState.offworldIncoming && (
               <audio loop id="sgcAlarmAudio">
                 <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
               </audio>
-            )} */}
+            )}
           {(gateState.offworld || gateState.offworldIncoming) &&
             currentPlanet?.id === 1 && (
               <audio loop id="sgcOffworldAlarmAudio">
