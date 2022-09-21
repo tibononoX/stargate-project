@@ -27,7 +27,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
   const [userList, setUserList] = useState([]);
 
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(!userData);
   const [userListOpen, setUserListOpen] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
   const [dhdOpen, setDhdOpen] = useState(false);

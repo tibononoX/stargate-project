@@ -6,17 +6,23 @@ SET
 
 CREATE TABLE
   user (
-    id INT(11) PRIMARY KEY AUTO_INCREMENT,
+    id INT (11) PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     current_location_id INT NOT NULL DEFAULT 1,
-    role ENUM("Admin", "User") DEFAULT "User" NOT NULL
+    role ENUM ("Admin", "User") DEFAULT "User" NOT NULL
   );
 
 INSERT INTO
-  user (username, email, password, role, current_location_id)
+  user (
+    username,
+    email,
+    password,
+    role,
+    current_location_id
+  )
 VALUES
   (
     "Tibuntu",
@@ -39,6 +45,6 @@ CREATE TABLE
     planetName VARCHAR(255) NOT NULL,
     gateAddress VARCHAR(8) NOT NULL,
     poo INT NOT NULL,
-    dialMode ENUM("EARTH", "DHD") NOT NULL,
+    dialMode ENUM ("EARTH", "DHD") NOT NULL,
     userId INT NULL
   );

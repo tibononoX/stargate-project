@@ -1,3 +1,6 @@
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable consistent-return */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
@@ -247,25 +250,27 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
           type: "rollData",
           payload: rollValues,
         });
-        await timeout(rollValues.timing - 200);
+        await timeout(rollValues.timing - 50);
         audioSelector(audioVolume, "earthChev");
+        await timeout(420);
         dispatch({
           type: "locking",
           payload: true,
         });
-        await timeout(700);
+        await timeout(300);
         dispatch({
           type: "lockChev",
           payload: true,
         });
+        await timeout(500);
         handleChev(gateState.inputAddress.length, dispatch);
         await handleDestOffworld();
-        await timeout(350);
+        await timeout(250);
         dispatch({
           type: "locking",
           payload: false,
         });
-        await timeout(700);
+        await timeout(300);
         dispatch({
           type: "lockChev",
           payload: false,
@@ -667,7 +672,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     if (gateState.destLock && !gateState.isOpen && gateState.ready) {
       const expires = setTimeout(() => {
         if (gateState.ready) {
-          console.log("Resetting gate due to inactivity after 15 seconds");
           socket.emit("gateAutoReset", {
             planetName: currentPlanet.planetName,
             destinationName: gateState.destinationInfo.planetName,
@@ -695,7 +699,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     if (gateState.offworld && !gateState.isOpen) {
       const expires = setTimeout(() => {
         if (!gateState.isOpen) {
-          console.log("Resetting gate due to inactivity after 16 seconds");
           socket.emit("wrongAddressStraight", {
             planetName: currentPlanet.planetName,
           });
@@ -715,7 +718,6 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
     ) {
       const expires = setTimeout(() => {
         if (gateState.inputAddress.length > 0) {
-          console.log(gateState.destinationInfo.planetName);
           socket.emit("wrongAddressStraight", {
             planetName: currentPlanet.planetName,
           });
@@ -836,14 +838,14 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
               <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
             </audio>
           )}
-          {gateState.inputAddress.length !== 0 &&
+          {/* {gateState.inputAddress.length !== 0 &&
             currentPlanet?.id === 1 &&
             !gateState.offworld &&
             !gateState.offworldIncoming && (
               <audio loop id="sgcAlarmAudio">
                 <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
               </audio>
-            )}
+            )} */}
           {(gateState.offworld || gateState.offworldIncoming) &&
             currentPlanet?.id === 1 && (
               <audio loop id="sgcOffworldAlarmAudio">
