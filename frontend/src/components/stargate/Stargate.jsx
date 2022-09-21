@@ -265,12 +265,12 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
         await timeout(500);
         handleChev(gateState.inputAddress.length, dispatch);
         await handleDestOffworld();
-        await timeout(300);
+        await timeout(250);
         dispatch({
           type: "locking",
           payload: false,
         });
-        await timeout(350);
+        await timeout(300);
         dispatch({
           type: "lockChev",
           payload: false,
