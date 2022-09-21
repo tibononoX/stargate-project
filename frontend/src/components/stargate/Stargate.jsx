@@ -250,25 +250,27 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
           type: "rollData",
           payload: rollValues,
         });
-        await timeout(rollValues.timing - 200);
+        await timeout(rollValues.timing - 50);
         audioSelector(audioVolume, "earthChev");
+        await timeout(420);
         dispatch({
           type: "locking",
           payload: true,
         });
-        await timeout(700);
+        await timeout(300);
         dispatch({
           type: "lockChev",
           payload: true,
         });
+        await timeout(500);
         handleChev(gateState.inputAddress.length, dispatch);
         await handleDestOffworld();
-        await timeout(350);
+        await timeout(300);
         dispatch({
           type: "locking",
           payload: false,
         });
-        await timeout(700);
+        await timeout(350);
         dispatch({
           type: "lockChev",
           payload: false,
@@ -836,14 +838,14 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
               <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
             </audio>
           )}
-          {gateState.inputAddress.length !== 0 &&
+          {/* {gateState.inputAddress.length !== 0 &&
             currentPlanet?.id === 1 &&
             !gateState.offworld &&
             !gateState.offworldIncoming && (
               <audio loop id="sgcAlarmAudio">
                 <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
               </audio>
-            )}
+            )} */}
           {(gateState.offworld || gateState.offworldIncoming) &&
             currentPlanet?.id === 1 && (
               <audio loop id="sgcOffworldAlarmAudio">

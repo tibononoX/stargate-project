@@ -1,6 +1,7 @@
 import audioSelector from "./audio";
 
 const rollSpeed = import.meta.env.VITE_GATE_ROLL_SPEED;
+// const rollSpeed = 320;
 
 export const rollCalc = (symbol, ringPosition, instant = false) => {
   const diff = Math.abs((ringPosition - symbol.position) / 9.23);

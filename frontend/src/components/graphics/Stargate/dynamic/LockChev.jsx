@@ -4,7 +4,7 @@ const LockChev = ({ locking }) => {
       <g
         style={{
           transform: locking ? `translateY(-0.4%)` : "",
-          transitionDuration: `300ms`,
+          transitionDuration: `400ms`,
           transformOrigin: "center",
           transitionTimingFunction: "cubic-bezier( 0., 0, 1, 1 )",
         }}
@@ -23,7 +23,7 @@ const LockChev = ({ locking }) => {
       <g
         style={{
           transform: locking ? `translateY(1.5%)` : "",
-          transitionDuration: `300ms`,
+          transitionDuration: `400ms`,
           transformOrigin: "center",
           transitionTimingFunction: "cubic-bezier( 0., 0, 1, 1 )",
         }}
