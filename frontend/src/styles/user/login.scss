@@ -7,6 +7,36 @@
   flex-direction: column;
 }
 
+.colorButton {
+  margin: 4px;
+  padding: 2px 6px;
+}
+
+.pickerClose {
+  position: fixed;
+  padding: 0 12px;
+  font-size: 2.5rem;
+  background-color: rgb(150, 137, 137);
+  color: white;
+  border: none;
+  top: 0;
+  right: 0;
+}
+
+.picker {
+  position: fixed;
+  z-index: 60;
+  left: 0;
+  margin: 12px;
+
+  &.sky {
+    bottom: 80px;
+  }
+  &.back {
+    bottom: 30px;
+  }
+}
+
 .login {
   margin-top: 10%;
   display: flex;
@@ -55,6 +85,7 @@
 }
 
 form {
+  z-index: 10;
   text-align: center;
 
   .submitButton {

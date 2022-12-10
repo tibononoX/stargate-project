@@ -14,16 +14,16 @@ Random.prototype.nextInt = function (min, max) {
   return Math.floor((this.next() / 2147483647) * (max - min + 1) + min);
 };
 
-function generateClipPathFront(seed, windowWidth) {
-  const random = new Random(seed);
+function generateClipPathFront(currentPlanet, windowWidth) {
+  const random = new Random(currentPlanet.seed);
 
   const points = [];
   for (let x = 0; x <= 100; x += 5) {
     points.push({
       x,
       y: random.nextInt(
-        windowWidth > 650 ? 52 : 52 * (windowWidth / 640),
-        windowWidth > 650 ? 53 : 53 * (windowWidth / 640)
+        windowWidth > 650 ? 52 : 52 * (windowWidth / 638),
+        windowWidth > 650 ? 53 : 53 * (windowWidth / 638)
       ),
     });
   }
@@ -37,16 +37,16 @@ function generateClipPathFront(seed, windowWidth) {
   return `polygon(${path})`;
 }
 
-function generateClipPathMid(seed, windowWidth) {
-  const random = new Random(seed);
+function generateClipPathMid(currentPlanet, windowWidth) {
+  const random = new Random(currentPlanet.seed);
 
   const points = [];
   for (let x = 0; x <= 100; x += 10) {
     points.push({
       x,
       y: random.nextInt(
-        windowWidth > 650 ? 38 : 38 * (windowWidth / 640),
-        windowWidth > 650 ? 48 : 48 * (windowWidth / 640)
+        windowWidth > 650 ? 38 : 38 * (windowWidth / 638),
+        windowWidth > 650 ? 48 : 48 * (windowWidth / 638)
       ),
     });
   }
@@ -61,8 +61,8 @@ function generateClipPathMid(seed, windowWidth) {
 }
 
 function PlanetBackground({ currentPlanet, windowWidth }) {
-  const clipPathFront = generateClipPathFront(currentPlanet.seed, windowWidth);
-  const clipPathMid = generateClipPathMid(currentPlanet.seed, windowWidth);
+  const clipPathFront = generateClipPathFront(currentPlanet, windowWidth);
+  const clipPathMid = generateClipPathMid(currentPlanet, windowWidth);
 
   if (currentPlanet.id !== 1) {
     return (
@@ -80,7 +80,7 @@ function PlanetBackground({ currentPlanet, windowWidth }) {
           style={{
             clipPath: clipPathFront,
             background: currentPlanet.frontColor,
-            zIndex: 5,
+            zIndex: 1,
           }}
         />
       </>

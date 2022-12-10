@@ -1,9 +1,11 @@
-import { useReducer, useState, useContext } from "react";
+import { useReducer, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import symbols from "@services/gateSymbols";
 import axios from "@services/axios";
 import "@styles/user/login.scss";
 import UserContext from "@contexts/UserContext";
+import PlanetBackground from "@components/graphics/planets/PlanetBackground";
+import ColorPicker from "react-best-gradient-color-picker";
 
 const formInitialState = {
   username: "",
@@ -36,8 +38,31 @@ const Signup = ({ fetchAddressList }) => {
   const [poo, setPoo] = useState(null);
   const [dialMode, setDialMode] = useState("DHD");
   const [planetName, setPlanetName] = useState("");
+  const [planetSeed, setPlanetSeed] = useState(
+    Math.floor(Math.random() * 1000000)
+  );
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [skyColor, setSkyColor] = useState(
+    "linear-gradient(0deg, rgba(211,242,255,1) 0%, rgba(136,199,255,1) 100%)"
+  );
+  const [backColor, setBackColor] = useState(
+    "linear-gradient(0deg, rgb(255, 235, 199) 0%, rgb(255, 193, 136) 50%)"
+  );
+  const [frontColor, setFrontColor] = useState(
+    "linear-gradient(0deg, rgb(201, 168, 92) 0%, rgba(255, 209, 136, 1) 40%)"
+  );
+  const [editingColors, setEditingColors] = useState(false);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
+
+    return () =>
+      window.removeEventListener("resize", () =>
+        setWindowWidth(window.innerWidth)
+      );
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,6 +96,10 @@ const Signup = ({ fetchAddressList }) => {
       const planetData = {
         planetName,
         gateAddress,
+        seed: planetSeed,
+        frontColor,
+        midColor: backColor,
+        skyColor,
         poo: poo.id,
         dialMode,
         userId: newCreatedUserData.newCreatedUser.id,
@@ -131,137 +160,236 @@ const Signup = ({ fetchAddressList }) => {
 
   return (
     <div className="page">
+      <PlanetBackground
+        currentPlanet={{
+          id: 0,
+          seed: planetSeed,
+          frontColor: frontColor,
+          midColor: backColor,
+          skyColor: skyColor,
+        }}
+        windowWidth={windowWidth}
+      />
       <h1>SIGN UP</h1>
       <form onSubmit={handleSubmit}>
-        <div className="userInfo">
-          <label htmlFor="username">
-            Username:
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="Username"
-              required
-              value={formData.username}
-              onChange={(e) =>
-                dispatch({ type: "UPDATE_USERNAME", payload: e.target.value })
-              }
-            />
-          </label>
-          <label htmlFor="email">
-            Email:
-            <input
-              id="email"
-              type="email"
-              placeholder="Email"
-              required
-              value={formData.email}
-              onChange={(e) =>
-                dispatch({ type: "UPDATE_EMAIL", payload: e.target.value })
-              }
-            />
-          </label>
-          <label htmlFor="password">
-            Password:
-            <input
-              id="password"
-              type="password"
-              placeholder="Password"
-              required
-              value={formData.password}
-              onChange={(e) =>
-                dispatch({ type: "UPDATE_PASSWORD", payload: e.target.value })
-              }
-            />
-          </label>
-          <label htmlFor="confirmPassword">
-            Confirm password:
-            <input
-              id="confirmPassword"
-              type="password"
-              placeholder="Password"
-              required
-              value={formData.confirmPassword}
-              onChange={(e) =>
-                dispatch({
-                  type: "UPDATE_CONFIRMPASSWORD",
-                  payload: e.target.value,
-                })
-              }
-            />
-          </label>
-        </div>
-
-        <div className="dhd signup">
-          <div className="gateInfo">
-            <label htmlFor="planetName">
-              Name your planet:
+        {!editingColors && (
+          <div className="userInfo">
+            <label htmlFor="username">
+              Username:
               <input
-                id="planetName"
+                id="username"
+                name="username"
                 type="text"
+                placeholder="Username"
                 required
-                value={planetName}
-                placeholder="Planet name"
-                onChange={(e) => setPlanetName(e.target.value)}
+                value={formData.username}
+                onChange={(e) =>
+                  dispatch({ type: "UPDATE_USERNAME", payload: e.target.value })
+                }
               />
             </label>
-            <label htmlFor="dialMode">
-              Dial Mode:
-              <select
-                id="dialMode"
-                value={dialMode}
-                onChange={(e) => setDialMode(e.target.value)}
-              >
-                <option value="DHD" key="DHD">
-                  DHD
-                </option>
-                <option value="EARTH" key="EARTH">
-                  Earth
-                </option>
-              </select>
+            <label htmlFor="email">
+              Email:
+              <input
+                id="email"
+                type="email"
+                placeholder="Email"
+                required
+                value={formData.email}
+                onChange={(e) =>
+                  dispatch({ type: "UPDATE_EMAIL", payload: e.target.value })
+                }
+              />
             </label>
-            <p>
-              <span className="inputAddress">
-                {gateAddress} | {poo?.letter}
-              </span>
-            </p>
-            <p className="tuto">
-              Enter your address of 6 symbols, and a 7th for the origin point
-            </p>
+            <label htmlFor="password">
+              Password:
+              <input
+                id="password"
+                type="password"
+                placeholder="Password"
+                required
+                value={formData.password}
+                onChange={(e) =>
+                  dispatch({ type: "UPDATE_PASSWORD", payload: e.target.value })
+                }
+              />
+            </label>
+            <label htmlFor="confirmPassword">
+              Confirm password:
+              <input
+                id="confirmPassword"
+                type="password"
+                placeholder="Password"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  dispatch({
+                    type: "UPDATE_CONFIRMPASSWORD",
+                    payload: e.target.value,
+                  })
+                }
+              />
+            </label>
+            <button className="submitButton" type="submit">
+              SIGN UP
+            </button>
+            <button
+              className="colorButton"
+              type="button"
+              onClick={() => setEditingColors("sky")}
+            >
+              Sky color
+            </button>
+            <button
+              className="colorButton"
+              type="button"
+              onClick={() => setEditingColors("back")}
+            >
+              Hills color
+            </button>
+            <button
+              className="colorButton"
+              type="button"
+              onClick={() => setEditingColors("front")}
+            >
+              Ground color
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              setGateAddress("");
-              setPoo(null);
-            }}
-          >
-            reset
-          </button>
-          <ul className="buttonList">
-            {symbols.map((symbol) => {
-              if (symbol.id === 1 || symbol.id === 40) {
-                return null;
-              }
-              return (
-                <li className="buttonItem" key={symbol.id}>
-                  <button
-                    className={handleDhdClassName(symbol.letter)}
-                    title={`${symbol.letter} - ${symbol.label}`}
-                    type="button"
-                    onClick={() => handleClick(symbol)}
-                  >
-                    {symbol.letter}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        <button className="submitButton" type="submit">
-          SIGN UP
-        </button>
+        )}
+        {editingColors === "sky" && (
+          <>
+            <button
+              type="button"
+              className="pickerClose"
+              onClick={() => setEditingColors(false)}
+            >
+              X
+            </button>
+            <ColorPicker
+              className="picker sky"
+              value={skyColor}
+              onChange={setSkyColor}
+              hideInputs={true}
+              hidePresets={true}
+            />
+          </>
+        )}
+        {editingColors === "back" && (
+          <>
+            <button
+              type="button"
+              className="pickerClose"
+              onClick={() => setEditingColors(false)}
+            >
+              X
+            </button>
+            <ColorPicker
+              className="picker back"
+              value={backColor}
+              onChange={setBackColor}
+              hideInputs={true}
+              hidePresets={true}
+            />
+          </>
+        )}
+        {editingColors === "front" && (
+          <>
+            <button
+              type="button"
+              className="pickerClose"
+              onClick={() => setEditingColors(false)}
+            >
+              X
+            </button>
+            <ColorPicker
+              className="picker front"
+              value={frontColor}
+              onChange={setFrontColor}
+              hideInputs={true}
+              hidePresets={true}
+            />
+          </>
+        )}
+        {!editingColors && (
+          <div className="dhd signup">
+            <div className="gateInfo">
+              <label htmlFor="planetSeed">
+                Choose your seed:
+                <input
+                  id="planetSeed"
+                  type="number"
+                  required
+                  value={planetSeed}
+                  placeholder="Planet name"
+                  onChange={(e) => setPlanetSeed(e.target.value)}
+                />
+              </label>
+              <label htmlFor="planetName">
+                Name your planet:
+                <input
+                  id="planetName"
+                  type="text"
+                  required
+                  value={planetName}
+                  placeholder="Planet name"
+                  onChange={(e) => setPlanetName(e.target.value)}
+                />
+              </label>
+              <label htmlFor="dialMode">
+                Dial Mode:
+                <select
+                  id="dialMode"
+                  value={dialMode}
+                  onChange={(e) => setDialMode(e.target.value)}
+                >
+                  <option value="DHD" key="DHD">
+                    DHD
+                  </option>
+                  <option value="EARTH" key="EARTH">
+                    Earth
+                  </option>
+                </select>
+              </label>
+              <p>
+                <span className="inputAddress">
+                  {gateAddress} | {poo?.letter}
+                </span>
+              </p>
+              <p className="tuto">
+                Enter your address of 6 symbols, and a 7th for the origin point
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setGateAddress("");
+                setPoo(null);
+              }}
+            >
+              reset
+            </button>
+            <ul className="buttonList">
+              {symbols.map((symbol) => {
+                if (symbol.id === 1 || symbol.id === 40) {
+                  return null;
+                }
+                return (
+                  <li className="buttonItem" key={symbol.id}>
+                    <button
+                      className={handleDhdClassName(symbol.letter)}
+                      title={`${symbol.letter} - ${symbol.label}`}
+                      type="button"
+                      onClick={() => handleClick(symbol)}
+                    >
+                      {symbol.letter}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </form>
     </div>
   );
