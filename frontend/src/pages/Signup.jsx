@@ -170,7 +170,7 @@ const Signup = ({ fetchAddressList }) => {
         }}
         windowWidth={windowWidth}
       />
-      <h1>SIGN UP</h1>
+      {/* <h1>SIGN UP</h1> */}
       <form onSubmit={handleSubmit}>
         {!editingColors && (
           <div className="userInfo">
@@ -233,27 +233,29 @@ const Signup = ({ fetchAddressList }) => {
             <button className="submitButton" type="submit">
               SIGN UP
             </button>
-            <button
-              className="colorButton"
-              type="button"
-              onClick={() => setEditingColors("sky")}
-            >
-              Sky color
-            </button>
-            <button
-              className="colorButton"
-              type="button"
-              onClick={() => setEditingColors("back")}
-            >
-              Hills color
-            </button>
-            <button
-              className="colorButton"
-              type="button"
-              onClick={() => setEditingColors("front")}
-            >
-              Ground color
-            </button>
+            <div className="colorEdit">
+              <button
+                className="colorButton"
+                type="button"
+                onClick={() => setEditingColors("sky")}
+              >
+                Sky color
+              </button>
+              <button
+                className="colorButton"
+                type="button"
+                onClick={() => setEditingColors("back")}
+              >
+                Hills color
+              </button>
+              <button
+                className="colorButton"
+                type="button"
+                onClick={() => setEditingColors("front")}
+              >
+                Ground color
+              </button>
+            </div>
           </div>
         )}
         {editingColors === "sky" && (
