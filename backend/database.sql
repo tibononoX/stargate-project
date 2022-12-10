@@ -42,6 +42,10 @@ CREATE TABLE
 CREATE TABLE
   planet (
     id INT PRIMARY KEY AUTO_INCREMENT,
+    seed INT NOT NULL,
+    frontColor VARCHAR(255) NOT NULL,
+    midColor VARCHAR(255) NOT NULL,
+    skyColor VARCHAR(255) NOT NULL,
     planetName VARCHAR(255) NOT NULL,
     gateAddress VARCHAR(8) NOT NULL,
     poo INT NOT NULL,

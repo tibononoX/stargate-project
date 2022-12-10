@@ -4,6 +4,7 @@ import PlanetContext from "@contexts/PlanetContext";
 import symbols from "@services/gateSymbols";
 import UserContext from "@contexts/UserContext";
 import Menu from "@components/Menu";
+import PlanetBackground from "@components/graphics/planets/PlanetBackground";
 
 const StargatePage = ({ addressList, windowWidth }) => {
   const { audioVolume, setAudioVolume, guestName, userData, socket } =
@@ -179,7 +180,11 @@ const StargatePage = ({ addressList, windowWidth }) => {
       <PlanetContext.Provider
         value={{ currentPlanet, setCurrentPlanet, hosting }}
       >
-        <div className={`page ${currentPlanet.id !== 1 ? "abydos" : ""}`}>
+        <div className="page">
+          <PlanetBackground
+            currentPlanet={currentPlanet}
+            windowWidth={windowWidth}
+          />
           {windowWidth >= 650 && (
             <div className="volumeControl">
               <label className="volumeRange">
@@ -215,7 +220,6 @@ const StargatePage = ({ addressList, windowWidth }) => {
             </div>
           )}
 
-          {currentPlanet?.id !== 1 && <div className="background" />}
           {socket && currentPlanet.id !== null && (
             <Stargate
               addressList={addressList}
@@ -224,7 +228,6 @@ const StargatePage = ({ addressList, windowWidth }) => {
               setDhdOpen={setDhdOpen}
             />
           )}
-          {currentPlanet?.id !== 1 && <div className="frontground" />}
           <Menu
             dhdOpen={dhdOpen}
             chatOpen={chatOpen}
