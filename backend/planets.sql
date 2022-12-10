@@ -35,8 +35,8 @@ VALUES
   ),
   (
     5268,
-    "linear-gradient(0deg, rgb(201, 168, 92) 0%, rgba(255, 209, 136, 1) 40%)",
-    "linear-gradient(0deg, rgb(255, 235, 199) 0%, rgb(255, 193, 136) 50%)",
+    "linear-gradient(0deg, rgb(181 179 175) 0%, rgb(233 233 233) 40%)",
+    "linear-gradient(0deg, rgb(195 190 182) 0%, rgb(175 175 175) 50%)",
     "linear-gradient(0deg, rgba(218,213,223,1) 0%, rgba(186,223,255,1) 100%)",
     "Tollan",
     "FgakKR",
