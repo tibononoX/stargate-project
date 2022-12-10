@@ -170,6 +170,12 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
           {chatRoom === currentPlanet.planetName && currentPlanet.initial && (
             <>
               <li className="message">
+                <span className="colorAdmin">
+                  THE DATABASE HAS BEEN RESET, YOU CAN CREATE A NEW ACCOUNT NOW
+                </span>
+              </li>
+
+              <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Welcome to
                 Stargate React! You are currently on {currentPlanet.planetName}
               </li>
