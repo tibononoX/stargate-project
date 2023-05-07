@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useContext, useEffect } from "react";
+import { useRef, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
 import audioSelector from "@services/audio";
 import PlanetContext from "@contexts/PlanetContext";
@@ -147,8 +147,17 @@ const Dhd = ({
     };
   }, []);
 
+  const dhdHeight = useRef();
+  console.log(dhdHeight?.current?.clientHeight);
+
   return (
-    <div className={dhdOpen ? "dhd open" : "dhd"}>
+    <div
+      ref={dhdHeight}
+      className={dhdOpen ? "dhd open" : "dhd"}
+      style={{
+        bottom: dhdOpen ? "0px" : `-${dhdHeight?.current?.clientHeight - 22}px`,
+      }}
+    >
       <button
         type="button"
         className={dhdOpen ? "showHide hide" : "showHide"}
