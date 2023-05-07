@@ -38,7 +38,7 @@ const Ring = ({ rollData, dispatch }) => {
         transitionDuration: `${rollData.timing}ms`,
         transformOrigin: "center",
         transform: `rotate(${rollData.position}deg)`,
-        transitionTimingFunction: "cubic-bezier( 0.05, 0, .8, 1 )",
+        transitionTimingFunction: "cubic-bezier( 0.12, 0, .8, 1 )",
       }}
     >
       <g

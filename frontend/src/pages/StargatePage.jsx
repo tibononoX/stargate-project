@@ -4,6 +4,7 @@ import PlanetContext from "@contexts/PlanetContext";
 import symbols from "@services/gateSymbols";
 import UserContext from "@contexts/UserContext";
 import Menu from "@components/Menu";
+import PlanetBackground from "@components/graphics/planets/PlanetBackground";
 
 const StargatePage = ({ addressList, windowWidth }) => {
   const { audioVolume, setAudioVolume, guestName, userData, socket } =
@@ -27,9 +28,10 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
   const [userList, setUserList] = useState([]);
 
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(!userData);
   const [userListOpen, setUserListOpen] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState("");
   const [dhdOpen, setDhdOpen] = useState(false);
 
   const fetchUsers = () => {
@@ -179,7 +181,11 @@ const StargatePage = ({ addressList, windowWidth }) => {
       <PlanetContext.Provider
         value={{ currentPlanet, setCurrentPlanet, hosting }}
       >
-        <div className={`page ${currentPlanet.id !== 1 ? "abydos" : ""}`}>
+        <div className="page">
+          <PlanetBackground
+            currentPlanet={currentPlanet}
+            windowWidth={windowWidth}
+          />
           {windowWidth >= 650 && (
             <div className="volumeControl">
               <label className="volumeRange">
@@ -215,24 +221,28 @@ const StargatePage = ({ addressList, windowWidth }) => {
             </div>
           )}
 
-          {currentPlanet?.id !== 1 && <div className="background" />}
           {socket && currentPlanet.id !== null && (
             <Stargate
               addressList={addressList}
               windowWidth={windowWidth}
               dhdOpen={dhdOpen}
               setDhdOpen={setDhdOpen}
+              selectedAddress={selectedAddress}
+              setSelectedAddress={setSelectedAddress}
+              setAddressBookOpen={setAddressBookOpen}
             />
           )}
-          {currentPlanet?.id !== 1 && <div className="frontground" />}
           <Menu
             dhdOpen={dhdOpen}
+            setDhdOpen={setDhdOpen}
             chatOpen={chatOpen}
             setChatOpen={setChatOpen}
             userListOpen={userListOpen}
             setUserListOpen={setUserListOpen}
             addressBookOpen={addressBookOpen}
             setAddressBookOpen={setAddressBookOpen}
+            selectedAddress={selectedAddress}
+            setSelectedAddress={setSelectedAddress}
             windowWidth={windowWidth}
             addressList={addressList}
             userList={userList}

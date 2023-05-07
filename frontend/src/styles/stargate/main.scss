@@ -62,7 +62,7 @@
 .dhd {
   z-index: 50;
   position: absolute;
-  bottom: -353px;
+  // bottom: -353px;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -143,6 +143,16 @@
         border: solid 2px rgb(61, 45, 37);
         user-select: none;
 
+        &.next {
+          border: solid 2px rgb(172, 216, 241);
+          box-shadow: 0px 0px 10px rgb(26, 156, 231);
+          color: rgb(169, 220, 236);
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
+
         &.active {
           border: solid 2px rgb(231, 89, 26);
           color: rgb(238, 127, 79);
@@ -208,7 +218,6 @@
   }
 
   .dhd {
-    bottom: -273px;
     padding: 28px 0 0 0;
 
     .showHide {

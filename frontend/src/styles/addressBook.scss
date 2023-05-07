@@ -101,9 +101,19 @@
       font-size: 0.9rem;
       padding: 8px 12px;
       border-top: solid 1px rgb(116, 98, 83);
+      transition: 150ms;
+      background-color: rgba(26, 156, 231, 0);
+
+      &:hover {
+        background: none;
+      }
 
       &:nth-child(1) {
         border: none;
+      }
+
+      &.selected {
+        background-color: rgba(53, 130, 175, 0.5);
       }
 
       .glyphs {
@@ -125,6 +135,11 @@
         .glyphs {
           color: rgb(194, 42, 42);
         }
+
+        &:hover {
+          background: none;
+          cursor: default;
+        }
       }
     }
   }
@@ -139,6 +154,18 @@
       .planet {
         .glyphs {
           font-size: 2rem;
+        }
+
+        &:hover {
+          background-color: rgba(65, 178, 243, 0.5);
+          cursor: pointer;
+        }
+
+        &.unreachable {
+          &:hover {
+            background-color: rgba(151, 36, 36, 0.2);
+            cursor: default;
+          }
         }
       }
     }

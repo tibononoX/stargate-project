@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useContext, useEffect } from "react";
+import { useRef, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
 import audioSelector from "@services/audio";
 import PlanetContext from "@contexts/PlanetContext";
@@ -12,6 +12,9 @@ function timeout(ms) {
 const Dhd = ({
   dhdOpen,
   setDhdOpen,
+  selectedAddress,
+  setSelectedAddress,
+  setAddressBookOpen,
   gateState,
   dispatch,
   openSequence,
@@ -20,14 +23,19 @@ const Dhd = ({
   prevPlanet,
   traveled,
 }) => {
-  const { audioVolume, socket } = useContext(UserContext);
+  const { audioVolume, socket, windowWidth } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
 
-  const handleDhdClassName = (type, id) => {
+  const handleDhdClassName = (type, id, letter) => {
+    const { inputAddress } = gateState;
+
     switch (type) {
       case "redButton":
         return "red";
       case "symbButton":
+        if (letter === selectedAddress[inputAddress.length]) {
+          return "symbButton next";
+        }
         if (
           gateState.inputAddress.some((symbol) => symbol.id === id) ||
           gateState.pooActive?.id === id
@@ -131,6 +139,17 @@ const Dhd = ({
       planetName: currentPlanet.planetName,
       inputAddress: newInputAddress,
     });
+
+    if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
+      setSelectedAddress("");
+    }
+    if (
+      selectedAddress !== "" &&
+      gateState.inputAddress?.length === 0 &&
+      windowWidth <= 650
+    ) {
+      setAddressBookOpen(false);
+    }
     return dispatch({
       type: "inputAddress",
       payload: newInputAddress,
@@ -147,8 +166,16 @@ const Dhd = ({
     };
   }, []);
 
+  const dhdHeight = useRef();
+
   return (
-    <div className={dhdOpen ? "dhd open" : "dhd"}>
+    <div
+      ref={dhdHeight}
+      className={dhdOpen ? "dhd open" : "dhd"}
+      style={{
+        bottom: dhdOpen ? "0px" : `-${dhdHeight?.current?.clientHeight - 22}px`,
+      }}
+    >
       <button
         type="button"
         className={dhdOpen ? "showHide hide" : "showHide"}
@@ -168,7 +195,11 @@ const Dhd = ({
             return (
               <li className="buttonItem" key={symbol.id}>
                 <button
-                  className={handleDhdClassName("symbButton", symbol.id)}
+                  className={handleDhdClassName(
+                    "symbButton",
+                    symbol.id,
+                    symbol.letter
+                  )}
                   title={`${symbol.letter} - ${symbol.label}`}
                   type="button"
                   onClick={() => {

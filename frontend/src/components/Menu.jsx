@@ -10,12 +10,15 @@ import Chat from "./Chat";
 
 const Menu = ({
   dhdOpen,
+  setDhdOpen,
   chatOpen,
   setChatOpen,
   userListOpen,
   setUserListOpen,
   addressBookOpen,
   setAddressBookOpen,
+  selectedAddress,
+  setSelectedAddress,
   windowWidth,
   addressList,
   userList,
@@ -55,7 +58,10 @@ const Menu = ({
           <AddressBook
             addressBookOpen={addressBookOpen}
             setAddressBookOpen={setAddressBookOpen}
+            selectedAddress={selectedAddress}
+            setSelectedAddress={setSelectedAddress}
             addressList={addressList}
+            setDhdOpen={setDhdOpen}
           />
         )}
         {currentPlanet.id && (

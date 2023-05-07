@@ -2,10 +2,38 @@ import { useState, useContext } from "react";
 import PlanetContext from "@contexts/PlanetContext";
 import "@styles/addressBook.scss";
 
-const AddressBook = ({ addressBookOpen, setAddressBookOpen, addressList }) => {
+const AddressBook = ({
+  addressBookOpen,
+  setAddressBookOpen,
+  selectedAddress,
+  setSelectedAddress,
+  addressList,
+  setDhdOpen,
+}) => {
   const { currentPlanet } = useContext(PlanetContext);
   const [showOneWay, setShowOneWay] = useState(true);
   const [showUnreachable, setShowUnreachable] = useState(false);
+
+  const handleSelectedAddress = (address) => {
+    if (currentPlanet.gateAddress === address) {
+      return setSelectedAddress("");
+    }
+    if (selectedAddress === `${address}${currentPlanet.poo.letter}`) {
+      return setSelectedAddress("");
+    }
+    setDhdOpen(true);
+    return setSelectedAddress(`${address}${currentPlanet.poo.letter}`);
+  };
+
+  const handleClassName = (address) => {
+    if (selectedAddress === `${address}${currentPlanet.poo.letter}`) {
+      return "planet selected";
+    }
+    if (address === currentPlanet.gateAddress) {
+      return "planet unreachable";
+    }
+    return "planet";
+  };
 
   return (
     <div className={addressBookOpen ? "addressBook open" : "addressBook"}>
@@ -92,10 +120,16 @@ const AddressBook = ({ addressBookOpen, setAddressBookOpen, addressList }) => {
             }
             if (
               currentPlanet.gateAddress.includes(address.pooLetter) &&
+              !address.gateAddress.includes(currentPlanet.poo.letter) &&
               showOneWay
             ) {
               return (
-                <li className="planet oneway" key={address.id}>
+                <li
+                  title="Click to highlight dialing sequence"
+                  className={`${handleClassName(address.gateAddress)} oneway`}
+                  key={address.id}
+                  onClick={() => handleSelectedAddress(address.gateAddress)}
+                >
                   <h3>
                     {address.planetName}{" "}
                     {currentPlanet.planetName === address.planetName
@@ -120,7 +154,11 @@ const AddressBook = ({ addressBookOpen, setAddressBookOpen, addressList }) => {
               showUnreachable
             ) {
               return (
-                <li className="planet unreachable" key={address.id}>
+                <li
+                  title="You can't dial to this planet"
+                  className="planet unreachable"
+                  key={address.id}
+                >
                   <h3>
                     {address.planetName}{" "}
                     {currentPlanet.planetName === address.planetName
@@ -141,7 +179,16 @@ const AddressBook = ({ addressBookOpen, setAddressBookOpen, addressList }) => {
               );
             }
             return (
-              <li className="planet" key={address.id}>
+              <li
+                title={
+                  currentPlanet.planetName === address.planetName
+                    ? "You can't dial to this planet"
+                    : "Click to highlight dialing sequence"
+                }
+                className={handleClassName(address.gateAddress)}
+                key={address.id}
+                onClick={() => handleSelectedAddress(address.gateAddress)}
+              >
                 <h3>
                   {address.planetName}{" "}
                   {currentPlanet.planetName === address.planetName
