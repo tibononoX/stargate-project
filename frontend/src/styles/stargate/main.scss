@@ -194,6 +194,11 @@
       );
     }
 
+    &.next {
+      border: solid rgb(172, 216, 241);
+      box-shadow: 0px 0px 10px rgb(26, 156, 231);
+    }
+
     &:hover {
       cursor: pointer;
     }

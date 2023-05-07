@@ -170,12 +170,6 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
           {chatRoom === currentPlanet.planetName && currentPlanet.initial && (
             <>
               <li className="message">
-                <span className="colorAdmin">
-                  THE DATABASE HAS BEEN RESET, YOU CAN CREATE A NEW ACCOUNT NOW
-                </span>
-              </li>
-
-              <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Welcome to
                 Stargate React! You are currently on {currentPlanet.planetName}
               </li>
@@ -185,9 +179,8 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
                 book on the left to see reachable planets
               </li>
               <li className="message">
-                <span className="colorAdmin">Tutorial</span>: Open the DHD
-                (button at the bottom of your screen), and enter the sequence
-                corresponding to your destination
+                <span className="colorAdmin">Tutorial</span>: Click on an
+                address to highlight its sequence, and enter it in the DHD
               </li>
               <li className="message">
                 <span className="colorAdmin">Tutorial</span>: Once the gate is

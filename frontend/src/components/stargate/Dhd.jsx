@@ -31,9 +31,19 @@ const Dhd = ({
 
     switch (type) {
       case "redButton":
-        return "red";
+        if ((gateState.dhdActive && gateState.destLock) || gateState.destLock) {
+          if (selectedAddress !== "") {
+            return "dhdButton active next";
+          }
+          return "dhdButton active";
+        }
+        return "dhdButton";
       case "symbButton":
-        if (letter === selectedAddress[inputAddress.length]) {
+        if (
+          letter === selectedAddress[inputAddress.length] &&
+          !gateState.destLock &&
+          !gateState.isLocking
+        ) {
           return "symbButton next";
         }
         if (
@@ -215,11 +225,7 @@ const Dhd = ({
         <button
           type="submit"
           title="Big red button woosh woosh"
-          className={
-            (gateState.dhdActive && gateState.destLock) || gateState.destLock
-              ? "dhdButton active"
-              : "dhdButton"
-          }
+          className={handleDhdClassName("redButton")}
         />
       </form>
     </div>

@@ -386,7 +386,6 @@ export const Stargate = ({
 
     console.warn("Wrong address");
     dispatch({ type: "isLocking", payload: false });
-    setSelectedAddress("");
     return false;
   };
 
@@ -399,10 +398,8 @@ export const Stargate = ({
 
   const checkPoo = (poo) => {
     if (currentPlanet.poo.letter !== poo.letter) {
-      setSelectedAddress("");
       return false;
     }
-    setSelectedAddress("");
     return true;
   };
 
