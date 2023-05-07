@@ -24,6 +24,7 @@ const io = require("socket.io")(server, {
 
 let users = [];
 let busyGates = [];
+let blockedGates = [];
 const messages = [];
 
 function cleanBusyGates() {
@@ -297,6 +298,10 @@ io.on("connection", (socket) => {
     io.emit("setUserList", users);
   });
 
+  socket.on("playerHit", ({ destinationName }) => {
+    socket.to(destinationName).emit("playerHit");
+  });
+
   socket.on("sendGateStatus", (clientId, gateState) => {
     socket.to(clientId).emit("newGateState", gateState);
   });
@@ -317,6 +322,34 @@ io.on("connection", (socket) => {
     });
 
     cb(gateBusy);
+  });
+
+  socket.on("isGateBlocked", (destinationName, cb) => {
+    const gateBlocked = blockedGates.some((entry) => entry === destinationName);
+    console.log(gateBlocked);
+    cb(gateBlocked);
+  });
+
+  socket.on("handleIrisState", ({ planetName, newIrisState }) => {
+    if (!newIrisState) {
+      const alreadyIn = blockedGates.find((entry) => entry === planetName);
+      if (alreadyIn) {
+        console.log(blockedGates);
+        return socket.to(planetName).emit("updateIris", newIrisState);
+      }
+      blockedGates.push(planetName);
+      console.log(blockedGates);
+    }
+    if (newIrisState) {
+      const alreadyIn = blockedGates.find((entry) => entry === planetName);
+      if (!alreadyIn) {
+        console.log(blockedGates);
+        return socket.to(planetName).emit("updateIris", newIrisState);
+      }
+      blockedGates.pop(planetName);
+      console.log(blockedGates);
+    }
+    return socket.to(planetName).emit("updateIris", newIrisState);
   });
 
   socket.on("newInput", ({ planetName, inputAddress }) => {

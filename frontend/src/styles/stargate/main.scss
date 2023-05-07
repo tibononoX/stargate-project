@@ -203,6 +203,28 @@
       cursor: pointer;
     }
   }
+
+  .iris {
+    position: absolute;
+    bottom: 40px;
+    right: 5%;
+    width: 50px;
+    height: 70px;
+    background-color: rgb(49, 47, 47);
+    color: grey;
+    font-weight: 800;
+    border: none;
+
+    &:hover {
+      cursor: pointer;
+      border: solid 1px green;
+    }
+
+    &.closed {
+      color: green;
+      border: solid 2px green;
+    }
+  }
 }
 
 @media screen and (max-width: 650px) {

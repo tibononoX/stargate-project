@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   ChevOne,
   ChevTwo,
@@ -12,11 +11,12 @@ import {
 } from "./dynamic/Chevrons";
 import Ring from "./dynamic/Ring";
 import Wormhole from "./dynamic/Wormhole";
+import Iris from "./dynamic/Iris";
 import GateBg from "./GateBg";
 import GateFrame from "./GateFrame";
 import SvgDef from "./SvgDef";
 
-function SG1Render({ windowWidth, gateState, dispatch, travelGate }) {
+function SG1Render({ windowWidth, gateState, dispatch, checkGateBlocked }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -27,7 +27,8 @@ function SG1Render({ windowWidth, gateState, dispatch, travelGate }) {
       viewBox="0 0 800 800"
     >
       <SvgDef />
-      {gateState.isOpen && <Wormhole travelGate={travelGate} />}
+      {gateState.isOpen && <Wormhole checkGateBlocked={checkGateBlocked} />}
+      {!gateState.irisOpen && <Iris checkGateBlocked={checkGateBlocked} />}
       <GateBg />
       <Ring rollData={gateState.rollData} dispatch={dispatch} />
       <GateFrame

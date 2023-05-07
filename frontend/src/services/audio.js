@@ -170,6 +170,33 @@ const audioSelector = (volume, type, chev = null) => {
       audio.volume = volume;
       break;
 
+    case "irisClose":
+      audio = new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/iris_close.mp3`
+      );
+      audio.volume = volume;
+      break;
+
+    case "irisOpen":
+      audio = new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/iris_open.mp3`
+      );
+      audio.volume = volume;
+      break;
+
+    case "irisHit":
+      audio = new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/stargate/iris_hit.mp3`
+      );
+      audio.volume = volume;
+      break;
+
     default:
       break;
   }

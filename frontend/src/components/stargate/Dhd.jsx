@@ -22,8 +22,10 @@ const Dhd = ({
   wrongAddress,
   prevPlanet,
   traveled,
+  handleIris,
 }) => {
-  const { audioVolume, socket, windowWidth } = useContext(UserContext);
+  const { audioVolume, socket, userData, windowWidth } =
+    useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
 
   const handleDhdClassName = (type, id, letter) => {
@@ -222,6 +224,33 @@ const Dhd = ({
             );
           })}
         </ul>
+        {currentPlanet.planetName === "Earth" && userData && (
+          <button
+            type="button"
+            title={
+              gateState.irisOpen
+                ? "Click to close the iris"
+                : "Click to open the iris"
+            }
+            className={
+              !gateState.irisOpen || gateState.irisOperating
+                ? "iris closed"
+                : "iris"
+            }
+            onClick={() => {
+              if (!gateState.irisOperating) {
+                socket.emit("handleIrisState", {
+                  planetName: currentPlanet.planetName,
+                  newIrisState: !gateState.irisOpen,
+                });
+                return handleIris(!gateState.irisOpen, true);
+              }
+              return null;
+            }}
+          >
+            IRIS
+          </button>
+        )}
         <button
           type="submit"
           title="Big red button woosh woosh"
