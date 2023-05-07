@@ -14,6 +14,7 @@ const Dhd = ({
   setDhdOpen,
   selectedAddress,
   setSelectedAddress,
+  setAddressBookOpen,
   gateState,
   dispatch,
   openSequence,
@@ -22,7 +23,7 @@ const Dhd = ({
   prevPlanet,
   traveled,
 }) => {
-  const { audioVolume, socket } = useContext(UserContext);
+  const { audioVolume, socket, windowWidth } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
 
   const handleDhdClassName = (type, id, letter) => {
@@ -142,7 +143,13 @@ const Dhd = ({
     if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
       setSelectedAddress("");
     }
-
+    if (
+      selectedAddress !== "" &&
+      gateState.inputAddress?.length === 0 &&
+      windowWidth <= 650
+    ) {
+      setAddressBookOpen(false);
+    }
     return dispatch({
       type: "inputAddress",
       payload: newInputAddress,

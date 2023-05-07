@@ -28,6 +28,7 @@ export const Stargate = ({
   setDhdOpen,
   selectedAddress,
   setSelectedAddress,
+  setAddressBookOpen,
 }) => {
   const { audioVolume, userData, socket } = useContext(UserContext);
   const { currentPlanet, setCurrentPlanet, hosting } =
@@ -880,6 +881,7 @@ export const Stargate = ({
           setDhdOpen={setDhdOpen}
           selectedAddress={selectedAddress}
           setSelectedAddress={setSelectedAddress}
+          setAddressBookOpen={setAddressBookOpen}
           gateState={gateState}
           dispatch={dispatch}
           openSequence={openSequence}

@@ -229,6 +229,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
               setDhdOpen={setDhdOpen}
               selectedAddress={selectedAddress}
               setSelectedAddress={setSelectedAddress}
+              setAddressBookOpen={setAddressBookOpen}
             />
           )}
           <Menu

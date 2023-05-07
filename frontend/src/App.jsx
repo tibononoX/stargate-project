@@ -102,6 +102,7 @@ function App() {
           userData,
           setUserData,
           socket,
+          windowWidth,
         }}
       >
         <Router>
