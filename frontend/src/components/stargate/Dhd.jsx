@@ -12,6 +12,8 @@ function timeout(ms) {
 const Dhd = ({
   dhdOpen,
   setDhdOpen,
+  selectedAddress,
+  setSelectedAddress,
   gateState,
   dispatch,
   openSequence,
@@ -23,11 +25,16 @@ const Dhd = ({
   const { audioVolume, socket } = useContext(UserContext);
   const { currentPlanet } = useContext(PlanetContext);
 
-  const handleDhdClassName = (type, id) => {
+  const handleDhdClassName = (type, id, letter) => {
+    const { inputAddress } = gateState;
+
     switch (type) {
       case "redButton":
         return "red";
       case "symbButton":
+        if (letter === selectedAddress[inputAddress.length]) {
+          return "symbButton next";
+        }
         if (
           gateState.inputAddress.some((symbol) => symbol.id === id) ||
           gateState.pooActive?.id === id
@@ -131,6 +138,11 @@ const Dhd = ({
       planetName: currentPlanet.planetName,
       inputAddress: newInputAddress,
     });
+
+    if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
+      setSelectedAddress("");
+    }
+
     return dispatch({
       type: "inputAddress",
       payload: newInputAddress,
@@ -148,7 +160,6 @@ const Dhd = ({
   }, []);
 
   const dhdHeight = useRef();
-  console.log(dhdHeight?.current?.clientHeight);
 
   return (
     <div
@@ -177,7 +188,11 @@ const Dhd = ({
             return (
               <li className="buttonItem" key={symbol.id}>
                 <button
-                  className={handleDhdClassName("symbButton", symbol.id)}
+                  className={handleDhdClassName(
+                    "symbButton",
+                    symbol.id,
+                    symbol.letter
+                  )}
                   title={`${symbol.letter} - ${symbol.label}`}
                   type="button"
                   onClick={() => {

@@ -31,6 +31,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
   const [chatOpen, setChatOpen] = useState(!userData);
   const [userListOpen, setUserListOpen] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState("");
   const [dhdOpen, setDhdOpen] = useState(false);
 
   const fetchUsers = () => {
@@ -226,16 +227,21 @@ const StargatePage = ({ addressList, windowWidth }) => {
               windowWidth={windowWidth}
               dhdOpen={dhdOpen}
               setDhdOpen={setDhdOpen}
+              selectedAddress={selectedAddress}
+              setSelectedAddress={setSelectedAddress}
             />
           )}
           <Menu
             dhdOpen={dhdOpen}
+            setDhdOpen={setDhdOpen}
             chatOpen={chatOpen}
             setChatOpen={setChatOpen}
             userListOpen={userListOpen}
             setUserListOpen={setUserListOpen}
             addressBookOpen={addressBookOpen}
             setAddressBookOpen={setAddressBookOpen}
+            selectedAddress={selectedAddress}
+            setSelectedAddress={setSelectedAddress}
             windowWidth={windowWidth}
             addressList={addressList}
             userList={userList}

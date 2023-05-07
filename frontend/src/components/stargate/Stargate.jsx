@@ -21,7 +21,14 @@ function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
+export const Stargate = ({
+  addressList,
+  windowWidth,
+  dhdOpen,
+  setDhdOpen,
+  selectedAddress,
+  setSelectedAddress,
+}) => {
   const { audioVolume, userData, socket } = useContext(UserContext);
   const { currentPlanet, setCurrentPlanet, hosting } =
     useContext(PlanetContext);
@@ -166,7 +173,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       }
       setTraveled(false);
       setPrevPlanet(currentPlanet.planetName);
-
+      setSelectedAddress("");
       return dispatch({
         type: "resetGate",
       });
@@ -372,11 +379,13 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       dispatch({ type: "destLock", payload: false });
       await timeout(600);
       dispatch({ type: "isLocking", payload: false });
+      setSelectedAddress("");
       return false;
     }
 
     console.warn("Wrong address");
     dispatch({ type: "isLocking", payload: false });
+    setSelectedAddress("");
     return false;
   };
 
@@ -389,8 +398,10 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
 
   const checkPoo = (poo) => {
     if (currentPlanet.poo.letter !== poo.letter) {
+      setSelectedAddress("");
       return false;
     }
+    setSelectedAddress("");
     return true;
   };
 
@@ -464,7 +475,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       planetName: inbound,
       destinationName: outbound,
     });
-
+    setSelectedAddress("");
     return openGate();
   };
 
@@ -496,6 +507,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       planetName: inbound,
       destinationName: outbound,
     });
+    setSelectedAddress("");
     return closeGate();
   };
 
@@ -792,6 +804,7 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
       planetName: currentPlanet.planetName,
       destinationName: gateState.destinationInfo.planetName,
     });
+    setSelectedAddress("");
     return setTraveled(true);
   };
 
@@ -865,6 +878,8 @@ export const Stargate = ({ addressList, windowWidth, dhdOpen, setDhdOpen }) => {
         <Dhd
           dhdOpen={dhdOpen}
           setDhdOpen={setDhdOpen}
+          selectedAddress={selectedAddress}
+          setSelectedAddress={setSelectedAddress}
           gateState={gateState}
           dispatch={dispatch}
           openSequence={openSequence}
