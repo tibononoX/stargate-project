@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { useState, useContext, useEffect, useMemo } from "react";
+import moment from "moment";
 import "@styles/chat.scss";
 import audioSelector from "@services/audio";
 import UserContext from "@contexts/UserContext";
@@ -46,7 +47,7 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
   }, [messages, chatRoom]);
 
   useEffect(() => {
-    if (notifAudio) {
+    if (notifAudio && (localNotif !== 0 || globalNotif !== 0)) {
       audioSelector(audioVolume, "chatNotif");
     }
   }, [localNotif, globalNotif]);
@@ -207,10 +208,13 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
               if (message.type === "info") {
                 return (
                   <li className="message info">
-                    <span className="date">
-                      {`${new Date(message.date).toLocaleTimeString(
-                        "en-US"
-                      )}: `}
+                    <span
+                      title={moment(message.date).format(
+                        "MMMM Do YYYY, h:mm:ss a"
+                      )}
+                      className="date"
+                    >
+                      {`${moment(message.date).format("LTS")}: `}
                     </span>
                     {message.message}
                   </li>
@@ -219,10 +223,13 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
               if (message.type === "alert") {
                 return (
                   <li className="message alert">
-                    <span className="date">
-                      {`${new Date(message.date).toLocaleTimeString(
-                        "en-US"
-                      )}: `}
+                    <span
+                      title={moment(message.date).format(
+                        "MMMM Do YYYY, h:mm:ss a"
+                      )}
+                      className="date"
+                    >
+                      {`${moment(message.date).format("LTS")}: `}
                     </span>
                     {message.message}
                   </li>
@@ -230,8 +237,13 @@ const Chat = ({ chatOpen, setChatOpen, setChatNotif }) => {
               }
               return (
                 <li className="message">
-                  <span className="date">
-                    {`${new Date(message.date).toLocaleTimeString("en-US")}: `}
+                  <span
+                    title={moment(message.date).format(
+                      "MMMM Do YYYY, h:mm:ss a"
+                    )}
+                    className="date"
+                  >
+                    {`${moment(message.date).format("LTS")}: `}
                   </span>
                   <span
                     className={

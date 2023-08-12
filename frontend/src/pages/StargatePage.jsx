@@ -25,14 +25,37 @@ const StargatePage = ({ addressList, windowWidth }) => {
 
   const [userRoom, setUserRoom] = useState("");
   const [hosting, setHosting] = useState("");
-
   const [userList, setUserList] = useState([]);
 
-  const [chatOpen, setChatOpen] = useState(!userData);
-  const [userListOpen, setUserListOpen] = useState(false);
-  const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(
+    localStorage.getItem("chatOpen")
+      ? localStorage.getItem("chatOpen") === "true"
+      : true
+  );
+  const [userListOpen, setUserListOpen] = useState(
+    localStorage.getItem("userListOpen")
+      ? localStorage.getItem("userListOpen") === "true"
+      : true
+  );
+  const [addressBookOpen, setAddressBookOpen] = useState(
+    localStorage.getItem("addressBookOpen")
+      ? localStorage.getItem("addressBookOpen") === "true"
+      : true
+  );
+  const [dhdOpen, setDhdOpen] = useState(
+    localStorage.getItem("dhdOpen")
+      ? localStorage.getItem("dhdOpen") === "true"
+      : true
+  );
+
   const [selectedAddress, setSelectedAddress] = useState("");
-  const [dhdOpen, setDhdOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("chatOpen", chatOpen);
+    localStorage.setItem("userListOpen", userListOpen);
+    localStorage.setItem("addressBookOpen", addressBookOpen);
+    localStorage.setItem("dhdOpen", dhdOpen);
+  }, [chatOpen, userListOpen, addressBookOpen, dhdOpen]);
 
   const fetchUsers = () => {
     socket.emit("fetchUsers", (userlist) => setUserList(userlist));
