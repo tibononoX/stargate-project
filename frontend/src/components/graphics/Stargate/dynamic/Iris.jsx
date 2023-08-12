@@ -1,8 +1,8 @@
-const Wormhole = ({ checkGateBlocked }) => {
+const Iris = () => {
   return (
     <path
-      className="wormhole"
-      fill="url(#radialGradient10079)"
+      className="iris"
+      fill="#7c7c7c"
       fillOpacity="1"
       fillRule="nonzero"
       stroke="#000"
@@ -14,9 +14,8 @@ const Wormhole = ({ checkGateBlocked }) => {
       strokeOpacity="1"
       strokeWidth="1"
       d="M693.427 398.305a293.427 293.427 0 11-586.854 0 293.427 293.427 0 11586.854 0z"
-      onClick={() => checkGateBlocked()}
     />
   );
 };
 
-export default Wormhole;
+export default Iris;

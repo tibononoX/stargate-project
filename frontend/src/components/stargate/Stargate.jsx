@@ -59,6 +59,8 @@ export const Stargate = ({
     destinationInfo: {},
     offworldIncoming: false,
     offworld: false,
+    irisOpen: true,
+    irisOperating: false,
   };
 
   const updateGateState = (state, action) => {
@@ -111,6 +113,10 @@ export const Stargate = ({
         return { ...state, offworldIncoming: action.payload };
       case "offworld":
         return { ...state, offworld: action.payload };
+      case "irisOpen":
+        return { ...state, irisOpen: action.payload };
+      case "irisOperating":
+        return { ...state, irisOperating: action.payload };
       case "RESET_FORM":
         return { ...gateInitialState };
       default:
@@ -129,6 +135,20 @@ export const Stargate = ({
       payload: { ...gateState.rollData, position: currentPlanet.poo.position },
     });
   }, [currentPlanet]);
+
+  const handleIris = async (state) => {
+    dispatch({ type: "irisOperating", payload: true });
+    if (!state) {
+      audioSelector(audioVolume, "irisClose");
+      await timeout(2600);
+    }
+    if (state) {
+      audioSelector(audioVolume, "irisOpen");
+      await timeout(2800);
+    }
+    dispatch({ type: "irisOperating", payload: false });
+    return dispatch({ type: "irisOpen", payload: state });
+  };
 
   const resetGate = async () => {
     const currentDialMode = currentPlanet.dialMode;
@@ -386,7 +406,6 @@ export const Stargate = ({
 
     console.warn("Wrong address");
     dispatch({ type: "isLocking", payload: false });
-    setSelectedAddress("");
     return false;
   };
 
@@ -399,10 +418,8 @@ export const Stargate = ({
 
   const checkPoo = (poo) => {
     if (currentPlanet.poo.letter !== poo.letter) {
-      setSelectedAddress("");
       return false;
     }
-    setSelectedAddress("");
     return true;
   };
 
@@ -629,13 +646,18 @@ export const Stargate = ({
       socket.on("playerTravels", () => {
         audioSelector(audioVolume, "travelWormhole");
       });
+      socket.on("playerHit", () => {
+        audioSelector(audioVolume, "irisHit");
+      });
       socket.on("openGate", () => {
         openGate();
       });
       socket.on("closeGate", (state = null) => {
         closeGate(state);
       });
-
+      socket.on("updateIris", (newIrisState) => {
+        handleIris(newIrisState);
+      });
       socket.on("offworldLock", (state, chevLocked, instant = false) => {
         offworldSequence(state, chevLocked, instant);
       });
@@ -652,8 +674,10 @@ export const Stargate = ({
       socket.off("lastChev");
       socket.off("wrongAddressStraight");
       socket.off("playerTravels");
+      socket.off("playerHit");
       socket.off("openGate");
       socket.off("closeGate");
+      socket.off("updateIris");
       socket.off("offworldLock");
       socket.off("offworldClose");
     };
@@ -765,10 +789,21 @@ export const Stargate = ({
     setPrevPlanet(currentPlanet.planetName);
   }, [userData]);
 
-  const travelGate = async () => {
+  const travelGate = async (blocked = false) => {
     if (gateState.offworld) {
       audioSelector(audioVolume, "robloxDeath");
       return audioSelector(audioVolume, "travelWormhole");
+    }
+
+    if (blocked) {
+      audioSelector(audioVolume, "travelWormhole");
+      await timeout(100);
+      audioSelector(audioVolume, "robloxDeath");
+      await timeout(400);
+      socket.emit("playerHit", {
+        destinationName: gateState.destinationInfo.planetName,
+      });
+      return audioSelector(audioVolume, "irisHit");
     }
 
     audioSelector(audioVolume, "travelWormhole");
@@ -807,6 +842,14 @@ export const Stargate = ({
     });
     setSelectedAddress("");
     return setTraveled(true);
+  };
+
+  const checkGateBlocked = () => {
+    return socket.emit(
+      "isGateBlocked",
+      gateState.destinationInfo.planetName,
+      (response) => travelGate(response)
+    );
   };
 
   useEffect(() => {
@@ -873,7 +916,7 @@ export const Stargate = ({
             windowWidth={windowWidth}
             gateState={gateState}
             dispatch={dispatch}
-            travelGate={travelGate}
+            checkGateBlocked={checkGateBlocked}
           />
         </div>
         <Dhd
@@ -889,6 +932,7 @@ export const Stargate = ({
           wrongAddress={wrongAddress}
           prevPlanet={prevPlanet}
           traveled={traveled}
+          handleIris={handleIris}
         />
       </div>
     );
