@@ -136,8 +136,8 @@ const StargatePage = ({ addressList, windowWidth }) => {
       socket.on("disconnect", () => {
         leavePlanet();
       });
-      socket.on("setUserList", (clients) => {
-        setUserList(clients);
+      socket.on("updateUserList", () => {
+        fetchUsers();
       });
       socket.on("user join", (client, clients) => {
         setUserList(clients);
