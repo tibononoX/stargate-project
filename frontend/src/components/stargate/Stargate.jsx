@@ -69,7 +69,12 @@ export const Stargate = ({
       case "initial":
         return action.payload;
       case "resetGate":
-        return { ...gateInitialState };
+        return {
+          ...gateInitialState,
+          irisOpen: state.irisOpen,
+          irisAnim: state.irisAnim,
+          irisOperating: state.irisOperating,
+        };
       case "inputAddress":
         return { ...state, inputAddress: action.payload };
       case "processingInput":
@@ -120,8 +125,6 @@ export const Stargate = ({
         return { ...state, irisAnim: action.payload };
       case "irisOperating":
         return { ...state, irisOperating: action.payload };
-      case "RESET_FORM":
-        return { ...gateInitialState };
       default:
         return state;
     }
