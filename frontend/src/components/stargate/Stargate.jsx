@@ -60,6 +60,7 @@ export const Stargate = ({
     offworldIncoming: false,
     offworld: false,
     irisOpen: true,
+    irisAnim: false,
     irisOperating: false,
   };
 
@@ -115,6 +116,8 @@ export const Stargate = ({
         return { ...state, offworld: action.payload };
       case "irisOpen":
         return { ...state, irisOpen: action.payload };
+      case "irisAnim":
+        return { ...state, irisAnim: action.payload };
       case "irisOperating":
         return { ...state, irisOperating: action.payload };
       case "RESET_FORM":
@@ -139,10 +142,12 @@ export const Stargate = ({
   const handleIris = async (state) => {
     dispatch({ type: "irisOperating", payload: true });
     if (!state) {
+      dispatch({ type: "irisAnim", payload: true });
       audioSelector(audioVolume, "irisClose");
       await timeout(2600);
     }
     if (state) {
+      dispatch({ type: "irisAnim", payload: false });
       audioSelector(audioVolume, "irisOpen");
       await timeout(2800);
     }
