@@ -233,20 +233,16 @@ class GateSync {
     if (!newIrisState) {
       const alreadyIn = blockedGates.find((entry) => entry === planetName);
       if (alreadyIn) {
-        console.log(blockedGates);
         return socket.to(planetName).emit("updateIris", newIrisState);
       }
       blockedGates.push(planetName);
-      console.log(blockedGates);
     }
     if (newIrisState) {
       const alreadyIn = blockedGates.find((entry) => entry === planetName);
       if (!alreadyIn) {
-        console.log(blockedGates);
         return socket.to(planetName).emit("updateIris", newIrisState);
       }
       blockedGates.pop(planetName);
-      console.log(blockedGates);
     }
     return socket.to(planetName).emit("updateIris", newIrisState);
   }
