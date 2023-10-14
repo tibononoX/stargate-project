@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useRef, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
@@ -33,6 +34,14 @@ const Dhd = ({
 
     switch (type) {
       case "redButton":
+        if (
+          gateState.preselectedSymbols.length === 7 &&
+          selectedAddress !== "" &&
+          !gateState.autoDial
+        ) {
+          return "dhdButton next";
+        }
+
         if ((gateState.dhdActive && gateState.destLock) || gateState.destLock) {
           if (selectedAddress !== "") {
             return "dhdButton active next";
@@ -41,8 +50,19 @@ const Dhd = ({
         }
         return "dhdButton";
       case "symbButton":
+        if (currentPlanet.dialMode === "EARTH") {
+          if (gateState.preselectedSymbols.some((symbol) => symbol.id === id)) {
+            return "symbButton active";
+          }
+          if (gateState.preselectedSymbols.length === 7) {
+            return "symbButton noClick";
+          }
+        }
         if (
-          letter === selectedAddress[inputAddress.length] &&
+          (letter === selectedAddress[inputAddress.length] ||
+            (gateState.preselectedSymbols.length > 0 &&
+              letter ===
+                selectedAddress[gateState.preselectedSymbols.length])) &&
           !gateState.destLock &&
           !gateState.isLocking
         ) {
@@ -80,13 +100,164 @@ const Dhd = ({
     return dispatch({ type: "pooActive", payload: false });
   };
 
+  const handleClick = async (dhdSymbol, autoDial = false) => {
+    const newInputAddress = [...gateState.inputAddress, dhdSymbol];
+    const newPreselectedSymbols = [...gateState.preselectedSymbols, dhdSymbol];
+    if (
+      gateState.inputAddress.length === 7 ||
+      (gateState.preselectedSymbols.length === 7 && !autoDial) ||
+      gateState.inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
+      (gateState.preselectedSymbols.some(
+        (symbol) => symbol.id === dhdSymbol.id
+      ) &&
+        !autoDial) ||
+      gateState.pooActive ||
+      gateState.isRolling ||
+      gateState.processingInput ||
+      gateState.isLocking ||
+      gateState.destLock ||
+      gateState.isOpen ||
+      gateState.offworld ||
+      gateState.aborting
+    ) {
+      return null;
+    }
+    if (
+      currentPlanet.dialMode === "EARTH" &&
+      gateState.preselectedSymbols.length < 7
+    ) {
+      return dispatch({
+        type: "preselectedSymbols",
+        payload: newPreselectedSymbols,
+      });
+    }
+
+    if (gateState.inputAddress.length === 6) {
+      socket.emit("lastChev", {
+        planetName: currentPlanet.planetName,
+        poo: dhdSymbol,
+      });
+      dispatch({ type: "isLocking", payload: true });
+      return dispatch({ type: "pooActive", payload: dhdSymbol });
+    }
+    socket.emit("newInput", {
+      planetName: currentPlanet.planetName,
+      inputAddress: newInputAddress,
+    });
+
+    if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
+      setSelectedAddress("");
+    }
+    if (
+      selectedAddress !== "" &&
+      gateState.inputAddress?.length === 0 &&
+      windowWidth <= 650
+    ) {
+      setAddressBookOpen(false);
+    }
+
+    return dispatch({
+      type: "inputAddress",
+      payload: newInputAddress,
+    });
+  };
+
+  const handleEarthSubmit = async (sequence, rollDelay, signal) => {
+    if (
+      gateState.pooActive !== false ||
+      !gateState.autoDial ||
+      gateState.aborting
+    ) {
+      return;
+    }
+
+    if (sequence && gateState.autoDial) {
+      await new Promise((resolve) => {
+        const interval = setInterval(
+          () => {
+            if (!gateState.processingInput) {
+              clearInterval(interval);
+              resolve();
+            }
+          },
+          gateState.inputAddress.length === 0 ? 1400 : 1000
+        );
+
+        signal.addEventListener("abort", () => {
+          clearInterval(interval);
+          resolve(); // Resolve the promise when the abort signal is triggered.
+        });
+      });
+
+      const symbol = sequence[gateState.inputAddress.length]; // Get the first symbol and remove it from the array
+      await handleClick(symbol, true);
+      await timeout(rollDelay); // Add a small delay if needed
+    }
+  };
+
+  const autoSequenceController = new AbortController();
+  const { signal } = autoSequenceController;
+
+  const abortDialing = async () => {
+    autoSequenceController.abort();
+    await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (!gateState.processingInput) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 1000);
+    });
+
+    return dhdFail();
+  };
+
+  useEffect(() => {
+    if (gateState.autoDial && !gateState.aborting) {
+      const sequence = [...gateState.preselectedSymbols];
+      handleEarthSubmit(sequence, gateState.rollData.timing + 1000, signal);
+    }
+
+    if (gateState.aborting) {
+      abortDialing();
+    }
+
+    return () => {
+      autoSequenceController.abort();
+    };
+  }, [
+    gateState.autoDial,
+    gateState.pooActive,
+    gateState.processingInput,
+    gateState.aborting,
+  ]);
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+    }
     try {
       if (traveled && gateState.isOpen) {
         return dhdCloseGate();
       }
+      if (gateState.isOpen) {
+        return dhdCloseGate();
+      }
+      if (currentPlanet.dialMode === "EARTH" && gateState.autoDial) {
+        return dispatch({ type: "aborting", payload: true });
+      }
       if (
+        currentPlanet.dialMode === "EARTH" &&
+        gateState.inputAddress.length !== 7
+      ) {
+        if (gateState.preselectedSymbols.length !== 7) {
+          return dispatch({ type: "preselectedSymbols", payload: [] });
+        }
+        audioSelector(audioVolume, "startAutoDial");
+        return dispatch({ type: "autoDial", payload: true });
+      }
+      if (
+        gateState.aborting ||
         gateState.offworld ||
         gateState.opening ||
         gateState.closing ||
@@ -95,9 +266,7 @@ const Dhd = ({
       ) {
         return null;
       }
-      if (gateState.isOpen) {
-        return dhdCloseGate();
-      }
+
       if (
         gateState.inputAddress.length === 0 ||
         gateState.inputAddress.length === 7
@@ -124,49 +293,17 @@ const Dhd = ({
     }
   };
 
-  const handleClick = async (dhdSymbol) => {
-    const newInputAddress = [...gateState.inputAddress, dhdSymbol];
-    if (
-      gateState.inputAddress.length === 7 ||
-      gateState.inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
-      gateState.pooActive ||
-      gateState.isRolling ||
-      gateState.processingInput ||
-      gateState.isLocking ||
-      gateState.destLock ||
-      gateState.isOpen ||
-      gateState.offworld
-    ) {
-      return null;
+  useEffect(() => {
+    if (gateState.ready && currentPlanet.dialMode === "EARTH") {
+      dhdOpenGate();
     }
-    if (gateState.inputAddress.length === 6) {
-      socket.emit("lastChev", {
-        planetName: currentPlanet.planetName,
-        poo: dhdSymbol,
-      });
-      dispatch({ type: "isLocking", payload: true });
-      return dispatch({ type: "pooActive", payload: dhdSymbol });
-    }
-    socket.emit("newInput", {
-      planetName: currentPlanet.planetName,
-      inputAddress: newInputAddress,
-    });
+  }, [gateState.ready]);
 
-    if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
-      setSelectedAddress("");
-    }
-    if (
-      selectedAddress !== "" &&
-      gateState.inputAddress?.length === 0 &&
-      windowWidth <= 650
-    ) {
+  useEffect(() => {
+    if (selectedAddress !== "" && gateState.preselectedSymbols.length !== 0) {
       setAddressBookOpen(false);
     }
-    return dispatch({
-      type: "inputAddress",
-      payload: newInputAddress,
-    });
-  };
+  }, [gateState.preselectedSymbols, selectedAddress]);
 
   useEffect(() => {
     socket.on("wrongAddress", () => {

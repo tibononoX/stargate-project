@@ -8,17 +8,101 @@
   overflow: hidden;
 }
 
-.currentPlanet {
+@keyframes pulsate {
+  0% {
+    filter: brightness(50%);
+  }
+  30% {
+    filter: brightness(90%);
+  }
+  50% {
+    filter: brightness(100%);
+  }
+  70% {
+    filter: brightness(90%);
+  }
+  100% {
+    filter: brightness(50%);
+  }
+}
+
+.displayContainer {
+  display: flex;
   position: absolute;
-  top: 0;
+  top: 1.5%;
+  right: 12%;
+
+  .inputSequence {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90px;
+    user-select: none;
+    padding: 6px 8px;
+    background-color: rgb(32, 32, 32);
+
+    .symbolLetter {
+      background-color: rgb(32, 32, 32);
+      border: solid 2px #6f9799;
+      border-radius: 1px;
+      width: 100%;
+      height: 55px;
+      text-align: center;
+      padding: 2px 4px;
+      margin: 2px;
+      font-family: "sg1Glyph";
+      font-weight: 500;
+      font-size: 3rem;
+      color: #6f9799;
+
+      &.active {
+        border: solid 2px rgb(199, 199, 199);
+        color: rgb(199, 199, 199);
+      }
+
+      &.fail {
+        border: solid 2px rgb(255, 187, 0);
+        color: rgb(255, 187, 0);
+        font-family: "Courier New", Courier, monospace;
+        animation: pulsate 1s infinite;
+      }
+
+      &.offworld {
+        font-family: "Courier New", Courier, monospace;
+        border: solid 2px red;
+        color: red;
+        animation: pulsate 1s infinite;
+      }
+    }
+  }
+}
+
+.topInfo {
+  position: absolute;
+  top: 5px;
   font-size: 2rem;
   padding: 8px;
   margin-top: 8px;
 
-  .offworld {
+  .headText {
+    padding: 1px 10px;
     background-color: rgba(7, 7, 7, 0.5);
-    font-weight: 600;
-    color: red;
+    font-weight: 400;
+
+    &.offworld {
+      font-weight: 600;
+      color: red;
+    }
+
+    &.abort {
+      font-weight: 600;
+      color: rgb(255, 187, 0);
+    }
+
+    &.planet {
+      background: none;
+      color: rgb(228, 228, 228);
+    }
   }
 }
 
@@ -232,15 +316,50 @@
     top: 5%;
   }
 
-  .currentPlanet {
+  .topInfo {
     margin-top: 0;
     font-size: 1.5rem;
+    top: 0;
 
-    .offworld {
-      background-color: rgba(7, 7, 7, 0.5);
-      font-weight: 600;
-      font-size: 1.3rem;
-      color: red;
+    .headText {
+      .offworld {
+        font-size: 1.3rem;
+      }
+      .abort {
+        font-size: 1.3rem;
+      }
+      .planet {
+        font-size: 1.3rem;
+      }
+    }
+  }
+
+  .displayContainer {
+    right: 50%;
+    top: calc(60vh - 50px);
+    transform: translateX(50%);
+    transition: 500ms;
+
+    &.dhdClosed {
+      top: calc(100vh - 100px);
+      filter: opacity(0);
+    }
+
+    .inputSequence {
+      flex-direction: row;
+      justify-content: space-evenly;
+      width: 95vw;
+      height: 50px;
+      padding: 4px 2px;
+
+      .symbolLetter {
+        height: 100%;
+        width: 13.5%;
+        margin: 1px;
+        padding-top: 4px;
+        text-align: center;
+        font-size: 2rem;
+      }
     }
   }
 
@@ -249,9 +368,6 @@
 
     .showHide {
       display: block;
-      &.hide {
-        // border-radius: 50% 50% 0 0;
-      }
     }
 
     &.open {
