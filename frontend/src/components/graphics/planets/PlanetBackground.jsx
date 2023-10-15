@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import "@components/graphics/planets/PlanetBackground.scss";
 
 function Random(seed) {

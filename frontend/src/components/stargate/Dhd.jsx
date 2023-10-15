@@ -42,9 +42,12 @@ const Dhd = ({
           return "dhdButton next";
         }
 
-        if ((gateState.dhdActive && gateState.destLock) || gateState.destLock) {
+        if (gateState.dhdActive || gateState.destLock) {
           if (selectedAddress !== "") {
             return "dhdButton active next";
+          }
+          if (gateState.offworld && !traveled) {
+            return "dhdButton active offworld";
           }
           return "dhdButton active";
         }
@@ -140,10 +143,6 @@ const Dhd = ({
       dispatch({ type: "isLocking", payload: true });
       return dispatch({ type: "pooActive", payload: dhdSymbol });
     }
-    socket.emit("newInput", {
-      planetName: currentPlanet.planetName,
-      inputAddress: newInputAddress,
-    });
 
     if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
       setSelectedAddress("");
@@ -156,6 +155,10 @@ const Dhd = ({
       setAddressBookOpen(false);
     }
 
+    socket.emit("newInput", {
+      planetName: currentPlanet.planetName,
+      inputAddress: newInputAddress,
+    });
     return dispatch({
       type: "inputAddress",
       payload: newInputAddress,
@@ -166,7 +169,8 @@ const Dhd = ({
     if (
       gateState.pooActive !== false ||
       !gateState.autoDial ||
-      gateState.aborting
+      gateState.aborting ||
+      gateState.offworld
     ) {
       return;
     }
@@ -237,34 +241,44 @@ const Dhd = ({
       e.preventDefault();
     }
     try {
-      if (traveled && gateState.isOpen) {
-        return dhdCloseGate();
-      }
-      if (gateState.isOpen) {
-        return dhdCloseGate();
-      }
-      if (currentPlanet.dialMode === "EARTH" && gateState.autoDial) {
-        return dispatch({ type: "aborting", payload: true });
-      }
       if (
-        currentPlanet.dialMode === "EARTH" &&
-        gateState.inputAddress.length !== 7
+        gateState.aborting ||
+        (gateState.offworld && !traveled) ||
+        gateState.opening ||
+        gateState.closing
       ) {
+        return null;
+      }
+      if ((traveled && gateState.isOpen) || gateState.isOpen) {
+        return dhdCloseGate();
+      }
+      if (currentPlanet.dialMode === "EARTH") {
+        if (
+          (gateState.autoDial || gateState.autoDialFromSocket) &&
+          !gateState.pooActive
+        ) {
+          socket.emit("aborting", { planetName: currentPlanet.planetName });
+          return dispatch({ type: "aborting", payload: true });
+        }
         if (gateState.preselectedSymbols.length !== 7) {
           return dispatch({ type: "preselectedSymbols", payload: [] });
         }
-        audioSelector(audioVolume, "startAutoDial");
-        return dispatch({ type: "autoDial", payload: true });
-      }
-      if (
-        gateState.aborting ||
-        gateState.offworld ||
-        gateState.opening ||
-        gateState.closing ||
-        gateState.isRolling ||
-        gateState.isLocking
-      ) {
-        return null;
+        if (
+          gateState.preselectedSymbols.length === 7 &&
+          gateState.inputAddress.length === 0 &&
+          gateState.pooActive === false
+        ) {
+          audioSelector(audioVolume, "startAutoDial");
+          socket.emit("autoDial", {
+            planetName: currentPlanet.planetName,
+            sequence: gateState.preselectedSymbols,
+          });
+          return dispatch({ type: "autoDial", payload: true });
+        }
+        if (gateState.failLock) {
+          socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
+          return dhdFail();
+        }
       }
 
       if (
@@ -284,9 +298,7 @@ const Dhd = ({
       if (!gateState.destinationInfo) {
         return null;
       }
-      if (!gateState.ready) {
-        return null;
-      }
+
       return dhdOpenGate();
     } catch (err) {
       return console.warn(err);
@@ -294,13 +306,23 @@ const Dhd = ({
   };
 
   useEffect(() => {
-    if (gateState.ready && currentPlanet.dialMode === "EARTH") {
+    if (
+      gateState.ready &&
+      currentPlanet.dialMode === "EARTH" &&
+      !gateState.aborting
+    ) {
       dhdOpenGate();
     }
   }, [gateState.ready]);
 
   useEffect(() => {
-    if (selectedAddress !== "" && gateState.preselectedSymbols.length !== 0) {
+    if (
+      selectedAddress !== "" &&
+      gateState.preselectedSymbols.length !== 0 &&
+      currentPlanet.dialMode !== "EARTH" &&
+      windowWidth < 650 &&
+      (gateState.autoDial || gateState.autoDialFromSocket)
+    ) {
       setAddressBookOpen(false);
     }
   }, [gateState.preselectedSymbols, selectedAddress]);
@@ -309,9 +331,13 @@ const Dhd = ({
     socket.on("wrongAddress", () => {
       dhdFail();
     });
+    socket.on("aborting", () => {
+      dispatch({ type: "aborting", payload: true });
+    });
 
     return () => {
       socket.off("wrongAddress");
+      socket.off("aborting");
     };
   }, []);
 
