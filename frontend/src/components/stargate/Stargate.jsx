@@ -6,7 +6,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useState, useEffect, useContext, useReducer } from "react";
+import { useRef, useState, useEffect, useContext, useReducer } from "react";
 import axios from "@services/axios";
 import "@styles/stargate/main.scss";
 import SG1Render from "@components/graphics/Stargate/SG1Render";
@@ -146,6 +146,7 @@ export const Stargate = ({
   const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
   const [traveled, setTraveled] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const dhdRef = useRef();
 
   useEffect(() => {
     dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
@@ -1032,6 +1033,9 @@ export const Stargate = ({
   ]);
 
   const handleSGCDisplay = () => {
+    if (!dhdRef.current) {
+      return null;
+    }
     const condition = (index, last = false) => {
       if (last) {
         return (
@@ -1056,6 +1060,14 @@ export const Stargate = ({
     return (
       <div
         className={dhdOpen ? "displayContainer" : "displayContainer dhdClosed"}
+        style={{
+          marginBottom:
+            windowWidth < 650
+              ? dhdOpen
+                ? dhdRef.current.clientHeight + 5
+                : 50
+              : "0",
+        }}
       >
         <div className="inputSequence">
           <p
@@ -1227,6 +1239,7 @@ export const Stargate = ({
           />
         </div>
         <Dhd
+          dhdRef={dhdRef}
           dhdOpen={dhdOpen}
           setDhdOpen={setDhdOpen}
           selectedAddress={selectedAddress}

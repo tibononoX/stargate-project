@@ -344,13 +344,15 @@
 
   .displayContainer {
     right: 50%;
-    top: calc(60vh - 50px);
+    top: auto;
+    bottom: 0;
+    // margin-bottom: 40vh;
     transform: translateX(50%);
     transition: 500ms;
 
     &.dhdClosed {
-      top: calc(100vh - 100px);
-      filter: opacity(0);
+      // top: calc(100vh - 100px);
+      // filter: opacity(0);
     }
 
     .inputSequence {

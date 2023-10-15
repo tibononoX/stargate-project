@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useRef, useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
 import audioSelector from "@services/audio";
 import PlanetContext from "@contexts/PlanetContext";
@@ -11,6 +11,7 @@ function timeout(ms) {
 }
 
 const Dhd = ({
+  dhdRef,
   dhdOpen,
   setDhdOpen,
   selectedAddress,
@@ -348,14 +349,14 @@ const Dhd = ({
     };
   }, []);
 
-  const dhdHeight = useRef();
-
   return (
     <div
-      ref={dhdHeight}
+      ref={dhdRef}
       className={dhdOpen ? "dhd open" : "dhd"}
       style={{
-        bottom: dhdOpen ? "0px" : `-${dhdHeight?.current?.clientHeight - 22}px`,
+        bottom: dhdOpen
+          ? "0px"
+          : `-${dhdRef.current ? dhdRef.current.clientHeight - 22 : 0}px`,
       }}
     >
       <button
