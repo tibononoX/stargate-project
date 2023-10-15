@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ChevOne,
   ChevTwo,
@@ -17,9 +16,18 @@ import GateBg from "./GateBg";
 import GateFrame from "./GateFrame";
 import SvgDef from "./SvgDef";
 
-function SG1Render({ windowWidth, gateState, dispatch, checkGateBlocked }) {
+function SG1Render({
+  windowHeight,
+  windowWidth,
+  gateState,
+  dispatch,
+  checkGateBlocked,
+}) {
   return (
-    <>
+    <div
+      className="gateContainer"
+      style={{ top: windowWidth > 1920 || windowHeight > 1080 ? 110 : 0 }}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -53,7 +61,7 @@ function SG1Render({ windowWidth, gateState, dispatch, checkGateBlocked }) {
           <ChevNine locking={gateState.locking} />
         )}
       </svg>
-    </>
+    </div>
   );
 }
 

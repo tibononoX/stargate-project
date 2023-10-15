@@ -24,6 +24,7 @@ function timeout(ms) {
 export const Stargate = ({
   addressList,
   windowWidth,
+  windowHeight,
   dhdOpen,
   setDhdOpen,
   selectedAddress,
@@ -36,6 +37,7 @@ export const Stargate = ({
 
   const gateInitialState = {
     inputAddress: [],
+    preselectedSymbols: [],
     processingInput: false,
     pooActive: false,
     resetting: false,
@@ -55,13 +57,16 @@ export const Stargate = ({
     locking: false,
     chevrons: [false, false, false, false, false, false, false, false],
     destLock: false,
-    dialingTo: {},
     destinationInfo: {},
     offworldIncoming: false,
     offworld: false,
     irisOpen: true,
     irisAnim: false,
     irisOperating: false,
+    autoDial: false,
+    autoDialFromSocket: false,
+    aborting: false,
+    failLock: false,
   };
 
   const updateGateState = (state, action) => {
@@ -77,6 +82,8 @@ export const Stargate = ({
         };
       case "inputAddress":
         return { ...state, inputAddress: action.payload };
+      case "preselectedSymbols":
+        return { ...state, preselectedSymbols: action.payload };
       case "processingInput":
         return { ...state, processingInput: action.payload };
       case "pooActive":
@@ -109,8 +116,6 @@ export const Stargate = ({
         return { ...state, chevrons: action.payload };
       case "destLock":
         return { ...state, destLock: action.payload };
-      case "dialingTo":
-        return { ...state, dialingTo: action.payload };
       case "destinationInfoReset":
         return { ...state, destinationInfo: gateInitialState.destinationInfo };
       case "destinationInfo":
@@ -125,6 +130,14 @@ export const Stargate = ({
         return { ...state, irisAnim: action.payload };
       case "irisOperating":
         return { ...state, irisOperating: action.payload };
+      case "autoDial":
+        return { ...state, autoDial: action.payload };
+      case "autoDialFromSocket":
+        return { ...state, autoDialFromSocket: action.payload };
+      case "aborting":
+        return { ...state, aborting: action.payload };
+      case "failLock":
+        return { ...state, failLock: action.payload };
       default:
         return state;
     }
@@ -141,6 +154,39 @@ export const Stargate = ({
       payload: { ...gateState.rollData, position: currentPlanet.poo.position },
     });
   }, [currentPlanet]);
+
+  const handleEarthSelectedAddress = async () => {
+    if (selectedAddress === "" && gateState.inputAddress.length === 0) {
+      return dispatch({
+        type: "preselectedSymbols",
+        payload: [],
+      });
+    }
+    if (
+      selectedAddress !== "" &&
+      currentPlanet.dialMode === "EARTH" &&
+      gateState.inputAddress.length === 0 &&
+      !gateState.autoDial &&
+      !gateState.autoDialFromSocket
+    ) {
+      const symbolsToPreselect = [];
+
+      for (let i = 0; i < selectedAddress.length; i++) {
+        const letter = selectedAddress[i];
+        const [object] = symbols.filter((symbol) => symbol.letter === letter);
+        symbolsToPreselect.push(object);
+      }
+
+      return dispatch({
+        type: "preselectedSymbols",
+        payload: symbolsToPreselect,
+      });
+    }
+  };
+
+  useEffect(() => {
+    handleEarthSelectedAddress();
+  }, [selectedAddress]);
 
   const handleIris = async (state) => {
     dispatch({ type: "irisOperating", payload: true });
@@ -162,7 +208,14 @@ export const Stargate = ({
     const currentDialMode = currentPlanet.dialMode;
     try {
       if (currentDialMode === "EARTH") {
-        handleChev(null, dispatch);
+        await handleChev(null, dispatch);
+        dispatch({ type: "inputAddress", payload: [] });
+        dispatch({
+          type: "preselectedSymbols",
+          payload: [],
+        });
+        setSelectedAddress("");
+        dispatch({ type: "failLock", payload: false });
         if (gateState.destinationInfo?.id) {
           socket.emit(
             "offworldFail",
@@ -190,7 +243,7 @@ export const Stargate = ({
         await timeout(200);
       }
       if (currentDialMode !== "EARTH") {
-        handleChev(null, dispatch);
+        await handleChev(null, dispatch);
         audioSelector(audioVolume, "chevEnd");
         if (gateState.destinationInfo?.id) {
           socket.emit(
@@ -264,57 +317,99 @@ export const Stargate = ({
     }
   };
 
-  const handleInput = async () => {
-    try {
-      if (gateState.destLock) {
-        return null;
+  // let continueSequence = true;
+  // const stopIfNecessary = () => {
+  //   if (!continueSequence) {
+  //     dispatch({
+  //       type: "processingInput",
+  //       payload: false,
+  //     });
+  //     return true;
+  //   }
+  //   return false;
+  // };
+
+  const earthDialSequence = async () => {
+    // if (stopIfNecessary()) return;
+
+    dispatch({
+      type: "processingInput",
+      payload: true,
+    });
+    const symbolToProcess = gateState.inputAddress
+      .map((address) => address)
+      .pop();
+    const rollValues = rollCalc(symbolToProcess, gateState.ringPosition);
+
+    // if (stopIfNecessary()) return;
+
+    dispatch({
+      type: "ringPosition",
+      payload: rollValues.position,
+    });
+    dispatch({
+      type: "rollData",
+      payload: rollValues,
+    });
+    await timeout(rollValues.timing - 50);
+
+    // if (stopIfNecessary()) return;
+
+    audioSelector(audioVolume, "earthChev");
+    await timeout(420);
+    dispatch({
+      type: "locking",
+      payload: true,
+    });
+    await timeout(300);
+    dispatch({
+      type: "lockChev",
+      payload: true,
+    });
+    await timeout(500);
+    await handleChev(gateState.inputAddress.length, dispatch);
+    await handleDestOffworld();
+    await timeout(250);
+    dispatch({
+      type: "locking",
+      payload: false,
+    });
+    await timeout(300);
+    dispatch({
+      type: "lockChev",
+      payload: false,
+    });
+
+    return dispatch({
+      type: "processingInput",
+      payload: false,
+    });
+  };
+
+  useEffect(() => {
+    if (gateState.offworld) {
+      // continueSequence = false;
+      if (!gateState.chevrons[5]) {
+        handleChev(6, dispatch, audioVolume);
       }
-      if (currentPlanet?.dialMode === "EARTH") {
-        dispatch({
-          type: "processingInput",
-          payload: true,
-        });
-        const symbolToProcess = gateState.inputAddress
-          .map((address) => address)
-          .pop();
-        const rollValues = rollCalc(symbolToProcess, gateState.ringPosition);
-        dispatch({
-          type: "ringPosition",
-          payload: rollValues.position,
-        });
+      if (gateState.ringPosition !== currentPlanet.poo.position) {
+        const rollValues = rollCalc(currentPlanet.poo, gateState.ringPosition);
+
         dispatch({
           type: "rollData",
           payload: rollValues,
         });
-        await timeout(rollValues.timing - 50);
-        audioSelector(audioVolume, "earthChev");
-        await timeout(420);
-        dispatch({
-          type: "locking",
-          payload: true,
-        });
-        await timeout(300);
-        dispatch({
-          type: "lockChev",
-          payload: true,
-        });
-        await timeout(500);
-        handleChev(gateState.inputAddress.length, dispatch);
-        await handleDestOffworld();
-        await timeout(250);
-        dispatch({
-          type: "locking",
-          payload: false,
-        });
-        await timeout(300);
-        dispatch({
-          type: "lockChev",
-          payload: false,
-        });
-        return dispatch({
-          type: "processingInput",
-          payload: false,
-        });
+      }
+    }
+  }, [gateState.offworld, gateState.chevrons, gateState.rollData.position]);
+
+  const handleInput = async () => {
+    try {
+      if (gateState.destLock || gateState.aborting || gateState.offworld) {
+        return null;
+      }
+      if (currentPlanet?.dialMode === "EARTH") {
+        return earthDialSequence();
       }
 
       dispatch({
@@ -333,7 +428,7 @@ export const Stargate = ({
       }
 
       await timeout(300);
-      handleChev(gateState.inputAddress.length, dispatch, audioVolume);
+      await handleChev(gateState.inputAddress.length, dispatch, audioVolume);
       await handleDestOffworld();
       return dispatch({
         type: "processingInput",
@@ -374,6 +469,9 @@ export const Stargate = ({
       return null;
     }
     if (currentPlanet.dialMode === "EARTH") {
+      if (gateState.aborting) {
+        return null;
+      }
       audioSelector(audioVolume, "earthLock");
       dispatch({ type: "locking", payload: true });
       await timeout(400);
@@ -386,6 +484,13 @@ export const Stargate = ({
       dispatch({ type: "locking", payload: false });
       await timeout(200);
       dispatch({ type: "isLocking", payload: false });
+      if (gateState.autoDial) {
+        dispatch({ type: "autoDial", payload: false });
+      }
+      dispatch({
+        type: "processingInput",
+        payload: false,
+      });
       return dispatch({ type: "ready", payload: true });
     }
     await timeout(800);
@@ -396,19 +501,37 @@ export const Stargate = ({
       destinationName: gateState.destinationInfo.planetName,
     });
     dispatch({ type: "isLocking", payload: false });
+    if (gateState.autoDial) {
+      dispatch({ type: "autoDial", payload: false });
+    }
+    dispatch({
+      type: "processingInput",
+      payload: false,
+    });
     return dispatch({ type: "ready", payload: true });
   };
 
   const lockFail = async () => {
     if (currentPlanet.dialMode === "EARTH") {
+      if (gateState.aborting) {
+        return null;
+      }
       console.warn("wrong Address");
       audioSelector(audioVolume, "earthLockFail");
       dispatch({ type: "locking", payload: true });
       await timeout(400);
       dispatch({ type: "destLock", payload: false });
+      dispatch({ type: "failLock", payload: true });
       await timeout(600);
       dispatch({ type: "isLocking", payload: false });
       setSelectedAddress("");
+      if (gateState.autoDial) {
+        dispatch({ type: "autoDial", payload: false });
+      }
+      dispatch({
+        type: "processingInput",
+        payload: false,
+      });
       return false;
     }
 
@@ -431,11 +554,34 @@ export const Stargate = ({
     return true;
   };
 
+  const wrongAddress = async (offworld) => {
+    if (offworld) {
+      console.warn("Inbound activation canceled");
+      if (!gateState.autoDial && !gateState.autoDialFromSocket) {
+        dispatch({ type: "locking", payload: false });
+        return dispatch({ type: "resetting", payload: true });
+      }
+    }
+
+    console.warn("Dialing failed");
+    audioSelector(audioVolume, "dialFail");
+    try {
+      await timeout(1200);
+      dispatch({ type: "locking", payload: false });
+      return dispatch({ type: "resetting", payload: true });
+    } catch (err) {
+      return console.warn(err);
+    }
+  };
+
   const checkMatching = async (poo) => {
+    setSelectedAddress("");
+
     try {
       if (gateState.offworld || gateState.inputAddress.length < 6) {
         return null;
       }
+
       if (currentPlanet.dialMode !== "EARTH") {
         audioSelector(
           audioVolume,
@@ -445,7 +591,9 @@ export const Stargate = ({
             : gateState.inputAddress.length + 1
         );
       }
+
       if (currentPlanet.dialMode === "EARTH") {
+        dispatch({ type: "processingInput", payload: true });
         await handleRollPoo(poo);
       }
 
@@ -538,7 +686,7 @@ export const Stargate = ({
   };
 
   const offworldSequence = async (state, chevLocked) => {
-    if (state === "dialing") {
+    if (state === "dialing" && gateState.inputAddress.length === 0) {
       const chevDiff =
         chevLocked - gateState.chevrons.filter((chev) => chev === true).length;
 
@@ -547,19 +695,20 @@ export const Stargate = ({
         gateState.chevrons.filter((chev) => chev === true).length === 0
       ) {
         for (let i = 0; i < chevDiff; i++) {
-          handleChev(i, dispatch, audioVolume);
+          await handleChev(i, dispatch, audioVolume);
           await timeout(200);
         }
       }
 
-      handleChev(chevLocked, dispatch, audioVolume);
-      return dispatch({ type: "offworldIncoming", payload: true });
+      return handleChev(chevLocked, dispatch, audioVolume);
     }
 
     if (state === "locked") {
       dispatch({ type: "inputAddress", payload: [] });
+      dispatch({ type: "preselectedSymbols", payload: [] });
+      setSelectedAddress("");
       dispatch({ type: "pooActive", payload: false });
-      handleChev(6, dispatch);
+      await handleChev(6, dispatch);
       dispatch({ type: "destLock", payload: true });
       audioSelector(audioVolume, "dhdLock");
       dispatch({ type: "offworld", payload: true });
@@ -569,7 +718,7 @@ export const Stargate = ({
     if (state === "open") {
       dispatch({ type: "inputAddress", payload: [] });
       dispatch({ type: "pooActive", payload: false });
-      handleChev(6, dispatch);
+      await handleChev(6, dispatch);
       dispatch({ type: "destLock", payload: true });
       dispatch({ type: "offworld", payload: true });
       return dispatch({ type: "isOpen", payload: true });
@@ -581,31 +730,22 @@ export const Stargate = ({
   useEffect(() => {
     if (socket) {
       socket.on("offworldSequence", (state, chevLocked, instant = false) => {
-        offworldSequence(state, chevLocked, instant);
+        dispatch({ type: "offworldIncoming", payload: true });
+
+        if (
+          (!gateState.autoDial &&
+            !gateState.autoDialFromSocket &&
+            gateState.inputAddress.length === 0) ||
+          state === "locked"
+        ) {
+          offworldSequence(state, chevLocked, instant);
+        }
       });
     }
     return () => {
       socket.off("offworldSequence");
     };
   }, [gateState.chevrons]);
-
-  const wrongAddress = async (offworld) => {
-    if (offworld) {
-      console.warn("Inbound activation canceled");
-      dispatch({ type: "locking", payload: false });
-      return dispatch({ type: "resetting", payload: true });
-    }
-
-    console.warn("Dialing failed");
-    audioSelector(audioVolume, "dialFail");
-    try {
-      await timeout(1200);
-      dispatch({ type: "locking", payload: false });
-      return dispatch({ type: "resetting", payload: true });
-    } catch (err) {
-      return console.warn(err);
-    }
-  };
 
   useEffect(() => {
     if (gateState.resetting) {
@@ -638,6 +778,10 @@ export const Stargate = ({
     if (socket) {
       socket.on("newInput", (data) => {
         dispatch({ type: "inputAddress", payload: data });
+      });
+      socket.on("autoDial", (data) => {
+        dispatch({ type: "preselectedSymbols", payload: data });
+        dispatch({ type: "autoDialFromSocket", payload: true });
       });
       socket.on("destinationInfo", (data) => {
         updateDestination(data);
@@ -677,6 +821,7 @@ export const Stargate = ({
 
     return () => {
       socket.off("newInput");
+      socket.off("autoDial");
       socket.off("destinationInfo");
       socket.off("lockFail");
       socket.off("lastChev");
@@ -815,7 +960,7 @@ export const Stargate = ({
     }
 
     audioSelector(audioVolume, "travelWormhole");
-
+    dispatch({ type: "preselectedSymbols", payload: [] });
     if (userData) {
       const changeLocation = await axios.put(
         `/users/${userData.id}`,
@@ -886,27 +1031,180 @@ export const Stargate = ({
     gateState.offworldIncoming,
   ]);
 
+  const handleSGCDisplay = () => {
+    const condition = (index, last = false) => {
+      if (last) {
+        return (
+          gateState.pooActive?.id === gateState.preselectedSymbols[6]?.id &&
+          gateState.destLock &&
+          !gateState.offworld
+        );
+      }
+      return (
+        gateState.inputAddress.some(
+          (inputSymbol) =>
+            gateState.preselectedSymbols[index]?.id === inputSymbol.id
+        ) && gateState.chevrons[index]
+      );
+    };
+    const offworldCondition =
+      (gateState.offworld || gateState.offworldIncoming) &&
+      gateState.autoDial &&
+      gateState.autoDialFromSocket &&
+      gateState.inputAddress.length === 0;
+
+    return (
+      <div
+        className={dhdOpen ? "displayContainer" : "displayContainer dhdClosed"}
+      >
+        <div className="inputSequence">
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock ? "fail" : condition(0) ? "active" : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "O"
+              : gateState.failLock
+              ? "N"
+              : gateState.preselectedSymbols[0]?.letter}
+          </p>
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock ? "fail" : condition(1) ? "active" : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "F"
+              : gateState.failLock
+              ? "O"
+              : gateState.preselectedSymbols[1]?.letter}
+          </p>
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock ? "fail" : condition(2) ? "active" : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "F"
+              : gateState.failLock
+              ? ""
+              : gateState.preselectedSymbols[2]?.letter}
+          </p>
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock ? "fail" : condition(3) ? "active" : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "W"
+              : gateState.failLock
+              ? "L"
+              : gateState.preselectedSymbols[3]?.letter}
+          </p>
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock ? "fail" : condition(4) ? "active" : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "R"
+              : gateState.failLock
+              ? "O"
+              : gateState.preselectedSymbols[4]?.letter}
+          </p>
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock ? "fail" : condition(5) ? "active" : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "L"
+              : gateState.failLock
+              ? "C"
+              : gateState.preselectedSymbols[5]?.letter}
+          </p>
+          <p
+            className={
+              offworldCondition
+                ? "symbolLetter offworld"
+                : `symbolLetter ${
+                    gateState.failLock
+                      ? "fail"
+                      : condition(6, true)
+                      ? "active"
+                      : ""
+                  }`
+            }
+          >
+            {offworldCondition
+              ? "D"
+              : gateState.failLock
+              ? "K"
+              : gateState.preselectedSymbols[6]?.letter}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const handleTopInfo = () => {
+    return gateState.aborting ? (
+      <span className="headText abort">ABORTING SEQUENCE</span>
+    ) : gateState.offworld && gateState.isOpen ? (
+      <span className="headText offworld">OFFWORLD WORMHOLE</span>
+    ) : gateState.offworldIncoming || gateState.offworld ? (
+      <span className="headText offworld">OFFWORLD INCOMING</span>
+    ) : !gateState.isOpen ? (
+      <span className="headText planet">
+        {`Current planet: ${currentPlanet?.planetName}`}
+      </span>
+    ) : (
+      gateState.destinationInfo &&
+      gateState.isOpen && (
+        <span className="headText planet">{`Wormhole open to ${gateState.destinationInfo?.planetName}`}</span>
+      )
+    );
+  };
+
   if (initialized || hosting) {
     return (
       <div className="gameContainer">
-        <p className="currentPlanet">
-          {gateState.offworld || gateState.offworldIncoming ? (
-            <span className="offworld">OFFWORLD ACTIVATION</span>
-          ) : !gateState.isOpen ? (
-            `Current planet: ${currentPlanet?.planetName}`
-          ) : (
-            gateState.destinationInfo &&
-            gateState.isOpen &&
-            `Wormhole open to ${gateState.destinationInfo?.planetName}`
-          )}
-        </p>
+        {currentPlanet.dialMode === "EARTH" && handleSGCDisplay()}
+        <p className="topInfo">{handleTopInfo()}</p>
         <div className="stargate">
           {gateState.isOpen && (
             <audio loop id="wormholeLoopAudio">
               <source src="./src/assets/sounds/stargate/wormholeLoop.wav" />
             </audio>
           )}
-          {gateState.inputAddress.length !== 0 &&
+          {(gateState.autoDial ||
+            gateState.aborting ||
+            gateState.inputAddress.length !== 0) &&
             currentPlanet?.id === 1 &&
             !gateState.offworld &&
             !gateState.offworldIncoming && (
@@ -914,14 +1212,15 @@ export const Stargate = ({
                 <source src="./src/assets/sounds/alarms/sgc_alarm.wav" />
               </audio>
             )}
-          {(gateState.offworld || gateState.offworldIncoming) &&
-            currentPlanet?.id === 1 && (
+          {gateState.offworld ||
+            (gateState.offworldIncoming && currentPlanet?.id === 1 && (
               <audio loop id="sgcOffworldAlarmAudio">
                 <source src="./src/assets/sounds/alarms/sgc_offworld-alarm.wav" />
               </audio>
-            )}
+            ))}
           <SG1Render
             windowWidth={windowWidth}
+            windowHeight={windowHeight}
             gateState={gateState}
             dispatch={dispatch}
             checkGateBlocked={checkGateBlocked}

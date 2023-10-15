@@ -21,6 +21,7 @@ function App() {
   const [socket, setSocket] = useState(null);
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
   const [audioVolume, setAudioVolume] = useState(
     localStorage.getItem("volume")
@@ -81,12 +82,16 @@ function App() {
   useEffect(() => {
     fetchAddressList();
     checkConnection();
-    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
+    window.addEventListener("resize", () => {
+      setWindowHeight(window.innerHeight);
+      setWindowWidth(window.innerWidth);
+    });
 
     return () =>
-      window.removeEventListener("resize", () =>
-        setWindowWidth(window.innerWidth)
-      );
+      window.removeEventListener("resize", () => {
+        setWindowHeight(window.innerHeight);
+        setWindowWidth(window.innerWidth);
+      });
   }, []);
 
   return (
@@ -103,6 +108,7 @@ function App() {
           setUserData,
           socket,
           windowWidth,
+          windowHeight,
         }}
       >
         <Router>
@@ -111,21 +117,11 @@ function App() {
               <>
                 <Route
                   path="*"
-                  element={
-                    <StargatePage
-                      addressList={addressList}
-                      windowWidth={windowWidth}
-                    />
-                  }
+                  element={<StargatePage addressList={addressList} />}
                 />
                 <Route
                   path="/"
-                  element={
-                    <StargatePage
-                      addressList={addressList}
-                      windowWidth={windowWidth}
-                    />
-                  }
+                  element={<StargatePage addressList={addressList} />}
                 />
               </>
             )}

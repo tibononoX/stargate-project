@@ -6,9 +6,16 @@ import UserContext from "@contexts/UserContext";
 import Menu from "@components/Menu";
 import PlanetBackground from "@components/graphics/planets/PlanetBackground";
 
-const StargatePage = ({ addressList, windowWidth }) => {
-  const { audioVolume, setAudioVolume, guestName, userData, socket } =
-    useContext(UserContext);
+const StargatePage = ({ addressList }) => {
+  const {
+    audioVolume,
+    setAudioVolume,
+    windowWidth,
+    windowHeight,
+    guestName,
+    userData,
+    socket,
+  } = useContext(UserContext);
   const [currentPlanet, setCurrentPlanet] = useState({
     initial: true,
     id: null,
@@ -248,6 +255,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
             <Stargate
               addressList={addressList}
               windowWidth={windowWidth}
+              windowHeight={windowHeight}
               dhdOpen={dhdOpen}
               setDhdOpen={setDhdOpen}
               selectedAddress={selectedAddress}
@@ -274,6 +282,7 @@ const StargatePage = ({ addressList, windowWidth }) => {
       </PlanetContext.Provider>
     );
   }
+  return null;
 };
 
 export default StargatePage;

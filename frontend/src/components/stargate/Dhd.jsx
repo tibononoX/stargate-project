@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import { useRef, useContext, useEffect } from "react";
 import symbols from "@services/gateSymbols";
@@ -33,16 +34,38 @@ const Dhd = ({
 
     switch (type) {
       case "redButton":
-        if ((gateState.dhdActive && gateState.destLock) || gateState.destLock) {
+        if (
+          gateState.preselectedSymbols.length === 7 &&
+          selectedAddress !== "" &&
+          !gateState.autoDial
+        ) {
+          return "dhdButton next";
+        }
+
+        if (gateState.dhdActive || gateState.destLock) {
           if (selectedAddress !== "") {
             return "dhdButton active next";
+          }
+          if (gateState.offworld && !traveled) {
+            return "dhdButton active offworld";
           }
           return "dhdButton active";
         }
         return "dhdButton";
       case "symbButton":
+        if (currentPlanet.dialMode === "EARTH") {
+          if (gateState.preselectedSymbols.some((symbol) => symbol.id === id)) {
+            return "symbButton active";
+          }
+          if (gateState.preselectedSymbols.length === 7) {
+            return "symbButton noClick";
+          }
+        }
         if (
-          letter === selectedAddress[inputAddress.length] &&
+          (letter === selectedAddress[inputAddress.length] ||
+            (gateState.preselectedSymbols.length > 0 &&
+              letter ===
+                selectedAddress[gateState.preselectedSymbols.length])) &&
           !gateState.destLock &&
           !gateState.isLocking
         ) {
@@ -80,24 +103,191 @@ const Dhd = ({
     return dispatch({ type: "pooActive", payload: false });
   };
 
+  const handleClick = async (dhdSymbol, autoDial = false) => {
+    const newInputAddress = [...gateState.inputAddress, dhdSymbol];
+    const newPreselectedSymbols = [...gateState.preselectedSymbols, dhdSymbol];
+    if (
+      gateState.inputAddress.length === 7 ||
+      (gateState.preselectedSymbols.length === 7 && !autoDial) ||
+      gateState.inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
+      (gateState.preselectedSymbols.some(
+        (symbol) => symbol.id === dhdSymbol.id
+      ) &&
+        !autoDial) ||
+      gateState.pooActive ||
+      gateState.isRolling ||
+      gateState.processingInput ||
+      gateState.isLocking ||
+      gateState.destLock ||
+      gateState.isOpen ||
+      gateState.offworld ||
+      gateState.aborting
+    ) {
+      return null;
+    }
+    if (
+      currentPlanet.dialMode === "EARTH" &&
+      gateState.preselectedSymbols.length < 7
+    ) {
+      return dispatch({
+        type: "preselectedSymbols",
+        payload: newPreselectedSymbols,
+      });
+    }
+
+    if (gateState.inputAddress.length === 6) {
+      socket.emit("lastChev", {
+        planetName: currentPlanet.planetName,
+        poo: dhdSymbol,
+      });
+      dispatch({ type: "isLocking", payload: true });
+      return dispatch({ type: "pooActive", payload: dhdSymbol });
+    }
+
+    if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
+      setSelectedAddress("");
+    }
+    if (
+      selectedAddress !== "" &&
+      gateState.inputAddress?.length === 0 &&
+      windowWidth <= 650
+    ) {
+      setAddressBookOpen(false);
+    }
+
+    socket.emit("newInput", {
+      planetName: currentPlanet.planetName,
+      inputAddress: newInputAddress,
+    });
+    return dispatch({
+      type: "inputAddress",
+      payload: newInputAddress,
+    });
+  };
+
+  const handleEarthSubmit = async (sequence, rollDelay, signal) => {
+    if (
+      gateState.pooActive !== false ||
+      !gateState.autoDial ||
+      gateState.aborting ||
+      gateState.offworld
+    ) {
+      return;
+    }
+
+    if (sequence && gateState.autoDial) {
+      await new Promise((resolve) => {
+        const interval = setInterval(
+          () => {
+            if (!gateState.processingInput) {
+              clearInterval(interval);
+              resolve();
+            }
+          },
+          gateState.inputAddress.length === 0 ? 1400 : 1000
+        );
+
+        signal.addEventListener("abort", () => {
+          clearInterval(interval);
+          resolve(); // Resolve the promise when the abort signal is triggered.
+        });
+      });
+
+      const symbol = sequence[gateState.inputAddress.length]; // Get the first symbol and remove it from the array
+      await handleClick(symbol, true);
+      await timeout(rollDelay); // Add a small delay if needed
+    }
+  };
+
+  const autoSequenceController = new AbortController();
+  const { signal } = autoSequenceController;
+
+  useEffect(() => {
+    if (gateState.offworld) {
+      autoSequenceController.abort();
+    }
+  }, [gateState.offworld]);
+
+  const abortDialing = async () => {
+    autoSequenceController.abort();
+    await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (!gateState.processingInput) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 1000);
+    });
+
+    return dhdFail();
+  };
+
+  useEffect(() => {
+    if (gateState.autoDial && !gateState.aborting) {
+      const sequence = [...gateState.preselectedSymbols];
+      handleEarthSubmit(sequence, gateState.rollData.timing + 1000, signal);
+    }
+
+    if (gateState.aborting) {
+      abortDialing();
+    }
+
+    return () => {
+      autoSequenceController.abort();
+    };
+  }, [
+    gateState.autoDial,
+    gateState.pooActive,
+    gateState.processingInput,
+    gateState.offworld,
+    gateState.aborting,
+  ]);
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+    }
     try {
-      if (traveled && gateState.isOpen) {
-        return dhdCloseGate();
-      }
       if (
-        gateState.offworld ||
+        gateState.aborting ||
+        (gateState.offworld && !traveled) ||
         gateState.opening ||
-        gateState.closing ||
-        gateState.isRolling ||
-        gateState.isLocking
+        gateState.closing
       ) {
         return null;
       }
-      if (gateState.isOpen) {
+      if ((traveled && gateState.isOpen) || gateState.isOpen) {
         return dhdCloseGate();
       }
+      if (currentPlanet.dialMode === "EARTH") {
+        if (
+          (gateState.autoDial || gateState.autoDialFromSocket) &&
+          !gateState.pooActive
+        ) {
+          socket.emit("aborting", { planetName: currentPlanet.planetName });
+          return dispatch({ type: "aborting", payload: true });
+        }
+        if (gateState.preselectedSymbols.length !== 7) {
+          return dispatch({ type: "preselectedSymbols", payload: [] });
+        }
+        if (
+          gateState.preselectedSymbols.length === 7 &&
+          gateState.inputAddress.length === 0 &&
+          gateState.pooActive === false
+        ) {
+          audioSelector(audioVolume, "startAutoDial");
+          socket.emit("autoDial", {
+            planetName: currentPlanet.planetName,
+            sequence: gateState.preselectedSymbols,
+          });
+          return dispatch({ type: "autoDial", payload: true });
+        }
+        if (gateState.failLock) {
+          socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
+          return dhdFail();
+        }
+      }
+
       if (
         gateState.inputAddress.length === 0 ||
         gateState.inputAddress.length === 7
@@ -115,66 +305,46 @@ const Dhd = ({
       if (!gateState.destinationInfo) {
         return null;
       }
-      if (!gateState.ready) {
-        return null;
-      }
+
       return dhdOpenGate();
     } catch (err) {
       return console.warn(err);
     }
   };
 
-  const handleClick = async (dhdSymbol) => {
-    const newInputAddress = [...gateState.inputAddress, dhdSymbol];
+  useEffect(() => {
     if (
-      gateState.inputAddress.length === 7 ||
-      gateState.inputAddress.some((symbol) => symbol.id === dhdSymbol.id) ||
-      gateState.pooActive ||
-      gateState.isRolling ||
-      gateState.processingInput ||
-      gateState.isLocking ||
-      gateState.destLock ||
-      gateState.isOpen ||
-      gateState.offworld
+      gateState.ready &&
+      currentPlanet.dialMode === "EARTH" &&
+      !gateState.aborting
     ) {
-      return null;
+      dhdOpenGate();
     }
-    if (gateState.inputAddress.length === 6) {
-      socket.emit("lastChev", {
-        planetName: currentPlanet.planetName,
-        poo: dhdSymbol,
-      });
-      dispatch({ type: "isLocking", payload: true });
-      return dispatch({ type: "pooActive", payload: dhdSymbol });
-    }
-    socket.emit("newInput", {
-      planetName: currentPlanet.planetName,
-      inputAddress: newInputAddress,
-    });
+  }, [gateState.ready]);
 
-    if (dhdSymbol.letter !== selectedAddress[gateState.inputAddress?.length]) {
-      setSelectedAddress("");
-    }
+  useEffect(() => {
     if (
       selectedAddress !== "" &&
-      gateState.inputAddress?.length === 0 &&
-      windowWidth <= 650
+      gateState.preselectedSymbols.length !== 0 &&
+      currentPlanet.dialMode !== "EARTH" &&
+      windowWidth < 650 &&
+      (gateState.autoDial || gateState.autoDialFromSocket)
     ) {
       setAddressBookOpen(false);
     }
-    return dispatch({
-      type: "inputAddress",
-      payload: newInputAddress,
-    });
-  };
+  }, [gateState.preselectedSymbols, selectedAddress]);
 
   useEffect(() => {
     socket.on("wrongAddress", () => {
       dhdFail();
     });
+    socket.on("aborting", () => {
+      dispatch({ type: "aborting", payload: true });
+    });
 
     return () => {
       socket.off("wrongAddress");
+      socket.off("aborting");
     };
   }, []);
 

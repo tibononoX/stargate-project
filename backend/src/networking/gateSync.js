@@ -20,6 +20,14 @@ class GateSync {
     return socket.to(planetName).emit("newInput", inputAddress);
   }
 
+  static autoDial(socket, planetName, sequence) {
+    return socket.to(planetName).emit("autoDial", sequence);
+  }
+
+  static aborting(socket, planetName) {
+    return socket.to(planetName).emit("aborting");
+  }
+
   static lastChev(socket, planetName, poo) {
     return socket.to(planetName).emit("lastChev", poo);
   }

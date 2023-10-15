@@ -89,6 +89,14 @@ function main(socket, io) {
     GateSync.newInput(socket, planetName, inputAddress);
   });
 
+  socket.on("autoDial", ({ planetName, sequence }) => {
+    GateSync.autoDial(socket, planetName, sequence);
+  });
+
+  socket.on("aborting", ({ planetName }) => {
+    GateSync.aborting(socket, planetName);
+  });
+
   socket.on("lastChev", ({ planetName, poo }) => {
     GateSync.lastChev(socket, planetName, poo);
   });

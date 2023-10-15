@@ -9,6 +9,14 @@ const audioSelector = (volume, type, chev = null) => {
       );
       audio.volume = volume;
       break;
+    case "startAutoDial":
+      audio = new Audio(
+        `${
+          import.meta.env.VITE_FRONTEND_SRC_URL
+        }/assets/sounds/ui/startAutoDial.mp3`
+      );
+      audio.volume = volume;
+      break;
 
     // COMMON SOUNDS
     case "dialFail":
