@@ -317,7 +317,21 @@ export const Stargate = ({
     }
   };
 
+  // let continueSequence = true;
+  // const stopIfNecessary = () => {
+  //   if (!continueSequence) {
+  //     dispatch({
+  //       type: "processingInput",
+  //       payload: false,
+  //     });
+  //     return true;
+  //   }
+  //   return false;
+  // };
+
   const earthDialSequence = async () => {
+    // if (stopIfNecessary()) return;
+
     dispatch({
       type: "processingInput",
       payload: true,
@@ -326,6 +340,9 @@ export const Stargate = ({
       .map((address) => address)
       .pop();
     const rollValues = rollCalc(symbolToProcess, gateState.ringPosition);
+
+    // if (stopIfNecessary()) return;
+
     dispatch({
       type: "ringPosition",
       payload: rollValues.position,
@@ -335,6 +352,9 @@ export const Stargate = ({
       payload: rollValues,
     });
     await timeout(rollValues.timing - 50);
+
+    // if (stopIfNecessary()) return;
+
     audioSelector(audioVolume, "earthChev");
     await timeout(420);
     dispatch({
@@ -359,15 +379,33 @@ export const Stargate = ({
       type: "lockChev",
       payload: false,
     });
+
     return dispatch({
       type: "processingInput",
       payload: false,
     });
   };
 
+  useEffect(() => {
+    if (gateState.offworld) {
+      // continueSequence = false;
+      if (!gateState.chevrons[5]) {
+        handleChev(6, dispatch, audioVolume);
+      }
+      if (gateState.ringPosition !== currentPlanet.poo.position) {
+        const rollValues = rollCalc(currentPlanet.poo, gateState.ringPosition);
+
+        dispatch({
+          type: "rollData",
+          payload: rollValues,
+        });
+      }
+    }
+  }, [gateState.offworld, gateState.chevrons, gateState.rollData.position]);
+
   const handleInput = async () => {
     try {
-      if (gateState.destLock || gateState.aborting) {
+      if (gateState.destLock || gateState.aborting || gateState.offworld) {
         return null;
       }
       if (currentPlanet?.dialMode === "EARTH") {
@@ -662,8 +700,7 @@ export const Stargate = ({
         }
       }
 
-      await handleChev(chevLocked, dispatch, audioVolume);
-      return dispatch({ type: "offworldIncoming", payload: true });
+      return handleChev(chevLocked, dispatch, audioVolume);
     }
 
     if (state === "locked") {
@@ -693,6 +730,8 @@ export const Stargate = ({
   useEffect(() => {
     if (socket) {
       socket.on("offworldSequence", (state, chevLocked, instant = false) => {
+        dispatch({ type: "offworldIncoming", payload: true });
+
         if (
           (!gateState.autoDial &&
             !gateState.autoDialFromSocket &&
@@ -1004,7 +1043,7 @@ export const Stargate = ({
       return (
         gateState.inputAddress.some(
           (inputSymbol) =>
-            gateState.preselectedSymbols[index].id === inputSymbol.id
+            gateState.preselectedSymbols[index]?.id === inputSymbol.id
         ) && gateState.chevrons[index]
       );
     };
@@ -1136,9 +1175,9 @@ export const Stargate = ({
   const handleTopInfo = () => {
     return gateState.aborting ? (
       <span className="headText abort">ABORTING SEQUENCE</span>
-    ) : gateState.offworld ? (
+    ) : gateState.offworld && gateState.isOpen ? (
       <span className="headText offworld">OFFWORLD WORMHOLE</span>
-    ) : gateState.offworldIncoming ? (
+    ) : gateState.offworldIncoming || gateState.offworld ? (
       <span className="headText offworld">OFFWORLD INCOMING</span>
     ) : !gateState.isOpen ? (
       <span className="headText planet">

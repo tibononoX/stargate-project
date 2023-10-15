@@ -202,6 +202,12 @@ const Dhd = ({
   const autoSequenceController = new AbortController();
   const { signal } = autoSequenceController;
 
+  useEffect(() => {
+    if (gateState.offworld) {
+      autoSequenceController.abort();
+    }
+  }, [gateState.offworld]);
+
   const abortDialing = async () => {
     autoSequenceController.abort();
     await new Promise((resolve) => {
@@ -233,6 +239,7 @@ const Dhd = ({
     gateState.autoDial,
     gateState.pooActive,
     gateState.processingInput,
+    gateState.offworld,
     gateState.aborting,
   ]);
 
