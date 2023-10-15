@@ -687,6 +687,12 @@ export const Stargate = ({
   };
 
   const offworldSequence = async (state, chevLocked) => {
+    if (gateState.autoDial) {
+      dispatch({ type: "autoDial", payload: false });
+    }
+    if (gateState.autoDialFromSocket) {
+      dispatch({ type: "autoDialFromSocket", payload: false });
+    }
     if (state === "dialing" && gateState.inputAddress.length === 0) {
       const chevDiff =
         chevLocked - gateState.chevrons.filter((chev) => chev === true).length;
@@ -1033,33 +1039,27 @@ export const Stargate = ({
   ]);
 
   const handleSGCDisplay = () => {
-    if (!dhdRef.current) {
-      return null;
-    }
-    const condition = (index, last = false) => {
-      if (last) {
-        return (
-          gateState.pooActive?.id === gateState.preselectedSymbols[6]?.id &&
+    if (!dhdRef.current) return null;
+
+    const condition = (index, last = false) =>
+      last
+        ? gateState.pooActive?.id === gateState.preselectedSymbols[6]?.id &&
           gateState.destLock &&
           !gateState.offworld
-        );
-      }
-      return (
-        gateState.inputAddress.some(
-          (inputSymbol) =>
-            gateState.preselectedSymbols[index]?.id === inputSymbol.id
-        ) && gateState.chevrons[index]
-      );
-    };
+        : gateState.inputAddress.some(
+            (inputSymbol) =>
+              gateState.preselectedSymbols[index]?.id === inputSymbol.id
+          ) && gateState.chevrons[index];
+
     const offworldCondition =
       (gateState.offworld || gateState.offworldIncoming) &&
-      gateState.autoDial &&
-      gateState.autoDialFromSocket &&
+      !gateState.autoDial &&
+      !gateState.autoDialFromSocket &&
       gateState.inputAddress.length === 0;
 
     return (
       <div
-        className={dhdOpen ? "displayContainer" : "displayContainer dhdClosed"}
+        className={`displayContainer ${dhdOpen ? "" : "dhdClosed"}`}
         style={{
           marginBottom:
             windowWidth < 650
@@ -1070,115 +1070,26 @@ export const Stargate = ({
         }}
       >
         <div className="inputSequence">
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock ? "fail" : condition(0) ? "active" : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "O"
-              : gateState.failLock
-              ? "N"
-              : gateState.preselectedSymbols[0]?.letter}
-          </p>
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock ? "fail" : condition(1) ? "active" : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "F"
-              : gateState.failLock
-              ? "O"
-              : gateState.preselectedSymbols[1]?.letter}
-          </p>
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock ? "fail" : condition(2) ? "active" : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "F"
-              : gateState.failLock
-              ? ""
-              : gateState.preselectedSymbols[2]?.letter}
-          </p>
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock ? "fail" : condition(3) ? "active" : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "W"
-              : gateState.failLock
-              ? "L"
-              : gateState.preselectedSymbols[3]?.letter}
-          </p>
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock ? "fail" : condition(4) ? "active" : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "R"
-              : gateState.failLock
-              ? "O"
-              : gateState.preselectedSymbols[4]?.letter}
-          </p>
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock ? "fail" : condition(5) ? "active" : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "L"
-              : gateState.failLock
-              ? "C"
-              : gateState.preselectedSymbols[5]?.letter}
-          </p>
-          <p
-            className={
-              offworldCondition
-                ? "symbolLetter offworld"
-                : `symbolLetter ${
-                    gateState.failLock
-                      ? "fail"
-                      : condition(6, true)
-                      ? "active"
-                      : ""
-                  }`
-            }
-          >
-            {offworldCondition
-              ? "D"
-              : gateState.failLock
-              ? "K"
-              : gateState.preselectedSymbols[6]?.letter}
-          </p>
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <p
+              className={`symbolLetter ${
+                offworldCondition
+                  ? "offworld"
+                  : gateState.failLock
+                  ? "fail"
+                  : condition(i)
+                  ? "active"
+                  : ""
+              }`}
+              key={i}
+            >
+              {offworldCondition
+                ? ["O", "F", "F", "W", "R", "L", "D"][i]
+                : gateState.failLock
+                ? ["N", "O", "", "L", "O", "C", "K"][i]
+                : gateState.preselectedSymbols[i]?.letter}
+            </p>
+          ))}
         </div>
       </div>
     );
@@ -1189,7 +1100,8 @@ export const Stargate = ({
       <span className="headText abort">ABORTING SEQUENCE</span>
     ) : gateState.offworld && gateState.isOpen ? (
       <span className="headText offworld">OFFWORLD WORMHOLE</span>
-    ) : gateState.offworldIncoming || gateState.offworld ? (
+    ) : (gateState.offworldIncoming || gateState.offworld) &&
+      !gateState.closing ? (
       <span className="headText offworld">OFFWORLD INCOMING</span>
     ) : !gateState.isOpen ? (
       <span className="headText planet">
