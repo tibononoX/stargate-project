@@ -1077,7 +1077,7 @@ export const Stargate = ({
                   ? "offworld"
                   : gateState.failLock
                   ? "fail"
-                  : condition(i)
+                  : condition(i, gateState.pooActive)
                   ? "active"
                   : ""
               }`}
