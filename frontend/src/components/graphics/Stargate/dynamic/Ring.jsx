@@ -1,43 +1,177 @@
 /* eslint-disable no-case-declarations */
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState, useRef } from "react";
+import { flushSync } from "react-dom";
 import audioSelector from "@services/audio";
 import UserContext from "@contexts/UserContext";
 
+const SYMBOL_SPACING = 9.23;
+const CLOSE_THRESHOLD = 8 * SYMBOL_SPACING;
+const normDeg = (deg) => ((deg % 360) + 360) % 360;
+const rollSpeed = import.meta.env.VITE_GATE_ROLL_SPEED;
+
+/**
+ * Ring owns its own cumulative CSS rotation so the animation direction
+ * and extra-spin logic work correctly on every client independently,
+ * without depending on synced unbounded values.
+ */
 const Ring = ({ rollData, dispatch }) => {
   const { audioVolume } = useContext(UserContext);
-  const handleRoll = async () => {
-    try {
-      if (rollData.instant) {
-        return null;
-      }
+  // Local cumulative rotation for CSS – never synced, never in gateState
+  const [cumulativePos, setCumulativePos] = useState(rollData.position);
+  // Separate transition duration state so the abort path can temporarily
+  // set it to 0 (snap) before starting the return animation
+  const [transitionDuration, setTransitionDuration] = useState(0);
+  // Deduplication: prevents double-processing when state is set both
+  // locally (earthDialSequence) and via newGateState sync
+  const prevKeyRef = useRef(null);
+  // Active roll sound + its cleanup timeout — kept in refs so they can be
+  // cancelled immediately when a new roll starts
+  const rollSoundRef = useRef(null);
+  const rollSoundTimeoutRef = useRef(null);
+  // SVG group ref used to read the browser’s actual rendered rotation on abort
+  const ringGroupRef = useRef(null);
 
-      dispatch({ type: "isRolling", payload: true });
-      const rollSound = audioSelector(
-        audioVolume,
-        rollData.reset ? "ringRollFail" : "ringRoll"
-      );
-      rollSound.play();
-
-      return setTimeout(() => {
-        rollSound.pause();
-        rollSound.currentTime = 0;
-        dispatch({ type: "isRolling", payload: false });
-      }, rollData.timing);
-    } catch (err) {
-      return console.warn(err);
-    }
+  /**
+   * Read the SVG group’s live rendered rotation angle from the browser’s
+   * computed style. Returns the value closest to `cumulativePos` (same winding).
+   */
+  const getVisualDeg = () => {
+    if (!ringGroupRef.current) return cumulativePos;
+    const tf = window.getComputedStyle(ringGroupRef.current).transform;
+    if (!tf || tf === "none") return cumulativePos;
+    const m = tf.match(/matrix\(([^)]+)\)/);
+    if (!m) return cumulativePos;
+    const [a, b] = m[1].split(",").map(Number);
+    // atan2 gives the rotation in [-180, 180]
+    const domDeg = Math.atan2(b, a) * (180 / Math.PI);
+    // Adjust to the same cumulative winding as cumulativePos
+    const base = Math.round(cumulativePos / 360) * 360;
+    const candidates = [
+      base + domDeg,
+      base + domDeg + 360,
+      base + domDeg - 360,
+    ];
+    return candidates.reduce((best, c) =>
+      Math.abs(c - cumulativePos) < Math.abs(best - cumulativePos) ? c : best
+    );
   };
 
+  /** Start a roll sound for `timing` ms, cancelling any previous one first. */
+  const startRollSound = (timing, isReset = false) => {
+    if (!timing) return;
+    if (rollSoundTimeoutRef.current !== null) {
+      clearTimeout(rollSoundTimeoutRef.current);
+      rollSoundTimeoutRef.current = null;
+    }
+    if (rollSoundRef.current) {
+      rollSoundRef.current.pause();
+      rollSoundRef.current.currentTime = 0;
+      rollSoundRef.current = null;
+    }
+    dispatch({ type: "isRolling", payload: true });
+    const rollSound = audioSelector(
+      audioVolume,
+      isReset ? "ringRollFail" : "ringRoll"
+    );
+    rollSoundRef.current = rollSound;
+    rollSound.play();
+    rollSoundTimeoutRef.current = setTimeout(() => {
+      rollSound.pause();
+      rollSound.currentTime = 0;
+      rollSoundRef.current = null;
+      rollSoundTimeoutRef.current = null;
+      dispatch({ type: "isRolling", payload: false });
+    }, timing);
+  };
+
+  // Keep the currently-playing roll sound’s volume in sync with the slider
   useEffect(() => {
-    handleRoll();
+    if (rollSoundRef.current) {
+      rollSoundRef.current.volume = audioVolume;
+    }
+  }, [audioVolume]);
+
+  useEffect(() => {
+    const key = `${rollData.position}_${rollData.timing}_${
+      rollData.direction ?? 0
+    }_${rollData.reset ?? false}_${rollData.abortReturn ?? false}`;
+    if (key === prevKeyRef.current) return; // deduplicate local + sync triggers
+    prevKeyRef.current = key;
+
+    const { position: targetPos, direction = 1 } = rollData;
+
+    if (!rollData.timing || rollData.instant) {
+      // Instant snap – no animation, no sound
+      setTransitionDuration(0);
+      setCumulativePos(targetPos);
+      return;
+    }
+
+    if (rollData.abortReturn) {
+      // Read the ring’s actual rendered position from the browser.
+      // flushSync ensures the snap commit reaches the DOM before the rAF
+      // fires, so the CSS transition truly starts from the visual position.
+      const visualDeg = getVisualDeg();
+      flushSync(() => {
+        setTransitionDuration(0);
+        setCumulativePos(visualDeg);
+      });
+      requestAnimationFrame(() => {
+        const norm = normDeg(visualDeg);
+        let dist;
+        if (direction > 0) {
+          dist = (targetPos - norm + 360) % 360;
+          if (dist === 0) dist = 360;
+          // no extra spin for abort returns
+        } else {
+          const ccw = (norm - targetPos + 360) % 360;
+          dist = -(ccw === 0 ? 360 : ccw);
+        }
+        const actualTiming = Math.max(
+          200,
+          rollSpeed * (Math.abs(dist) / SYMBOL_SPACING)
+        );
+        setCumulativePos(visualDeg + dist);
+        setTransitionDuration(actualTiming);
+        startRollSound(actualTiming, true);
+        // Tell Stargate.jsx the real animation duration so resetGate
+        // waits exactly until the ring arrives, not a moment longer.
+        dispatch({
+          type: "abortRollActualTiming",
+          payload: { timing: actualTiming, startedAt: Date.now() },
+        });
+      });
+      return;
+    }
+
+    // Normal roll (or non-abort reset roll back to POO)
+    setCumulativePos((prev) => {
+      const currentNorm = normDeg(prev);
+      let angularDist;
+      if (direction > 0) {
+        angularDist = (targetPos - currentNorm + 360) % 360;
+        if (angularDist === 0) angularDist = 360;
+        if (!rollData.reset && angularDist < CLOSE_THRESHOLD)
+          angularDist += 360;
+      } else {
+        const ccwDist = (currentNorm - targetPos + 360) % 360;
+        angularDist = -(ccwDist === 0 ? 360 : ccwDist);
+        if (!rollData.reset && Math.abs(angularDist) < CLOSE_THRESHOLD)
+          angularDist -= 360;
+      }
+      return prev + angularDist;
+    });
+    setTransitionDuration(rollData.timing);
+    startRollSound(rollData.timing, rollData.reset ?? false);
   }, [rollData]);
 
   return (
     <g
+      ref={ringGroupRef}
       style={{
-        transitionDuration: `${rollData.timing}ms`,
+        transitionDuration: `${transitionDuration}ms`,
         transformOrigin: "center",
-        transform: `rotate(${rollData.position}deg)`,
+        transform: `rotate(${cumulativePos}deg)`,
         transitionTimingFunction: "cubic-bezier( 0.12, 0, .8, 1 )",
       }}
     >

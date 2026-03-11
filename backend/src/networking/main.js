@@ -4,30 +4,39 @@ const Chat = require("../networking/chat");
 const GateSync = require("../networking/gateSync");
 
 function main(socket, io) {
+  const getUser = () => UserHandler.getUserBySocket(socket);
+
+  const chatInfo = (message, channel) =>
+    Chat.newChatMessage(io, {
+      type: "info",
+      username: "Server",
+      message,
+      ...(channel && { channel }),
+    });
+
+  const chatAlert = (channel, message) =>
+    Chat.newChatMessage(io, {
+      type: "alert",
+      channel,
+      username: "Server",
+      message,
+    });
+
+  // --- CONNECTION ---
+
   socket.on("disconnect", () => {
-    const user = UserHandler.getUserBySocket(socket);
+    const user = getUser();
     UserHandler.disconnect(io, socket);
-    Chat.newChatMessage(io, {
-      type: "info",
-      channel: user?.currentPlanet,
-      username: "Server",
-      message: `${user?.username} left ${user?.currentPlanet}`,
-    });
-    Chat.newChatMessage(io, {
-      type: "info",
-      username: "Server",
-      message: `${user?.username} disconnected`,
-    });
+    chatInfo(
+      `${user?.username} left ${user?.currentPlanet}`,
+      user?.currentPlanet
+    );
+    chatInfo(`${user?.username} disconnected`);
   });
 
   socket.on("joinServer", ({ username, currentPlanet }) => {
     UserHandler.joinServer(io, socket, username, currentPlanet);
-    const user = UserHandler.getUserBySocket(socket);
-    Chat.newChatMessage(io, {
-      type: "info",
-      username: "Server",
-      message: `${user?.username} connected`,
-    });
+    chatInfo(`${getUser()?.username} connected`);
   });
 
   socket.on("newPlanetRegistered", () => {
@@ -35,31 +44,23 @@ function main(socket, io) {
     io.emit("fetchAddressList");
   });
 
+  // --- PLANET NAVIGATION ---
+
   socket.on("join planet", (planetName, initial, cb) => {
     UserHandler.joinPlanet(io, socket, planetName, initial, cb);
-    const user = UserHandler.getUserBySocket(socket);
-    Chat.newChatMessage(io, {
-      type: "info",
-      channel: planetName,
-      username: "Server",
-      message: `${user?.username} joined ${planetName}`,
-    });
+    chatInfo(`${getUser()?.username} joined ${planetName}`, planetName);
   });
 
   socket.on("leave planet", (planetName, destinationName) => {
     UserHandler.leavePlanet(io, socket, planetName, destinationName);
-    const user = UserHandler.getUserBySocket(socket);
-    Chat.newChatMessage(io, {
-      type: "info",
-      channel: planetName,
-      username: "Server",
-      message: `${user?.username} left ${planetName}`,
-    });
+    chatInfo(`${getUser()?.username} left ${planetName}`, planetName);
   });
 
   socket.on("fetchUsers", (cb) => {
     UserHandler.fetchUsers(cb);
   });
+
+  // --- GATE SYNC ---
 
   socket.on("playerTravels", ({ planetName, destinationName }) => {
     GateSync.playerTravels(io, socket, planetName, destinationName);
@@ -71,6 +72,10 @@ function main(socket, io) {
 
   socket.on("sendGateStatus", (clientId, gateState) => {
     GateSync.sendGateStatus(socket, clientId, gateState);
+  });
+
+  socket.on("updateGateState", ({ planetName, gateState }) => {
+    GateSync.setGateState(planetName, gateState);
   });
 
   socket.on("isGateBusy", (planetName, destinationName, cb) => {
@@ -125,49 +130,37 @@ function main(socket, io) {
     GateSync.gateAutoReset(socket, planetName, destinationName);
   });
 
-  socket.on("openGate", ({ planetName, destinationName }) => {
-    const user = UserHandler.getUserBySocket(socket);
-    GateSync.openGate(io, socket, user, planetName, destinationName);
-    Chat.newChatMessage(io, {
-      type: "alert",
-      channel: planetName,
-      username: "Server",
-      message: `${user?.username} opened wormhole to ${destinationName}`,
-    });
-  });
-
-  socket.on("closeGate", ({ planetName, destinationName }) => {
-    const user = UserHandler.getUserBySocket(socket);
-    GateSync.closeGate(io, socket, user, planetName, destinationName);
-    Chat.newChatMessage(io, {
-      type: "alert",
-      channel: planetName,
-      username: "Server",
-      message: `${user?.username} closed wormhole to ${destinationName}`,
-    });
-    Chat.newChatMessage(io, {
-      type: "alert",
-      channel: destinationName,
-      username: "Server",
-      message: "Offworld vortex closing",
-    });
-  });
-
   socket.on("offworldChev", ({ planetName, destinationName, chevLocked }) =>
     GateSync.offworldChev(socket, planetName, destinationName, chevLocked)
   );
 
-  socket.on("destLock", ({ planetName, destinationName }) => {
-    GateSync.destLock(io, socket, planetName, destinationName);
-    Chat.newChatMessage(io, {
-      type: "alert",
-      channel: destinationName,
-      username: "Server",
-      message: "Incoming offworld activation !",
-    });
+  // --- WORMHOLE ---
+
+  socket.on("openGate", ({ planetName, destinationName }) => {
+    const user = getUser();
+    GateSync.openGate(io, socket, user, planetName, destinationName);
+    chatAlert(
+      planetName,
+      `${user?.username} opened wormhole to ${destinationName}`
+    );
   });
 
-  // CHAT SYSTEM
+  socket.on("closeGate", ({ planetName, destinationName }) => {
+    const user = getUser();
+    GateSync.closeGate(io, socket, user, planetName, destinationName);
+    chatAlert(
+      planetName,
+      `${user?.username} closed wormhole to ${destinationName}`
+    );
+    chatAlert(destinationName, "Offworld vortex closing");
+  });
+
+  socket.on("destLock", ({ planetName, destinationName }) => {
+    GateSync.destLock(io, socket, planetName, destinationName);
+    chatAlert(destinationName, "Incoming offworld activation !");
+  });
+
+  // --- CHAT ---
 
   socket.on("getMessages", (cb) => {
     cb(Chat.getMessages());

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import socketIOClient from "socket.io-client  ";
 import UserContext from "@contexts/UserContext";
 import axios from "@services/axios";
+import { setGlobalVolume } from "@services/audio";
 import StargatePage from "@pages/StargatePage";
 import Login from "@pages/Login";
 import Logout from "@pages/Logout";
@@ -36,6 +37,11 @@ function App() {
       ? localStorage.getItem("chatAudio") === "true"
       : true
   );
+
+  // Keep all currently-playing sounds in sync with the volume slider
+  useEffect(() => {
+    setGlobalVolume(audioVolume);
+  }, [audioVolume]);
 
   const checkConnection = async () => {
     try {

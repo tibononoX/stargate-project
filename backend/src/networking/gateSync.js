@@ -2,6 +2,7 @@
 
 const busyGates = [];
 const blockedGates = [];
+const gateStates = new Map(); // planetName -> latest gateState snapshot
 
 class GateSync {
   static getBusyGates() {
@@ -10,6 +11,18 @@ class GateSync {
 
   static busyGatesSplice(gates) {
     return busyGates.splice(gates, 1);
+  }
+
+  static setGateState(planetName, state) {
+    gateStates.set(planetName, state);
+  }
+
+  static getGateState(planetName) {
+    return gateStates.get(planetName) ?? null;
+  }
+
+  static clearGateState(planetName) {
+    gateStates.delete(planetName);
   }
 
   static sendGateStatus(socket, clientId, gateState) {
@@ -86,10 +99,7 @@ class GateSync {
     }
 
     busyGates.splice(gates, 1);
-    console.log("######################");
-    console.log("Gate link removed from busy gates : ");
-    console.log(`[${planetName} - ${destinationName}]`);
-    console.table(busyGates);
+    console.log(`Gate auto-reset: [${planetName} - ${destinationName}]`);
     socket.to(planetName).emit("wrongAddress");
     return socket.to(destinationName).emit("wrongAddress");
   }
@@ -142,10 +152,7 @@ class GateSync {
         chevLocked,
         state: "dialing",
       });
-      console.log("######################");
-      console.log("New gate link added to busy gates : ");
-      console.log(`[${planetName} - ${destinationName}]`);
-      console.table(busyGates);
+      console.log(`Gate link added: [${planetName} - ${destinationName}]`);
     }
 
     const gates = busyGates.findIndex(
@@ -224,13 +231,8 @@ class GateSync {
     );
 
     busyGates.splice(gates, 1);
-    console.log("######################");
-    console.log("Gate link removed from busy gates : ");
-    console.log(`[${planetName} - ${destinationName}]`);
-    console.table(busyGates);
-
     console.log(
-      `${currentClient?.username} triggers gate closing from ${planetName} to ${destinationName}`
+      `Gate closed by ${currentClient?.username}: [${planetName} - ${destinationName}]`
     );
 
     socket.to(planetName).emit("closeGate");

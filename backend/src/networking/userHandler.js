@@ -29,8 +29,7 @@ class UserHandler {
   }
 
   static getUserBySocket(socket) {
-    const [user] = users.filter((client) => client.id === socket.id);
-    return user;
+    return users.find((client) => client.id === socket.id);
   }
 
   static getUserIndexBySocket(socket) {
@@ -44,7 +43,7 @@ class UserHandler {
       id: socket.id,
       currentPlanet,
     };
-    if (users.filter((client) => client.id === socket.id).length !== 0) {
+    if (users.some((client) => client.id === socket.id)) {
       const indexOfUser = users.findIndex((client) => client.id === socket.id);
       users.splice(indexOfUser);
     }
@@ -59,26 +58,27 @@ class UserHandler {
     users[userIndex] = { ...users[userIndex], currentPlanet: planetName };
     const user = this.getUserBySocket(socket);
 
-    console.log(isHostPresent);
-
     if (!isHostPresent) {
       HostingHandler.noHostPresent(io, socket, planetName);
-      console.log(userIndex);
       users[userIndex] = { ...users[userIndex], hosting: planetName };
       cb(planetName);
     }
 
     if (isHostPresent && initial) {
-      const [host] = HostingHandler.getPlanetHost(users, planetName);
-      socket.to(host.id).emit("getGateState", socket.id);
+      const savedState = GateSync.getGateState(planetName);
+      if (savedState) {
+        // Fast path: server has a cached snapshot, send it directly
+        socket.emit("newGateState", savedState);
+      } else {
+        // Fallback: ask the current host to send their state
+        const [host] = HostingHandler.getPlanetHost(users, planetName);
+        socket.to(host.id).emit("getGateState", socket.id);
+      }
     }
 
     io.in(planetName).emit(
       "user join",
-      {
-        user: user?.username,
-        planet: planetName,
-      },
+      { user: user?.username, planet: planetName },
       users
     );
     this.logUserList(user.username, false);
@@ -90,40 +90,35 @@ class UserHandler {
     users[userIndex] = { ...users[userIndex], currentPlanet: destinationName };
     delete users[userIndex].hosting;
 
-    const otherUser = users.filter(
+    const otherUsers = users.filter(
       (client) => client.currentPlanet === planetName
     );
 
-    if (otherUser.length === 0) {
+    if (otherUsers.length === 0) {
       const busyGates = GateSync.getBusyGates();
-      const [isGateOpen] = busyGates
-        .filter(
-          (link) => link.outbound === planetName || link.inbound === planetName
-        )
-        .map((link) => link);
+      const isGateOpen = busyGates.find(
+        (link) => link.outbound === planetName || link.inbound === planetName
+      );
 
       if (isGateOpen && isGateOpen.outbound === planetName) {
         io.to(isGateOpen.outbound).emit("closeGate");
 
-        const gates = busyGates.findIndex(
+        const gateIndex = busyGates.findIndex(
           (link) =>
             link.outbound === isGateOpen.outbound &&
             link.inbound === isGateOpen.inbound
         );
-
-        busyGates.splice(gates, 1);
-        console.log("######################");
-        console.log("Gate link removed from busy gates : ");
-        console.log(`[${planetName} - ${destinationName}]`);
-        console.table(busyGates);
+        busyGates.splice(gateIndex, 1);
+        console.log(
+          `Gate auto-closed (planet empty): [${planetName} - ${destinationName}]`
+        );
       }
+      GateSync.clearGateState(planetName);
     }
+
     io.in(planetName).emit(
       "user left",
-      {
-        user: this.getUserBySocket(socket)?.username,
-        planet: planetName,
-      },
+      { user: this.getUserBySocket(socket)?.username, planet: planetName },
       users
     );
   }
@@ -131,23 +126,20 @@ class UserHandler {
   static disconnect(io, socket) {
     const user = this.getUserBySocket(socket);
     socket.leave(user?.currentPlanet);
-    users = users
-      .filter((client) => client.id !== socket.id)
-      .map((newusers) => newusers);
+    users = users.filter((client) => client.id !== socket.id);
 
     const otherUserOnPlanet = users.filter(
       (client) => client.currentPlanet === user?.currentPlanet
     );
-    console.log(otherUserOnPlanet);
+
     if (otherUserOnPlanet.length === 0) {
       HostingHandler.handleDisconnect(io, user?.currentPlanet);
+      GateSync.clearGateState(user?.currentPlanet);
     }
     if (otherUserOnPlanet.length >= 1) {
       const newHostIndex = users.findIndex(
         (client) => client.currentPlanet === user.currentPlanet
       );
-
-      console.log(newHostIndex);
       users[newHostIndex] = {
         ...users[newHostIndex],
         hosting: users[newHostIndex].currentPlanet,

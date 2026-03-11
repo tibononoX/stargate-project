@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import symbols from "@services/gateSymbols";
 import audioSelector from "@services/audio";
 import PlanetContext from "@contexts/PlanetContext";
@@ -85,10 +85,6 @@ const Dhd = ({
       default:
         return null;
     }
-  };
-
-  const dhdFail = () => {
-    return wrongAddress();
   };
 
   const dhdOpenGate = () => {
@@ -200,31 +196,25 @@ const Dhd = ({
     }
   };
 
-  const autoSequenceController = new AbortController();
-  const { signal } = autoSequenceController;
+  const abortControllerRef = useRef(null);
 
   useEffect(() => {
     if (gateState.offworld) {
-      autoSequenceController.abort();
+      abortControllerRef.current?.abort();
     }
   }, [gateState.offworld]);
 
-  const abortDialing = async () => {
-    autoSequenceController.abort();
-    await new Promise((resolve) => {
-      const interval = setInterval(() => {
-        if (!gateState.processingInput) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 1000);
-    });
-
-    return dhdFail();
+  const abortDialing = () => {
+    abortControllerRef.current?.abort();
+    // earthDialSequence clears its own state immediately when aborted;
+    // no need to wait for processingInput — go straight to the fail reset.
+    return wrongAddress();
   };
 
   useEffect(() => {
     if (gateState.autoDial && !gateState.aborting) {
+      abortControllerRef.current = new AbortController();
+      const { signal } = abortControllerRef.current;
       const sequence = [...gateState.preselectedSymbols];
       handleEarthSubmit(sequence, gateState.rollData.timing + 1000, signal);
     }
@@ -234,7 +224,7 @@ const Dhd = ({
     }
 
     return () => {
-      autoSequenceController.abort();
+      abortControllerRef.current?.abort();
     };
   }, [
     gateState.autoDial,
@@ -285,7 +275,7 @@ const Dhd = ({
         }
         if (gateState.failLock) {
           socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
-          return dhdFail();
+          return wrongAddress();
         }
       }
 
@@ -301,7 +291,7 @@ const Dhd = ({
         !gateState.destLock
       ) {
         socket.emit("wrongAddress", { planetName: currentPlanet.planetName });
-        return dhdFail();
+        return wrongAddress();
       }
       if (!gateState.destinationInfo) {
         return null;
@@ -337,7 +327,7 @@ const Dhd = ({
 
   useEffect(() => {
     socket.on("wrongAddress", () => {
-      dhdFail();
+      wrongAddress();
     });
     socket.on("aborting", () => {
       dispatch({ type: "aborting", payload: true });

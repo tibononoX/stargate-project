@@ -21,6 +21,55 @@ function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const createGateInitialState = (position) => ({
+  inputAddress: [],
+  preselectedSymbols: [],
+  processingInput: false,
+  pooActive: false,
+  resetting: false,
+  ringPosition: position,
+  rollData: { timing: 0, position },
+  isRolling: false,
+  dhdActive: false,
+  ready: false,
+  opening: false,
+  isOpen: false,
+  closing: false,
+  lockChev: false,
+  isLocking: false,
+  locking: false,
+  chevrons: [false, false, false, false, false, false, false, false],
+  destLock: false,
+  destinationInfo: {},
+  offworldIncoming: false,
+  offworld: false,
+  irisOpen: true,
+  irisAnim: false,
+  irisOperating: false,
+  autoDial: false,
+  autoDialFromSocket: false,
+  aborting: false,
+  failLock: false,
+});
+
+const gateReducer = (state, action) => {
+  switch (action.type) {
+    case "initial":
+      return action.payload;
+    case "resetGate":
+      return {
+        ...createGateInitialState(action.payload),
+        irisOpen: state.irisOpen,
+        irisAnim: state.irisAnim,
+        irisOperating: state.irisOperating,
+      };
+    case "destinationInfoReset":
+      return { ...state, destinationInfo: {} };
+    default:
+      return { ...state, [action.type]: action.payload };
+  }
+};
+
 export const Stargate = ({
   addressList,
   windowWidth,
@@ -35,124 +84,32 @@ export const Stargate = ({
   const { currentPlanet, setCurrentPlanet, hosting } =
     useContext(PlanetContext);
 
-  const gateInitialState = {
-    inputAddress: [],
-    preselectedSymbols: [],
-    processingInput: false,
-    pooActive: false,
-    resetting: false,
-    ringPosition: currentPlanet.poo.position,
-    rollData: {
-      timing: 0,
-      position: currentPlanet.poo.position,
-    },
-    isRolling: false,
-    dhdActive: false,
-    ready: false,
-    opening: false,
-    isOpen: false,
-    closing: false,
-    lockChev: false,
-    isLocking: false,
-    locking: false,
-    chevrons: [false, false, false, false, false, false, false, false],
-    destLock: false,
-    destinationInfo: {},
-    offworldIncoming: false,
-    offworld: false,
-    irisOpen: true,
-    irisAnim: false,
-    irisOperating: false,
-    autoDial: false,
-    autoDialFromSocket: false,
-    aborting: false,
-    failLock: false,
-  };
-
-  const updateGateState = (state, action) => {
-    switch (action.type) {
-      case "initial":
-        return action.payload;
-      case "resetGate":
-        return {
-          ...gateInitialState,
-          irisOpen: state.irisOpen,
-          irisAnim: state.irisAnim,
-          irisOperating: state.irisOperating,
-        };
-      case "inputAddress":
-        return { ...state, inputAddress: action.payload };
-      case "preselectedSymbols":
-        return { ...state, preselectedSymbols: action.payload };
-      case "processingInput":
-        return { ...state, processingInput: action.payload };
-      case "pooActive":
-        return { ...state, pooActive: action.payload };
-      case "resetting":
-        return { ...state, resetting: action.payload };
-      case "ringPosition":
-        return { ...state, ringPosition: action.payload };
-      case "rollData":
-        return { ...state, rollData: action.payload };
-      case "isRolling":
-        return { ...state, isRolling: action.payload };
-      case "dhdActive":
-        return { ...state, dhdActive: action.payload };
-      case "ready":
-        return { ...state, ready: action.payload };
-      case "opening":
-        return { ...state, opening: action.payload };
-      case "isOpen":
-        return { ...state, isOpen: action.payload };
-      case "closing":
-        return { ...state, closing: action.payload };
-      case "lockChev":
-        return { ...state, lockChev: action.payload };
-      case "isLocking":
-        return { ...state, isLocking: action.payload };
-      case "locking":
-        return { ...state, locking: action.payload };
-      case "chevrons":
-        return { ...state, chevrons: action.payload };
-      case "destLock":
-        return { ...state, destLock: action.payload };
-      case "destinationInfoReset":
-        return { ...state, destinationInfo: gateInitialState.destinationInfo };
-      case "destinationInfo":
-        return { ...state, destinationInfo: action.payload };
-      case "offworldIncoming":
-        return { ...state, offworldIncoming: action.payload };
-      case "offworld":
-        return { ...state, offworld: action.payload };
-      case "irisOpen":
-        return { ...state, irisOpen: action.payload };
-      case "irisAnim":
-        return { ...state, irisAnim: action.payload };
-      case "irisOperating":
-        return { ...state, irisOperating: action.payload };
-      case "autoDial":
-        return { ...state, autoDial: action.payload };
-      case "autoDialFromSocket":
-        return { ...state, autoDialFromSocket: action.payload };
-      case "aborting":
-        return { ...state, aborting: action.payload };
-      case "failLock":
-        return { ...state, failLock: action.payload };
-      default:
-        return state;
-    }
-  };
-  const [gateState, dispatch] = useReducer(updateGateState, gateInitialState);
+  const [gateState, dispatch] = useReducer(
+    gateReducer,
+    createGateInitialState(currentPlanet.poo.position)
+  );
   const [prevPlanet, setPrevPlanet] = useState(currentPlanet.planetName);
   const [traveled, setTraveled] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const dhdRef = useRef();
+  // Local cumulative ring rotation – used only to compute correct timing
+  // for await calls in earthDialSequence/resetGate. NOT synced.
+  const cumulativeRef = useRef(currentPlanet.poo.position);
+  // AbortController for the currently-running earthDialSequence
+  const earthDialAbortRef = useRef(null);
+  // Track the abort continuation roll so resetGate can wait for it
+  const abortRollTimingRef = useRef(0);
+  const abortRollStartRef = useRef(0);
+  // Timestamp of when the current ring roll animation started,
+  // used to compute remaining visual distance on abort
+  const rollStartTimeRef = useRef(0);
 
   useEffect(() => {
+    cumulativeRef.current = currentPlanet.poo.position;
     dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
     dispatch({
       type: "rollData",
-      payload: { ...gateState.rollData, position: currentPlanet.poo.position },
+      payload: { timing: 0, position: currentPlanet.poo.position },
     });
   }, [currentPlanet]);
 
@@ -170,13 +127,9 @@ export const Stargate = ({
       !gateState.autoDial &&
       !gateState.autoDialFromSocket
     ) {
-      const symbolsToPreselect = [];
-
-      for (let i = 0; i < selectedAddress.length; i++) {
-        const letter = selectedAddress[i];
-        const [object] = symbols.filter((symbol) => symbol.letter === letter);
-        symbolsToPreselect.push(object);
-      }
+      const symbolsToPreselect = [...selectedAddress].map((letter) =>
+        symbols.find((symbol) => symbol.letter === letter)
+      );
 
       return dispatch({
         type: "preselectedSymbols",
@@ -229,15 +182,39 @@ export const Stargate = ({
         gateState.rollData.position === currentPlanet.poo.position &&
         gateState.ringPosition === currentPlanet.poo.position
       ) {
+        // If an abort-continuation roll is still in progress, let it finish
+        if (abortRollTimingRef.current > 0) {
+          const elapsed = Date.now() - abortRollStartRef.current;
+          const remaining = abortRollTimingRef.current - elapsed - 200;
+          if (remaining > 0) await timeout(remaining);
+          abortRollTimingRef.current = 0;
+          abortRollStartRef.current = 0;
+        }
         audioSelector(audioVolume, "chevEnd");
       }
       if (
         gateState.rollData.position !== currentPlanet.poo.position &&
         gateState.ringPosition !== currentPlanet.poo.position
       ) {
-        const rollValues = rollCalc(currentPlanet.poo, gateState.ringPosition);
-        dispatch({ type: "ringPosition", payload: rollValues.position });
-        dispatch({ type: "rollData", payload: { ...rollValues, reset: true } });
+        // CW, noExtraSpin=true so the reset roll is fast
+        const rollValues = rollCalc(
+          currentPlanet.poo,
+          cumulativeRef.current,
+          1,
+          false,
+          true
+        );
+        cumulativeRef.current = rollValues.position;
+        dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
+        dispatch({
+          type: "rollData",
+          payload: {
+            position: currentPlanet.poo.position,
+            timing: rollValues.timing,
+            direction: 1,
+            reset: true,
+          },
+        });
 
         await timeout(rollValues.timing - 200);
         audioSelector(audioVolume, "chevEnd");
@@ -257,8 +234,10 @@ export const Stargate = ({
       setTraveled(false);
       setPrevPlanet(currentPlanet.planetName);
       setSelectedAddress("");
+      cumulativeRef.current = currentPlanet.poo.position;
       return dispatch({
         type: "resetGate",
+        payload: currentPlanet.poo.position,
       });
     } catch (err) {
       return console.warn(err);
@@ -318,91 +297,145 @@ export const Stargate = ({
     }
   };
 
-  // let continueSequence = true;
-  // const stopIfNecessary = () => {
-  //   if (!continueSequence) {
-  //     dispatch({
-  //       type: "processingInput",
-  //       payload: false,
-  //     });
-  //     return true;
-  //   }
-  //   return false;
-  // };
-
   const earthDialSequence = async () => {
-    // if (stopIfNecessary()) return;
+    // Fresh controller for this chevron lock — aborted by the aborting useEffect
+    const controller = new AbortController();
+    earthDialAbortRef.current = controller;
+    const { signal } = controller;
 
-    dispatch({
-      type: "processingInput",
-      payload: true,
-    });
+    const abortableTimeout = (ms) =>
+      new Promise((resolve, reject) => {
+        const id = setTimeout(resolve, ms);
+        signal.addEventListener(
+          "abort",
+          () => {
+            clearTimeout(id);
+            reject(new DOMException("Aborted", "AbortError"));
+          },
+          { once: true }
+        );
+      });
+
+    dispatch({ type: "processingInput", payload: true });
     const symbolToProcess = gateState.inputAddress
       .map((address) => address)
       .pop();
-    const rollValues = rollCalc(symbolToProcess, gateState.ringPosition);
+    // direction alternates per chevron: odd index = CW, even index = CCW
+    const dir = gateState.inputAddress.length % 2 === 0 ? -1 : 1;
+    const rollValues = rollCalc(symbolToProcess, cumulativeRef.current, dir);
+    cumulativeRef.current = rollValues.position;
 
-    // if (stopIfNecessary()) return;
-
-    dispatch({
-      type: "ringPosition",
-      payload: rollValues.position,
-    });
+    rollStartTimeRef.current = Date.now();
+    dispatch({ type: "ringPosition", payload: symbolToProcess.position });
     dispatch({
       type: "rollData",
-      payload: rollValues,
-    });
-    await timeout(rollValues.timing - 50);
-
-    // if (stopIfNecessary()) return;
-
-    audioSelector(audioVolume, "earthChev");
-    await timeout(420);
-    dispatch({
-      type: "locking",
-      payload: true,
-    });
-    await timeout(300);
-    dispatch({
-      type: "lockChev",
-      payload: true,
-    });
-    await timeout(500);
-    await handleChev(gateState.inputAddress.length, dispatch);
-    await handleDestOffworld();
-    await timeout(250);
-    dispatch({
-      type: "locking",
-      payload: false,
-    });
-    await timeout(300);
-    dispatch({
-      type: "lockChev",
-      payload: false,
+      payload: {
+        position: symbolToProcess.position,
+        timing: rollValues.timing,
+        direction: dir,
+      },
     });
 
-    return dispatch({
-      type: "processingInput",
-      payload: false,
-    });
+    try {
+      await abortableTimeout(rollValues.timing - 50);
+
+      audioSelector(audioVolume, "earthChev");
+      await abortableTimeout(420);
+      dispatch({ type: "locking", payload: true });
+      await abortableTimeout(300);
+      dispatch({ type: "lockChev", payload: true });
+      await abortableTimeout(500);
+      await handleChev(gateState.inputAddress.length, dispatch);
+      await handleDestOffworld();
+      await abortableTimeout(250);
+      dispatch({ type: "locking", payload: false });
+      await abortableTimeout(300);
+      dispatch({ type: "lockChev", payload: false });
+      dispatch({ type: "processingInput", payload: false });
+    } catch (e) {
+      if (e.name === "AbortError") {
+        // Clean up mid-sequence state immediately
+        dispatch({ type: "locking", payload: false });
+        dispatch({ type: "lockChev", payload: false });
+        dispatch({ type: "processingInput", payload: false });
+
+        // Continue the ring in the same direction straight to POO —
+        // no direction reversal, no jarring speed change.
+        const pooRoll = rollCalc(
+          currentPlanet.poo,
+          cumulativeRef.current,
+          dir,
+          false,
+          true // noExtraSpin: go directly to POO
+        );
+        cumulativeRef.current = pooRoll.position;
+
+        // The CSS animation was mid-way through the interrupted roll.
+        // Extend the POO-return timing by the remaining visual travel time
+        // so the ring continues at the same angular speed without speeding up.
+        const rollElapsed = Date.now() - rollStartTimeRef.current;
+        const remainingRollTime = Math.max(0, rollValues.timing - rollElapsed);
+        const adjustedTiming = pooRoll.timing + remainingRollTime;
+
+        abortRollTimingRef.current = adjustedTiming;
+        abortRollStartRef.current = Date.now();
+        dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
+        dispatch({
+          type: "rollData",
+          payload: {
+            position: currentPlanet.poo.position,
+            timing: adjustedTiming, // used for abortRollTimingRef / chevEnd timing
+            direction: dir,
+            reset: true,
+            abortReturn: true, // tells Ring.jsx to read DOM visual position
+          },
+        });
+      }
+    }
   };
 
   useEffect(() => {
     if (gateState.offworld) {
-      // continueSequence = false;
       if (!gateState.chevrons[5]) {
         handleChev(6, dispatch, audioVolume);
       }
       if (gateState.ringPosition !== currentPlanet.poo.position) {
-        const rollValues = rollCalc(currentPlanet.poo, gateState.ringPosition);
-
+        const rollValues = rollCalc(
+          currentPlanet.poo,
+          cumulativeRef.current,
+          1,
+          false,
+          true // noExtraSpin – quick return to poo
+        );
+        cumulativeRef.current = rollValues.position;
+        dispatch({ type: "ringPosition", payload: currentPlanet.poo.position });
         dispatch({
           type: "rollData",
-          payload: rollValues,
+          payload: {
+            position: currentPlanet.poo.position,
+            timing: rollValues.timing,
+            direction: 1,
+          },
         });
       }
     }
   }, [gateState.offworld, gateState.chevrons, gateState.rollData.position]);
+
+  // Abort any running earthDialSequence the moment the user cancels
+  useEffect(() => {
+    if (gateState.aborting) {
+      earthDialAbortRef.current?.abort();
+    }
+  }, [gateState.aborting]);
+
+  // Ring.jsx feeds back the actual DOM-based animation timing after an abort.
+  // Update the refs so resetGate waits exactly the right amount of time.
+  useEffect(() => {
+    if (gateState.abortRollActualTiming) {
+      abortRollTimingRef.current = gateState.abortRollActualTiming.timing;
+      abortRollStartRef.current = gateState.abortRollActualTiming.startedAt;
+    }
+  }, [gateState.abortRollActualTiming]);
 
   const handleInput = async () => {
     try {
@@ -418,15 +451,13 @@ export const Stargate = ({
         payload: true,
       });
 
-      if (currentPlanet.dialMode !== "EARTH") {
-        audioSelector(
-          audioVolume,
-          "dhdInput",
-          gateState.inputAddress.length === 0
-            ? 1
-            : gateState.inputAddress.length + 1
-        );
-      }
+      audioSelector(
+        audioVolume,
+        "dhdInput",
+        gateState.inputAddress.length === 0
+          ? 1
+          : gateState.inputAddress.length + 1
+      );
 
       await timeout(300);
       await handleChev(gateState.inputAddress.length, dispatch, audioVolume);
@@ -440,30 +471,12 @@ export const Stargate = ({
     }
   };
 
-  const checkBusy = async (planetName) => {
-    const promise = await new Promise((resolve) => {
-      socket.emit(
-        "isGateBusy",
-        currentPlanet.planetName,
-        planetName,
-        (value) => {
-          if (value) {
-            resolve(true);
-          }
-          resolve(false);
-        }
+  const checkBusy = (planetName) =>
+    new Promise((resolve) => {
+      socket.emit("isGateBusy", currentPlanet.planetName, planetName, (value) =>
+        resolve(Boolean(value))
       );
-    }).then((result) => {
-      if (!result) {
-        return false;
-      }
-      return true;
     });
-    if (!promise) {
-      return false;
-    }
-    return true;
-  };
 
   const lockDest = async () => {
     if (gateState.destLock) {
@@ -619,10 +632,6 @@ export const Stargate = ({
     }
   };
 
-  const updateDestination = (newDestination) => {
-    return dispatch({ type: "destinationInfo", payload: newDestination });
-  };
-
   const openGate = async () => {
     try {
       audioSelector(audioVolume, "gateOpen");
@@ -761,8 +770,7 @@ export const Stargate = ({
   }, [gateState.resetting]);
 
   const emitGateState = (clientId) => {
-    const stateToEmit = gateState;
-    socket.emit("sendGateStatus", clientId, stateToEmit);
+    socket.emit("sendGateStatus", clientId, gateState);
   };
 
   useEffect(() => {
@@ -781,6 +789,16 @@ export const Stargate = ({
     };
   }, [gateState]);
 
+  // Push gate state to server whenever it changes so new clients get it instantly
+  useEffect(() => {
+    if (hosting) {
+      socket.emit("updateGateState", {
+        planetName: currentPlanet.planetName,
+        gateState,
+      });
+    }
+  }, [gateState]);
+
   useEffect(() => {
     if (socket) {
       socket.on("newInput", (data) => {
@@ -791,7 +809,7 @@ export const Stargate = ({
         dispatch({ type: "autoDialFromSocket", payload: true });
       });
       socket.on("destinationInfo", (data) => {
-        updateDestination(data);
+        dispatch({ type: "destinationInfo", payload: data });
       });
       socket.on("lockFail", async () => {
         await lockFail();
@@ -987,13 +1005,14 @@ export const Stargate = ({
     setCurrentPlanet(gateState.destinationInfo);
     console.warn("new planet:", gateState.destinationInfo.planetName);
     dispatch({ type: "offworld", payload: true });
-    const rollValues = rollCalc(
-      gateState.destinationInfo.poo,
-      gateState.ringPosition,
-      true
-    );
-    dispatch({ type: "ringPosition", payload: rollValues.position });
-    dispatch({ type: "rollData", payload: rollValues });
+    // Instant snap to destination POO – no animation on arrival
+    const destPooPos = gateState.destinationInfo.poo.position;
+    cumulativeRef.current = destPooPos;
+    dispatch({ type: "ringPosition", payload: destPooPos });
+    dispatch({
+      type: "rollData",
+      payload: { timing: 0, position: destPooPos, direction: 1 },
+    });
     dispatch({ type: "inputAddress", payload: [] });
     dispatch({ type: "pooActive", payload: null });
     socket.emit("playerTravels", {
@@ -1171,4 +1190,4 @@ export const Stargate = ({
   }
 };
 
-export default { Stargate };
+export default Stargate;
