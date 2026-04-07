@@ -1,34 +1,57 @@
-## Concept
+# Stargate REACT
 
-This template is meant to serve as a foundation for every P2/P3 following the React-Express-MySQL stack, as learned in Wild Code School.
-It's pre-configured with a set of tools which'll help students produce industry-quality and easier-to-maintain code, while staying as simple as possible to use.
+Personal project aimed at recreating an interactive dialing simulator based on the principles of the Stargate device as seen in the Stargate SG-1 franchise.
+Initially started as a small personal project, I made it grow over the years and added features like online client-synching and social features.
 
-## Setup & Use
+## Features
 
-### Project Initialization
+- Ability to activate and operate the stargate and go through it to reach another planet.
+- Dynamic client hosting for network synchronisation
+- Create an account and name your own planet/destination
+- In-game chat, global & per planet
+- Mobile compatibility (browser app)
 
-- In VSCode, install plugins **Prettier - Code formatter** and **ESLint** and configure them
-- Clone this repo, enter it
-- Run command `npm run setup`
-- _NB: To launch the backend server, you'll need an environment file with database credentials. You'll find a template one in `backend/.env.sample`_
+## Technologies used
 
-### Available Commands
+- **Frontend :** React, Vite, SCSS, Axios, Socket.io
+- **Backend :** Node.js, Express, MySQL, MVC architecture
+- **Déploiement :** VPS, Docker & Caprover
 
-- `setup` : Initialization of frontend and backend, as well as all toolings
-- `dev` : Starts both servers (frontend + backend) in one terminal
-- `dev-front` : Starts the React frontend server
-- `dev-back` : Starts the Express backend server
-- `lint` : Runs validation tools, and refuses unclean code (will be executed on every _commit_)
-- `fix` : Fixes linter errors (run it if `lint` growls on your code !)
+## Installation
 
-## FAQ
+1. Clone the repository :
 
-### Tools
+   ```bash
+   git clone https://github.com/tibononoX/stargate-project
+   cd stargate-project
+   ```
 
-- _Concurrently_ : Allows for several commands to run concurrently in the same CLI
-- _Husky_ : Allows to execute specific commands that trigger on _git_ events
-- _Vite_ : Alternative to _Create-React-App_, packaging less tools for a more fluid experience
-- _ESLint_ : "Quality of code" tool, ensures chosen rules will be enforced
-- _Prettier_ : "Quality of code" tool as well, focuses on the styleguide
-- _ Airbnb Standard_ : One of the most known "standards", even though it's not officially linked to ES/JS
-- _Nodemon_ : Allows to restart the server everytime a .js file is udated
+2. Install dependancies :
+
+   ```bash
+   pnpm install
+   ```
+
+3. Run the development server locally :
+
+   ```bash
+   pnpm run dev
+   ```
+
+## Usage
+
+- You'll initially appear on Earth by default, you can open the address book, the DHD keyboard and the chatbox. You can also see who it connected (wether it's a guest or not).
+- Dial the gate by selecting an address in the address book or by inputing manually a sequence on the DHD. Earth-type gates will wait for you to initiate the dialing by pressing the red button on the DHD, while normal ones will input the sequence directly.
+- Have fun!
+
+## Links
+
+- **Deployed web-app :** [https://stargate.tibuntu.fr/](https://stargate.tibuntu.fr/)
+
+## Author
+
+- **tibononox** - [GitHub](https://github.com/tibononox)
+
+## Licence
+
+This project is purely made for fun and is not destined to be distributed or used in any commercial manner.
